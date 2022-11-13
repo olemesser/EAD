@@ -10,3 +10,7 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 Requires: dplyr, rpicosat, tidyr, GA, Matrix, digest, parallel, doSNOW, foreach, faux, plyr, DescTools, igraph, R.utils, fGarch
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -49,6 +49,10 @@ Creates a \code{N_src} x \code{N_tgt}  domain mapping matrix (DMM) by reaching a
 \examples{
 set.seed(1234)
 
-crt_DMM(N_src=7,N_tgt=16,DMM_PAR=0.4,upper_Bound=1)
+crt_DMM(N_src=7,
+        N_tgt=16,
+        method='SDC',
+        DMM_PAR=0.4,
+        upper_Bound=1)
 
 }

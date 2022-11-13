@@ -75,7 +75,7 @@ crt_EAD<-function(DOE,
       message[['DOMAIN']]<-DOM$message
       remove(DOM)
 
-    #### 3. Create Cost Vector ####
+    #### 3. Create Costs ####
           RC<-crt_RC(N_RD = DOE$N_RD[x],
                      TC = DOE$TC[x],
                      ratio_fixedC = runif(1,min=DOE$ratio_fixedC[x][[1]][1],max=DOE$ratio_fixedC[x][[1]][2]),

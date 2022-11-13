@@ -131,7 +131,7 @@ crt_DOMAINS<-function(P_FD,
 
     }
 
-    ### 2.4 Write Measures for DMMs ###
+    ### 2.5 Write Measures for DMMs ###
     measures[['SYSTEM']]<-list(SDC=list(FD_PD = DMM_FD_PD$SDC,
                                      FD_PrD = DMM_FD_PrD$SDC,
                                      FD_RD = DMM_FD_RD$SDC,
@@ -165,7 +165,7 @@ crt_DOMAINS<-function(P_FD,
     remove(DMM_PD_PrD)
     remove(DMM_PrD_RD)
 
-    ### 2.5 Create DSM matrices ###
+    ### 2.6 Create DSM matrices ###
     DSM_param_PD<-runif(1,min=DSM_param[1],max=DSM_param[2])
     DSM_param_PrD<-runif(1,min=DSM_param[1],max=DSM_param[2])
     DSM_param_RD<-runif(1,min=DSM_param[1],max=DSM_param[2])
@@ -190,7 +190,7 @@ crt_DOMAINS<-function(P_FD,
 
 
 
-    ### 2.6 Write Measures for DSMs ###
+    ### 2.7 Write Measures for DSMs ###
     measures[['SYSTEM']]<-c(measures[['SYSTEM']],
                               list(SC=list(PD = DSM_PD$SC_adj_n,
                                       PrD = DSM_PrD$SC_adj_n,
@@ -217,8 +217,8 @@ crt_DOMAINS<-function(P_FD,
     remove(DSM_RD)
 
 
-    #### 3. calculate product matrices ####
-    ### 3.1 Calculate Physical Domain ###
+    #### 2.8. calculate product matrices ####
+    ### 2.8.1 Calculate Physical Domain ###
     P_DD_1 <- P$FD %*% DMM$FD_PD
     # P_DD_1[P_DD_1>0]<-1
     P_DD_2 <- P_DD_1 %*% DSM$PD
@@ -226,14 +226,14 @@ crt_DOMAINS<-function(P_FD,
     P[["PD"]] <- pmax(P_DD_1,P_DD_2)
     remove(P_DD_1,P_DD_2)
 
-    ### 3.2 Calculate Process Domain ###
+    ### 2.8.2 Calculate Process Domain ###
     P[["PrD"]] <- P[["PD"]] %*% (( DMM$PD_PrD %*% DSM$PrD) + DMM$PD_PrD) + P[["FD"]] %*% DMM$FD_PrD
 
-    ### 3.3 Calculate Resource Domain ###
+    ### 2.8.3 Calculate Resource Domain ###
     P[["RD"]] <- P[["PrD"]] %*% (( DMM$PrD_RD %*% DSM$RD) + DMM$PrD_RD) + P[["FD"]] %*% DMM$FD_RD + P[["PrD"]] %*% DMM$PrD_RD
 
 
-    #### Final Checks ####
+    #### 2.9 Final Checks ####
       tries<-tries+1
       cond_unique_RD<-NROW(unique(P[["RD"]]))==NROW(P[['FD']])
       cond_unique_PrD<-NROW(unique(P[["PrD"]]))==NROW(P[['FD']])
@@ -254,7 +254,7 @@ crt_DOMAINS<-function(P_FD,
     }
   }
 
-
+  #### 2.10 Write Output object ####
   measures[['PRODUCT']]<-list(
                              INTER=list(FD=measure_INTER(P$FD),
                                         PD=measure_INTER(P$PD),

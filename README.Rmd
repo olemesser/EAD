@@ -93,7 +93,7 @@ Finally, write the created EAD environments to a file to conduct further experim
   save(EAD,file=paste0(Sys.Date(),"_EAD.RData"))
 ```
 
-# Literature
+# References
 
 Anand, V., Balakrishnan, R., & Labro, E. (2019). A Framework for Conducting Numerical Experiments on Cost System Design. *Journal of Management Accounting Research*, *31*(1), 41–61. <https://doi.org/10.2308/jmar-52057>
 
