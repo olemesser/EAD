@@ -27,7 +27,7 @@ You can install the development version of EAD via any github install function. 
 
 ```{r, eval=FALSE, include=TRUE}
 library(devtools)
-install_github("olemesser/EAD")
+install_github("olemesser/EAD",build_vignettes = TRUE)
 ```
 
 ## Create the EAD
@@ -91,6 +91,14 @@ Finally, write the created EAD environments to a file to conduct further experim
 ```{r write, eval=FALSE, include=TRUE}
   ## write output to file
   save(EAD,file=paste0(Sys.Date(),"_EAD.RData"))
+```
+
+# Full Documentation
+
+For the full documentation use the included vignettes as:
+
+```{r,eval=FALSE, include=TRUE}
+utils::vignette("documentation",package ="EAD")
 ```
 
 # References

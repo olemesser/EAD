@@ -10,7 +10,7 @@ The numerical EAD framework generates firm environments according to the
 Extended Axiomatic Design (EAD) introduced by Mertens (2020). The
 simulation model is explained in Meßerschmidt (forthcoming). The
 framework adapts some function from the cost system design framework by
-Anand et al. (2019). The original code in C# is available under:
+Anand et al. (2019). The original code in C# is available under
 <https://github.com/vanand74/CostSystemSim>.
 
 ## Installation
@@ -20,7 +20,7 @@ function. For example:
 
 ``` r
 library(devtools)
-install_github("olemesser/EAD")
+install_github("olemesser/EAD",build_vignettes = TRUE)
 ```
 
 ## Create the EAD
@@ -95,7 +95,15 @@ experiments
   save(EAD,file=paste0(Sys.Date(),"_EAD.RData"))
 ```
 
-# Literature
+# Full Documentation
+
+For the full documentation use the included vignettes as:
+
+``` r
+utils::vignette("documentation",package ="EAD")
+```
+
+# References
 
 Anand, V., Balakrishnan, R., & Labro, E. (2019). A Framework for
 Conducting Numerical Experiments on Cost System Design. *Journal of
