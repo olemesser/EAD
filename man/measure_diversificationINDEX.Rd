@@ -15,7 +15,7 @@ measure_diversificationINDEX(P, DMD = NULL)
 Returns the corresponding index value
 }
 \description{
-Calculates the Herfindahl-based product diversification index (D) as defined by Gollop (1997)
+Calculates the Herfindahl-based product diversification index (D) as defined by \insertCite{Gollop.1997;textual}{EAD} and \insertCite{Gollop.1991;textual}{EAD}.
 }
 \examples{
 
@@ -24,4 +24,7 @@ P<-CSD_EAD$RES_CONS_PAT
 DMD<-crt_DEMAND(NROW(P),1000,1)$DEMAND
 
 measure_diversificationINDEX(P,DMD)
+}
+\references{
+\insertAllCited{}
 }

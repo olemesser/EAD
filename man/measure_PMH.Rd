@@ -13,7 +13,7 @@ measure_PMH(P)
 Returns the corresponding PMH value
 }
 \description{
-The product mix heterogeneity (PMH)as defined by Anderson (1995) for a given product matrix is calculated with this function.
+The product mix heterogeneity (PMH)as defined by \insertCite{Anderson.1995;textual}{EAD} for a given product matrix is calculated with this function.
 Since the PMH is calculated for each individual resource the mean and standard deviation are returned.
 }
 \examples{
@@ -22,4 +22,7 @@ data('csd_EAD')
 P<-CSD_EAD$RES_CONS_PAT
 
 measure_PMH(P)
+}
+\references{
+\insertAllCited{}
 }

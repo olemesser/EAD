@@ -15,10 +15,13 @@ Returns the corresponding proportion
 \description{
 This function measures the skewness of an given input vector such as demand or resource costs.
 It calculates the proportion of top ten percentage of elements on the total sum.
-Anand et al. (2019) use this measure to operationalize resource cost distribution.
+\insertCite{Anand2019;textual}{EAD} use this measure to operationalize resource cost distribution.
 }
 \examples{
 
 data('csd_EAD')
 measure_TOP10(CSD_EAD$DMD)
+}
+\references{
+\insertAllCited{}
 }

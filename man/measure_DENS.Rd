@@ -14,6 +14,7 @@ Returns the corresponding density value
 }
 \description{
 This function measures the density defined as the proportion of non-zero entries in P.
+This measure is used in several studies \insertCite{Anand2019,BLH2011}{EAD}.
 }
 \examples{
 
@@ -21,4 +22,7 @@ data('csd_EAD')
 P<-CSD_EAD$RES_CONS_PAT
 
 measure_DENS(P)
+}
+\references{
+\insertAllCited{}
 }

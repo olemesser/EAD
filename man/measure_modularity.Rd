@@ -19,8 +19,8 @@ The calculated modularity measure
 }
 \description{
 Calculates the directed of undirected modularity measure of a network.
-The directed approach is descriped by Blondel, Guillaume, Lambiotte, & Lefebvre (2008) as well as Newman (2006).
-The undirected measure is based on Leicht & Newmann (2008).
+The directed approach is described by \insertCite{Blondel.2008;textual}{EAD} as well as \insertCite{Newman.2006;textual}{EAD}.
+The undirected measure is based on \insertCite{Leicht.2008;textual}{EAD}.
 }
 \examples{
 
@@ -40,4 +40,7 @@ The undirected measure is based on Leicht & Newmann (2008).
 ## use the directed approach by Leicht & Newmann (2008)
   measure_modularity(DSM,symmetric=F)
 
+}
+\references{
+\insertAllCited{}
 }

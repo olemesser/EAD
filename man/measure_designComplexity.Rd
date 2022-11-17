@@ -15,7 +15,7 @@ measure_designComplexity(A, norm = T)
 The calculated design complexity measure.
 }
 \description{
-This measure is based on the Shannon entropy. Adapted from Modrak & Bednar (2015).
+This measure is based on the Shannon entropy. Adapted from \insertCite{Modrak.2015;textual}{EAD}.
 }
 \examples{
 
@@ -27,4 +27,7 @@ A<-matrix(c(1,0,0,
          byrow=T)
 
 measure_designComplexity(A)
+}
+\references{
+\insertAllCited{}
 }

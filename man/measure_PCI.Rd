@@ -13,7 +13,7 @@ measure_PCI(P)
 Returns the corresponding index value
 }
 \description{
-This index was introduced by Kota et al. (2000). The f-values as defined by Kota are set to one.
+This index was introduced by \insertCite{Kota2000;textual}{EAD}. The f-values as defined by Kota are set to one.
 }
 \examples{
 
@@ -26,4 +26,7 @@ P<-matrix(c(1,0,0,1,
        ncol = 5)
 
 measure_PCI(P)
+}
+\references{
+\insertAllCited{}
 }

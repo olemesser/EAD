@@ -1,8 +1,10 @@
 #' @title Calculate Design Complexity
-#' @description This measure is based on the Shannon entropy. Adapted from Modrak & Bednar (2015).
+#' @description This measure is based on the Shannon entropy. Adapted from \insertCite{Modrak.2015;textual}{EAD}.
 #' @param A A domain mapping matrix (DMM) or dependency structure matrix (DSM), reflecting the transition between two domains.
 #' @param norm Boolean, default\code{TRUE}. Decides if the normalized design complexity measures should be returned.
 #' @return The calculated design complexity measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' A<-matrix(c(1,0,0,
@@ -31,9 +33,11 @@ measure_designComplexity<-function(A,norm=T){
 
 
 #' @title Calculate Reangularity
-#' @description This measure calculates the reangularity for a given domain mapping matrix (DMM) according to Suh (1995) and Delaš et al. (2018).
+#' @description This measure calculates the reangularity for a given domain mapping matrix (DMM) according to \insertCite{Suh.1995;textual}{EAD} and \insertCite{Delas.2018;textual}{EAD}.
 #' @param DMM A domain mapping matrix, reflecting the transition between two domains.
 #' @return The calculated reangularity measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' DMM<-matrix(c(1,0,0,
@@ -59,10 +63,12 @@ measure_reangularity<-function(A){
 }
 
 
-#' @title Calculate Semiangularity
-#' @description This measure calculates the semiangularity for a given domain mapping matrix (DMM) according to Suh (1995) and Delaš et al. (2018).
+#' @title Calculate Semangularity
+#' @description This measure calculates the semangularity for a given domain mapping matrix (DMM) according to \insertCite{Suh.1995;textual}{EAD} and \insertCite{Delas.2018;textual}{EAD}.
 #' @param DMM A domain mapping matrix, reflecting the transition between two domains.
-#' @return The calculated semiangularity measure.
+#' @return The calculated semangularity measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' DMM<-matrix(c(1,0,0,
@@ -88,13 +94,15 @@ measure_semiangularity<-function(A){
 
 #' @title measure_modularity
 #' @description Calculates the directed of undirected modularity measure of a network.
-#' The directed approach is descriped by Blondel, Guillaume, Lambiotte, & Lefebvre (2008) as well as Newman (2006).
-#' The undirected measure is based on Leicht & Newmann (2008).
+#' The directed approach is described by \insertCite{Blondel.2008;textual}{EAD} as well as \insertCite{Newman.2006;textual}{EAD}.
+#' The undirected measure is based on \insertCite{Leicht.2008;textual}{EAD}.
 #' @param A A data.frame containing the dependency structure matrix with information on element dependencies.
 #' @param preMember A numerical vector containing the assignment of vertices to cluster.
 #' The default value is \code{preMember=NULL} which means that the communities are identified using the \link[igraph]{fastgreedy.community}
 #' @param plot_op Boolean, default \code{plot_op=FALSE}. If set to true the graph is visualized.
 #' @return The calculated modularity measure
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' ## unsymmetrical matrix as input
@@ -140,13 +148,15 @@ measure_modularity<-function(A,preMember=NULL,plot_op=F){
 }
 
 #' @title Calculate structural complexity
-#' @description This measure is defined by Kim et al. (2013), Sinha & de Weck (2014) as well as Sinha & de Weck (2016).
-#' The C1 term is neglected here. Thervore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
+#' @description This measure is defined by \insertCite{Sinha.2018;textual}{EAD} and \insertCite{Sinha.2014;textual}{EAD}.
+#' The C1 term is neglected here. Therefore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
 #' Non-symmetric matrices are transformed into a symmetric binary matrix.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
 #' @param nrom Boolean, default=F. If set to true, the normalized measure is returned.
-#' Sinha & de Weck (2016) proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}
+#' \insertCite{Sinha.2016;textual}{EAD} proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}
 #' @return The calculated structural complexity measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' DSM<-matrix(c(1,0,0,
@@ -180,9 +190,11 @@ measure_structuralcomplexity<-function(A,norm=F){
 }
 
 #' @title Calculate the von Neumann entropy for graphs.
-#' @description This function takes a DSM and calculates the von Neumann entropy. For further details see: Passerini & Severini (2009).
+#' @description This function takes a DSM and calculates the von Neumann entropy. For further details see: \insertCite{Passerini.2009;textual}{EAD}.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
 #' @return The calculated von Neumann entropy measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' DSM<-matrix(c(1,0,0,
@@ -221,9 +233,11 @@ measure_neumannEntropy<-function(A,norm=T){
 #### Product Measures ####
 
 #' @title Calculate normalized dissimilarity
-#' @description Takes a product matrix with products in rows and attributes in columns. This measure is defined by Buchholz (2012).
+#' @description Takes a product matrix with products in rows and attributes in columns. This measure is defined by \insertCite{Buchholz.2012;textual}{EAD}.
 #' @param P A product matrix with products in rows and attributes in columns.
 #' @return The calculated normalized dissimilarity measure.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' P<-matrix(c(1,1,1,1,
@@ -253,9 +267,11 @@ measure_DISS<-function(P,norm=T){
 
 #' @title Calculate sum of distances
 #' @description Calculates the absolute sum of euclidean distances for a given matrix with elements in rows and attributes in columns.
-#' For further details on this measure see Buchholz (2012).
+#' For further details on this measure see \insertCite{Buchholz.2012;textual}{EAD}.
 #' @param P A product matrix with products in rows and attributes in columns.
 #' @return The calculated sum of distances.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' P<-matrix(c(1,1,1,1,
@@ -292,10 +308,12 @@ measure_DISTcv<-function(P){
 
 
 #' @title Calculate intra-product heterogeneity
-#' @description Calculates the INTRA measure defined by Gupta (1993)
+#' @description Calculates the INTRA measure defined by \insertCite{Gupta.1993;textual}{EAD} and adapted by \insertCite{Mertens.2020;textual}{EAD}.
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @param norm Boolean, default \code{FALSE}. If set to \code{TRUE}, then the normalized measures is used.
 #' @return Returns the calculated intra value.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' P<-matrix(c(2,1,1,1,
@@ -323,9 +341,11 @@ measure_INTRA<-function(P,norm=F){
 
 
 #' @title Calculate inter-product heterogeneity
-#' @description Calculates the INTRA measure defined by Gupta (1993) and adapted by Mertens (2020).
+#' @description Calculates the INTRA measure defined by \insertCite{Gupta.1993;textual}{EAD} and adapted by \insertCite{Mertens.2020;textual}{EAD}.
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @return Returns the calculated inter value.
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' P<-matrix(c(2,1,1,1,
@@ -366,10 +386,12 @@ measure_NN<-function(P,prop=0.2){
 
 
 #' @title Calculate the Product Mix Heterogeneity (PMH)
-#' @description The product mix heterogeneity (PMH)as defined by Anderson (1995) for a given product matrix is calculated with this function.
+#' @description The product mix heterogeneity (PMH)as defined by \insertCite{Anderson.1995;textual}{EAD} for a given product matrix is calculated with this function.
 #' Since the PMH is calculated for each individual resource the mean and standard deviation are returned.
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @return Returns the corresponding PMH value
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' data('csd_EAD')
@@ -386,10 +408,12 @@ measure_PMH<-function(P){
 }
 
 #' @title Calculate the Product Diversification Index
-#' @description Calculates the Herfindahl-based product diversification index (D) as defined by Gollop (1997)
+#' @description Calculates the Herfindahl-based product diversification index (D) as defined by \insertCite{Gollop.1997;textual}{EAD} and \insertCite{Gollop.1991;textual}{EAD}.
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @param DMD A demand vector. If no demand vector is given, then a normal distribution is assumed where each product has the quantity one.
 #' @return Returns the corresponding index value
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' data('csd_EAD')
@@ -412,9 +436,11 @@ measure_diversificationINDEX<-function(P,DMD=NULL){
 }
 
 #' @title Calculate the Product Line Commonality Index
-#' @description This index was introduced by Kota et al. (2000). The f-values as defined by Kota are set to one.
+#' @description This index was introduced by \insertCite{Kota2000;textual}{EAD}. The f-values as defined by Kota are set to one.
 #' @param P A product matrix representing the components per product (P_DD) with products in rows and components in columns.
 #' @return Returns the corresponding index value
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' P<-matrix(c(1,0,0,1,
@@ -438,10 +464,12 @@ measure_PCI<-function(P){
 
 
 #' @title Calculate Local Outlier Factor (LOF)
-#' @description Calculates the local outlier factor of observation (rows) in \code{P}. The input is passed to \link[DescTools]{LOF}
+#' @description Calculates the local outlier factor of observation (rows) in \code{P} as defined by \insertCite{Breunig2000;textual}{EAD} and \insertCite{XU2022;textual}{EAD} The input is passed to \link[DescTools]{LOF}
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @param n A value between \code{2<n<NROW(P)} indicating the number of products used to calculate the LOF's.
 #' @return Returns the corresponding index value
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' data('csd_EAD')
@@ -458,8 +486,11 @@ measure_LOF<-function(P,perc=0.1){
 
 #' @title Measure density of a product matrix
 #' @description This function measures the density defined as the proportion of non-zero entries in P.
+#' This measure is used in several studies \insertCite{Anand2019,BLH2011}{EAD}.
 #' @param P A product matrix (e.g, RES_CONS_PAT) with products in rows and features, components, process or resources in columns.
 #' @return Returns the corresponding density value
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' data('csd_EAD')
@@ -473,9 +504,11 @@ measure_DENS<-function(P){
 #' @title Measure the skewness of an vector
 #' @description This function measures the skewness of an given input vector such as demand or resource costs.
 #' It calculates the proportion of top ten percentage of elements on the total sum.
-#' Anand et al. (2019) use this measure to operationalize resource cost distribution.
+#' \insertCite{Anand2019;textual}{EAD} use this measure to operationalize resource cost distribution.
 #' @param x A numeric vector which is strictly positive \code{0<x}.
 #' @return Returns the corresponding proportion
+#' @references
+#' \insertAllCited{}
 #' @examples
 #'
 #' data('csd_EAD')
@@ -500,11 +533,81 @@ measure_TOP10<-function(x){
 #'               0,1,0,1),
 #'        nrow = 4,
 #'        ncol = 5)
-#' measure_NPV(CSD_EAD$DMD)
+#' measure_NPV(P)
 measure_NPV<-function(P){
   temp<-lapply(1:NCOL(P),function(x){
     unique(c(0,P[,x]))
   })
   temp<-prod(sapply(temp,length))-1
   return(NROW(P)/temp)
+}
+
+#' @title Calculates the option variability
+#' @description This function calculates the option variability measure defined by \insertCite{MacDuffie1996;textual}{EAD}
+#' @param P A product matrix containing the features with products in rows and features in columns.
+#' @return Returns the OV value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' P<-matrix(c(1,0,0,1,
+#'               0,1,0,0,
+#'               1,0,0,0,
+#'               0,1,1,0,
+#'               0,1,0,1),
+#'        nrow = 4,
+#'        ncol = 5)
+#' measure_OV(P)
+measure_OV<-function(P){
+  mue<-apply(P,2,function(x) sum(x>0))/NROW(P)
+  return(sum(sqrt(mue*(1-mue))))
+}
+
+#' @title Calculates the Commonality Index (CI)
+#' @description This function calculates the commonality index as defined by \insertCite{MartinIshii1996;textual}{EAD}
+#' @param P A product matrix containing the products in rows and and features, components, process or resources in columns.
+#' @return Returns the CI value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' P<-matrix(c(1,0,0,1,
+#'               0,1,0,0,
+#'               1,0,0,0,
+#'               0,1,1,0,
+#'               0,1,0,1),
+#'        nrow = 4,
+#'        ncol = 5)
+#' measure_CI(P)
+measure_CI<-function(P){
+  return(NCOL(P)/sum(P[P>0]))
+}
+
+
+#' @title Calculates the Generalized Complexity Index (GCI)
+#' @description This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}
+#' @param P A product matrix containing the products in rows and and features, components, process or resources in columns.
+#' @return Returns the GCI value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' P<-matrix(c(1,0,0,1,
+#'               0,1,0,0,
+#'               1,0,0,0,
+#'               0,1,1,0,
+#'               0,1,0,1),
+#'        nrow = 4,
+#'        ncol = 5)
+#' measure_GCI(P)
+measure_GCI<-function(P){
+  P<-unique(P)
+  V<-NROW(P) # number of variants
+  uel<-apply(P,2,function(x) length(unique(x)))
+  U<-sum(uel)# number of unique elements
+  t<-prod(dim(P)) # number of total elements
+  A<-U
+  M<-prod(uel) # maximum possible number of connections
+  GCI <- V*(1-U/t)*A/M
+  return(GCI)
 }

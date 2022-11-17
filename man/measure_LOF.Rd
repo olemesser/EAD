@@ -15,7 +15,7 @@ measure_LOF(P, perc = 0.1)
 Returns the corresponding index value
 }
 \description{
-Calculates the local outlier factor of observation (rows) in \code{P}. The input is passed to \link[DescTools]{LOF}
+Calculates the local outlier factor of observation (rows) in \code{P} as defined by \insertCite{Breunig2000;textual}{EAD} and \insertCite{XU2022;textual}{EAD} The input is passed to \link[DescTools]{LOF}
 }
 \examples{
 
@@ -23,4 +23,7 @@ data('csd_EAD')
 P<-CSD_EAD$RES_CONS_PAT
 
 measure_LOF(P,n=2)
+}
+\references{
+\insertAllCited{}
 }

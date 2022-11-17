@@ -13,7 +13,7 @@ measure_DISS(P, norm = T)
 The calculated normalized dissimilarity measure.
 }
 \description{
-Takes a product matrix with products in rows and attributes in columns. This measure is defined by Buchholz (2012).
+Takes a product matrix with products in rows and attributes in columns. This measure is defined by \insertCite{Buchholz.2012;textual}{EAD}.
 }
 \examples{
 
@@ -24,4 +24,7 @@ P<-matrix(c(1,1,1,1,
            ncol = 3)
 
 measure_DISSnrom(P)
+}
+\references{
+\insertAllCited{}
 }

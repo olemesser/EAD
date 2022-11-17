@@ -24,5 +24,5 @@ P<-matrix(c(1,0,0,1,
               0,1,0,1),
        nrow = 4,
        ncol = 5)
-measure_NPV(CSD_EAD$DMD)
+measure_NPV(P)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/complexityMeasures.R
 \name{measure_semiangularity}
 \alias{measure_semiangularity}
-\title{Calculate Semiangularity}
+\title{Calculate Semangularity}
 \usage{
 measure_semiangularity(A)
 }
@@ -10,10 +10,10 @@ measure_semiangularity(A)
 \item{DMM}{A domain mapping matrix, reflecting the transition between two domains.}
 }
 \value{
-The calculated semiangularity measure.
+The calculated semangularity measure.
 }
 \description{
-This measure calculates the semiangularity for a given domain mapping matrix (DMM) according to Suh (1995) and Delaš et al. (2018).
+This measure calculates the semangularity for a given domain mapping matrix (DMM) according to \insertCite{Suh.1995;textual}{EAD} and \insertCite{Delas.2018;textual}{EAD}.
 }
 \examples{
 
@@ -25,4 +25,7 @@ DMM<-matrix(c(1,0,0,
          byrow=T)
 
 measure_semiangularity(DMM)
+}
+\references{
+\insertAllCited{}
 }

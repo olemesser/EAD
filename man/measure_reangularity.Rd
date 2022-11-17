@@ -13,7 +13,7 @@ measure_reangularity(A)
 The calculated reangularity measure.
 }
 \description{
-This measure calculates the reangularity for a given domain mapping matrix (DMM) according to Suh (1995) and Delaš et al. (2018).
+This measure calculates the reangularity for a given domain mapping matrix (DMM) according to \insertCite{Suh.1995;textual}{EAD} and \insertCite{Delas.2018;textual}{EAD}.
 }
 \examples{
 
@@ -25,4 +25,7 @@ DMM<-matrix(c(1,0,0,
          byrow=T)
 
 measure_reangularity(DMM)
+}
+\references{
+\insertAllCited{}
 }

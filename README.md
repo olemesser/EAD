@@ -95,6 +95,40 @@ experiments
   save(EAD,file=paste0(Sys.Date(),"_EAD.RData"))
 ```
 
+## Calculate (true) Benchmark Costs
+
+The following chunk calculates the product benchmark costs for the given
+design.
+
+``` r
+costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
+               DMD = EAD[[1]][[1]]$DEMAND,
+               RC_var = EAD[[1]][[1]]$RC$var,
+               RC_fix = EAD[[1]][[1]]$RC$fix)
+
+## the product costs multiplied by the demand equals the total costs
+sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
+PC_B_full<-costs$PC_B
+```
+
+If the product mix (available products) or the demand varies, the costs
+are calculated as:
+
+``` r
+## lets assume we drop the first ten products 
+DMD<-EAD[[1]][[1]]$DEMAND
+DMD[1:10]<-0
+costs<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
+                DMD = DMD,
+                RC_fix = EAD[[1]][[1]]$RC$fix,
+               RCU=costs$RCU)
+
+PC_B_reduced<-costs$PC_B
+
+## compare the differences
+cbind(PC_B_full,PC_B_reduced)
+```
+
 # Full Documentation
 
 For the full documentation use the included vignettes as:

@@ -10,14 +10,14 @@ measure_structuralcomplexity(A, norm = F)
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}
 
 \item{nrom}{Boolean, default=F. If set to true, the normalized measure is returned.
-Sinha & de Weck (2016) proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}}
+\insertCite{Sinha.2016;textual}{EAD} proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}}
 }
 \value{
 The calculated structural complexity measure.
 }
 \description{
-This measure is defined by Kim et al. (2013), Sinha & de Weck (2014) as well as Sinha & de Weck (2016).
-The C1 term is neglected here. Thervore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
+This measure is defined by \insertCite{Sinha.2018;textual}{EAD} and \insertCite{Sinha.2014;textual}{EAD}.
+The C1 term is neglected here. Therefore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
 Non-symmetric matrices are transformed into a symmetric binary matrix.
 }
 \examples{
@@ -30,4 +30,7 @@ DSM<-matrix(c(1,0,0,
          byrow=T)
 
 measure_structuralcomplexity(DSM)
+}
+\references{
+\insertAllCited{}
 }

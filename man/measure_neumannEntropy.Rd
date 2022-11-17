@@ -13,7 +13,7 @@ measure_neumannEntropy(A, norm = T)
 The calculated von Neumann entropy measure.
 }
 \description{
-This function takes a DSM and calculates the von Neumann entropy. For further details see: Passerini & Severini (2009).
+This function takes a DSM and calculates the von Neumann entropy. For further details see: \insertCite{Passerini.2009;textual}{EAD}.
 }
 \examples{
 
@@ -25,4 +25,7 @@ DSM<-matrix(c(1,0,0,
          byrow=T)
 
 measure_neumannEntropy(DSM)
+}
+\references{
+\insertAllCited{}
 }

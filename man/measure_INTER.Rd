@@ -13,7 +13,7 @@ measure_INTER(P)
 Returns the calculated inter value.
 }
 \description{
-Calculates the INTRA measure defined by Gupta (1993) and adapted by Mertens (2020).
+Calculates the INTRA measure defined by \insertCite{Gupta.1993;textual}{EAD} and adapted by \insertCite{Mertens.2020;textual}{EAD}.
 }
 \examples{
 
@@ -24,4 +24,7 @@ P<-matrix(c(2,1,1,1,
          nrow = 4,
          ncol = 4,byrow=T)
 measure_INTER(P)
+}
+\references{
+\insertAllCited{}
 }

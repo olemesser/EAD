@@ -14,7 +14,7 @@ The calculated sum of distances.
 }
 \description{
 Calculates the absolute sum of euclidean distances for a given matrix with elements in rows and attributes in columns.
-For further details on this measure see Buchholz (2012).
+For further details on this measure see \insertCite{Buchholz.2012;textual}{EAD}.
 }
 \examples{
 
@@ -25,4 +25,7 @@ P<-matrix(c(1,1,1,1,
            ncol = 3)
 
 measure_DISTsum(P)
+}
+\references{
+\insertAllCited{}
 }
