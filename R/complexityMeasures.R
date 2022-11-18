@@ -585,7 +585,7 @@ measure_CI<-function(P){
 
 
 #' @title Calculates the Generalized Complexity Index (GCI)
-#' @description This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}
+#' @description This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}.
 #' @param P A product matrix containing the products in rows and and features, components, process or resources in columns.
 #' @return Returns the GCI value
 #' @references
@@ -610,4 +610,152 @@ measure_GCI<-function(P){
   M<-prod(uel) # maximum possible number of connections
   GCI <- V*(1-U/t)*A/M
   return(GCI)
+}
+
+
+#' @title Calculates the Coupling Complexity (CC)
+#' @description This function coupling complexity (CC) as defined by \insertCite{Ameri.2008;textual}{EAD} and \insertCite{Summers.2010;textual}{EAD}.
+#' Note, this function is not implemented yet since description of authors is not sufficient to reproduce the algorithm.
+#' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @return Returns the CC value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#' require(EAD)
+#'
+#' ## water Sprinkler example by Ameri et al. (2008) ##
+#' data("waterSprinkler")
+#' DSM<-waterSprinkler
+#' measure_CoupComp(DSM)
+measure_CoupComp<-function(DSM){
+  require(data.table)
+  require(igraph)
+  require(dplyr)
+
+  #### Create Entity Relationship Graph ####
+  DSM<-as.data.frame(DSM)
+  DSM$src<-colnames(DSM)
+  DSM<-setDT(DSM)
+  DSM<-melt.data.table(setDT(DSM),id.vars = "src",variable.name="tgt") %>%
+        as.data.frame() %>%
+        filter(value>0) %>%
+        tidyr::uncount(value) %>%
+        mutate(node_right=paste0(src,"-",tgt))
+  DSM<-rbind(data.frame(node_left=DSM$src,node_right=DSM$node_right),
+             data.frame(node_left=DSM$tgt,node_right=DSM$node_right)) %>%
+    as.matrix()
+
+    g<-graph_from_edgelist(DSM)
+    V(g)$x<-ifelse((V(g)$name) %in% DSM[,2],2,0)
+    V(g)$y<-ifelse(V(g)$x==0,
+                   match(V(g)$name,sort(unique(DSM[,1]))),
+                   match(V(g)$name,sort(unique(DSM[,2]))))
+
+
+  #### Start Separation Algorithm ####
+    level<-1
+    total<-0
+    ## remove unary constraints
+    g<-delete.vertices(g,which(degree(x)==1 & V(x)$name %in% DSM[,2]))
+
+    repeat{
+      g<-decompose.graph(g)
+      size<-1
+      x<-g[[1]]
+      lapply(g,function(x){
+        on.exit(size=1)
+        nodes<-which(degree(x)==size)
+        i<-1
+        temp_n<-lapply(nodes,function(i)  unlist(lapply(all_simple_paths(x, from = i),function(y) y$name)))
+        temp_n<-unique(unlist(temp_n))
+        numbSets<-sum(temp_n %in% DSM[,2])
+        x_new<-delete.vertices(x,temp_n)
+        plot(x_new)
+        decompose.graph(x_new)
+      })
+      size<-1
+      nodes<-which(degree(g)==size)
+      plot(g_new)
+    total<-level*set_size*numbSets+total
+      if(cond){
+        break
+      }else{
+        level<-level+1
+      }
+    }
+  return(CC)
+}
+
+#' @title Calculates the Halstead-derived volume measure complexity (HVM)
+#' @description This function calculates the Halstead-derived volume measure complexity (HVM) as defined by \insertCite{Halstead.1979;textual}{EAD}, \insertCite{Prather.1984;textual}{EAD} and \insertCite{Hennig.2022;textual}{EAD}.
+#' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @return Returns the HVM value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#' require(EAD)
+#'
+#' ## water Sprinkler example by Ameri et al. (2008) ##
+#' data("waterSprinkler")
+#' DSM<-waterSprinkler
+#'
+#' measure_HVM(DSM)
+measure_HVM<-function(DSM){
+  DSM<-makeMatrixsymmetric(DSM)
+  diag(DSM)<-0
+  E<-sum(DSM/2)
+  N<-NROW(DSM)
+  HVM<-(E+N)*log(E+N)
+  return(HVM)
+}
+
+
+
+#' @title Calculates the Interface Complexity (HIC)
+#' @description This function calculates the Interface Complexity (HIC) as defined by \insertCite{Holtta.2005;textual}{EAD}.
+#' Note, this function is not implemented yet since description of authors is not sufficient to reproduce the algorithm.
+#' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @return Returns the HIC value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#' require(EAD)
+#'
+#' ## water Sprinkler example by Ameri et al. (2008) ##
+#' data("waterSprinkler")
+#' DSM<-waterSprinkler
+#'
+#' measure_HIC(DSM)
+measure_HIC<-function(DSM){
+  DSM<-makeMatrixsymmetric(DSM)
+  diag(DSM)<-0
+  HIC<-sum(DSM/2)
+  return(HIC)
+}
+
+
+#' @title Calculates the McCabe's Cyclomatic Complexity (MCC)
+#' @description This function calculates the McCabe's cyclomatic complexity (MCC)  \insertCite{McCabe.1976;textual}{EAD}.
+#' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @return Returns the MCC value
+#' @references
+#' \insertAllCited{}
+#' @examples
+#' require(EAD)
+#'
+#' ## water Sprinkler example by Ameri et al. (2008) ##
+#' data("waterSprinkler")
+#' DSM<-waterSprinkler
+#'
+#' measure_MCC(DSM)
+measure_MCC<-function(DSM){
+  require(igraph)
+  diag(DSM)<-0
+  if(sum(DSM)==0){
+    MCC<-0
+  }else{
+    g<-graph_from_adjacency_matrix(DSM)
+    MCC <- sum(degree(g,mode="out"))+1
+  }
+  return(MCC)
 }

@@ -1,7 +1,7 @@
 Package: EAD
 Type: Package
 Title: Framework for the Extended Axiomatic Design (EAD)
-Version: 0.3.0
+Version: 0.3.1
 Author: Ole Jan Messerschmidt <ole.messerschmidt@tuhh.de>
 Maintainer: Ole Jan Messerschmidt <ole.messerschmidt@tuhh.de>
 Description: This package includes all functions to generate EAD environments, analyze their designs and conduct numerical experiments. 
@@ -9,7 +9,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
-Requires: dplyr, rpicosat, tidyr, GA, Matrix, digest, parallel, doSNOW, foreach, faux, plyr, DescTools, igraph, R.utils, fGarch
+Requires: dplyr, rpicosat, tidyr, GA, Matrix, digest, parallel, doSNOW, foreach, faux, plyr, DescTools, igraph, R.utils, fGarch, data.table
 Suggests: 
     knitr,
     rmarkdown

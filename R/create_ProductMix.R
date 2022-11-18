@@ -129,8 +129,8 @@ create_ProductMix<-function(N_FR=7,
   measures<-list(N_P=NROW(P_FD_const), # number of product variants
                  D_u=measure_diversificationINDEX(P_FD_const), # Diversification Index
                  LOF_10=measure_LOF(P_FD_const), # Local Outlier Factor
-                 PV=measure_DISS(P_FD_const),
-                 DENS_FD=sum(P_FD_const>0)/prod(dim(P_FD_const))) # Product Variety (M12)
+                 PV=measure_DISS(P_FD_const), # Product Variety
+                 DENS_FD=sum(P_FD_const>0)/prod(dim(P_FD_const))) # density of DSM_FD
 
   productMIX<-list(
                     P_FD = P_FD,

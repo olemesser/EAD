@@ -13,7 +13,7 @@ measure_GCI(P)
 Returns the GCI value
 }
 \description{
-This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}
+This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}.
 }
 \examples{
 

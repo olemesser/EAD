@@ -203,7 +203,19 @@ crt_DOMAINS<-function(P_FD,
                                       RD = DSM_RD$NE),
                               DENS_DSM=list(PD = DSM_PD$DENS_DSM,
                                             PrD = DSM_PrD$DENS_DSM,
-                                            RD = DSM_RD$DENS_DSM)
+                                            RD = DSM_RD$DENS_DSM),
+                              GCI=list(PD = DSM_PD$GCI,
+                                       PrD = DSM_PrD$GCI,
+                                       RD = DSM_RD$GCI),
+                              MCC=list(PD = DSM_PD$MCC,
+                                       PrD = DSM_PrD$MCC,
+                                       RD = DSM_RD$MCC),
+                              HVM=list(PD = DSM_PD$HVM,
+                                       PrD = DSM_PrD$HVM,
+                                       RD = DSM_RD$HVM),
+                              HIC=list(PD = DSM_PD$HIC,
+                                       PrD = DSM_PrD$HIC,
+                                       RD = DSM_RD$HIC)
                               )
                             )
 
@@ -286,8 +298,15 @@ crt_DOMAINS<-function(P_FD,
                                       PD=measure_DISTsum(P$PD)/2,
                                       PrD=measure_DISTsum(P$PrD)/2,
                                       RD=measure_DISTsum(P$RD)/2),
-                              NPV=list(FD=measure_NPV(P$FD)))
-                         )
+                              NPV=list(FD=measure_NPV(P$FD)),
+                              CI=list(FD=measure_CI(P$FD), # Martin & Ishii (1996) commonality index
+                                      PD=measure_CI(P$PD),
+                                      PrD=measure_CI(P$PrD),
+                                      RD=measure_CI(P$RD)),
+                              OV=list(FD=measure_OV(P$FD),
+                                      PD=measure_OV(P$PD),
+                                      PrD=measure_OV(P$PrD),
+                                      RD=measure_OV(P$RD))))
 
   out<-list(P=P,
             DSM=DSM,
