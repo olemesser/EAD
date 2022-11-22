@@ -13,7 +13,7 @@ data_summary <- function(data, varname, groupnames){
   return(data_sum)
 }
 
-cor_table<-function(res,filename){
+cor_table<-function(res,filename,group=NULL){
   library(xlsx)
   require(dplyr)
   require(tidyr)
@@ -41,17 +41,40 @@ cor_table<-function(res,filename){
     data.table::dcast("method + src_temp  ~ tgt_temp",value.var="CI") %>%
     as_tibble()
 
-  CI<-CI[match(rownames(res$stars),CI$src_temp),]
-  CI<-CI[,c(1,2,match(CI$src_temp,colnames(CI)))]
+  if(!is.null(group)){
+    CI<-CI %>%
+      left_join(group,by=c("src_temp"="var")) %>%
+      relocate(grp,.after = "src_temp") %>%
+      arrange(method,grp)
+    CI<-CI[,c(1,2,3,match(CI$src_temp,colnames(CI)))]
+    order<-match(CI$src_temp,rownames(res$stars))
+    res$stars <-res$stars[order,]
+    res$stars <- res$stars[,order]
+    order<-match(CI$src_temp,rownames(res$r))
+    res$r <-res$r[order,]
+    res$r <-res$r[,order]
+  }else{
+    CI<-CI[match(rownames(res$stars),CI$src_temp),]
+    CI<-CI[,c(1,2,match(CI$src_temp,colnames(CI)))]
+  }
+
+
+
 
   coef<-res$stars %>%
     as_tibble() %>%
     mutate(method=as.character(res$Call)[3],.before=1)
 
+  coef_numb<-res$r %>%
+    as_tibble() %>%
+    mutate_all(round,digits=3) %>%
+    mutate(method=as.character(res$Call)[3],.before=1)
 
 
   write.xlsx(coef,
              file = filename,sheetName = "coef")
+  write.xlsx(coef_numb,
+              file = filename,sheetName = "coef_numb",append = T)
   write.xlsx( CI,
               file = filename,sheetName = "CI",append = T)
 

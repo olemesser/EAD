@@ -78,7 +78,6 @@ crt_DSM<-function(N_el,
                SC_adj_n=measure_structuralcomplexity(DSM,norm=T),
                Q=measure_modularity(DSM),
                NE=measure_neumannEntropy(DSM),
-               GCI=measure_GCI(DSM),
                MCC=measure_MCC(DSM),
                HVM=measure_HVM(DSM),
                HIC=measure_HIC(DSM))
