@@ -4,10 +4,12 @@
 \alias{measure_MCC}
 \title{Calculates the McCabe's Cyclomatic Complexity (MCC)}
 \usage{
-measure_MCC(DSM)
+measure_MCC(DSM, norm = T)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}
+
+\item{norm}{Boolean, default=T normalizes the MCC in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.}
 }
 \value{
 Returns the MCC value

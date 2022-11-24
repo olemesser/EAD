@@ -4,10 +4,12 @@
 \alias{measure_HVM}
 \title{Calculates the Halstead-derived volume measure complexity (HVM)}
 \usage{
-measure_HVM(DSM)
+measure_HVM(DSM, norm = T)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}
+
+\item{norm}{Boolean, default=T normalizes the HVM in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.}
 }
 \value{
 Returns the HVM value

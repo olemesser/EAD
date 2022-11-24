@@ -4,10 +4,12 @@
 \alias{measure_OV}
 \title{Calculates the option variability}
 \usage{
-measure_OV(P)
+measure_OV(P, norm = T)
 }
 \arguments{
 \item{P}{A product matrix containing the features with products in rows and features in columns.}
+
+\item{norm}{Boolean, default=T normalizes the HVM in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.}
 }
 \value{
 Returns the OV value

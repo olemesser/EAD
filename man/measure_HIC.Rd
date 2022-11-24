@@ -4,10 +4,12 @@
 \alias{measure_HIC}
 \title{Calculates the Interface Complexity (HIC)}
 \usage{
-measure_HIC(DSM)
+measure_HIC(DSM, norm = T)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}
+
+\item{norm}{Boolean, default=T normalizes the HIC in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.}
 }
 \value{
 Returns the HIC value

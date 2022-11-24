@@ -545,6 +545,7 @@ measure_NPV<-function(P){
 #' @title Calculates the option variability
 #' @description This function calculates the option variability measure defined by \insertCite{MacDuffie1996;textual}{EAD}
 #' @param P A product matrix containing the features with products in rows and features in columns.
+#' @param norm Boolean, default=T normalizes the HVM in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.
 #' @return Returns the OV value
 #' @references
 #' \insertAllCited{}
@@ -558,9 +559,14 @@ measure_NPV<-function(P){
 #'        nrow = 4,
 #'        ncol = 5)
 #' measure_OV(P)
-measure_OV<-function(P){
+measure_OV<-function(P,norm=T){
   mue<-apply(P,2,function(x) sum(x>0))/NROW(P)
-  return(sum(sqrt(mue*(1-mue))))
+  OV <- sum(sqrt(mue*(1-mue)))
+  if(norm){
+    OV_max<-sum(sqrt(0.5*(1-0.5)))
+    OV <- OV / OV_max
+  }
+  return(OV)
 }
 
 #' @title Calculates the Commonality Index (CI)
@@ -689,6 +695,7 @@ measure_CoupComp<-function(DSM){
 #' @title Calculates the Halstead-derived volume measure complexity (HVM)
 #' @description This function calculates the Halstead-derived volume measure complexity (HVM) as defined by \insertCite{Halstead.1979;textual}{EAD}, \insertCite{Prather.1984;textual}{EAD} and \insertCite{Hennig.2022;textual}{EAD}.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @param norm Boolean, default=T normalizes the HVM in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.
 #' @return Returns the HVM value
 #' @references
 #' \insertAllCited{}
@@ -700,12 +707,17 @@ measure_CoupComp<-function(DSM){
 #' DSM<-waterSprinkler
 #'
 #' measure_HVM(DSM)
-measure_HVM<-function(DSM){
+measure_HVM<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
   diag(DSM)<-0
   E<-sum(DSM/2)
   N<-NROW(DSM)
   HVM<-(E+N)*log(E+N)
+  if(norm){
+    E_max<-N^2-N
+    HVM_max<- (E_max+N)*log(E_max+N)
+    HVM <- HVM / HVM_max
+  }
   return(HVM)
 }
 
@@ -715,6 +727,7 @@ measure_HVM<-function(DSM){
 #' @description This function calculates the Interface Complexity (HIC) as defined by \insertCite{Holtta.2005;textual}{EAD}.
 #' Note, this function is not implemented yet since description of authors is not sufficient to reproduce the algorithm.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @param norm Boolean, default=T normalizes the HIC in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.
 #' @return Returns the HIC value
 #' @references
 #' \insertAllCited{}
@@ -726,10 +739,15 @@ measure_HVM<-function(DSM){
 #' DSM<-waterSprinkler
 #'
 #' measure_HIC(DSM)
-measure_HIC<-function(DSM){
+measure_HIC<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
   diag(DSM)<-0
   HIC<-sum(DSM/2)
+  if(norm){
+    N <- NROW(DSM)
+    HIC_max <- N^2-N
+    HIC<- HIC / HIC_max
+  }
   return(HIC)
 }
 
@@ -737,6 +755,7 @@ measure_HIC<-function(DSM){
 #' @title Calculates the McCabe's Cyclomatic Complexity (MCC)
 #' @description This function calculates the McCabe's cyclomatic complexity (MCC)  \insertCite{McCabe.1976;textual}{EAD}.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
+#' @param norm Boolean, default=T normalizes the MCC in a range of 0-1 where HVM=1 is the maximum possible value for a given matrix.
 #' @return Returns the MCC value
 #' @references
 #' \insertAllCited{}
@@ -748,7 +767,7 @@ measure_HIC<-function(DSM){
 #' DSM<-waterSprinkler
 #'
 #' measure_MCC(DSM)
-measure_MCC<-function(DSM){
+measure_MCC<-function(DSM,norm=T){
   require(igraph)
   diag(DSM)<-0
   if(sum(DSM)==0){
@@ -756,6 +775,13 @@ measure_MCC<-function(DSM){
   }else{
     g<-graph_from_adjacency_matrix(DSM)
     MCC <- sum(degree(g,mode="out"))+1
+    if(norm){
+      DSM_max<-matrix(1,nrow = NROW(DSM),ncol = NROW(DSM))
+      DSM_max[upper.tri(DSM_max)]<-0
+      diag(DSM)<-0
+      MCC_max<-measure_MCC(DSM_max,norm=F)
+      MCC <- MCC / MCC_max
+    }
   }
   return(MCC)
 }
