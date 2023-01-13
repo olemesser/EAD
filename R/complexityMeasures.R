@@ -92,6 +92,37 @@ measure_semiangularity<-function(A){
   return(output)
 }
 
+
+#' @title Calculates Jung's system design complexity
+#' @description This measure calculates the system design complexity  for a given domain mapping matrix (DMM) according to \insertCite{Jung.2022;textual}{EAD}.
+#' @param DMM A domain mapping matrix, reflecting the transition between two domains.
+#' @return The calculated system design complexity measure.
+#' @references
+#' \insertAllCited{}
+#' @examples
+#' ## example as shown in Jung et al. (2022)
+#' data('RDU1')
+#' measure_JSDC(RDU1) # must be 389.5
+#'
+#'
+#' data('RDU2')
+#' measure_JSDC(RDU2) # must be 466.1
+measure_JSDC<-function(DMM,norm=F){
+  energy<-sum(svd(DMM)$d)
+  JSDC <- sum(DMM) * energy/min(dim(DMM))
+
+  if(norm){
+    JSDC<-JSDC
+    # DMM_max<-matrix(1,nrow=dim(DMM)[1],ncol=dim(DMM)[2])
+    # JSDC_max<-measure_JSDC(DMM_max,norm=F)
+    # JSDC<-JSDC/JSDC_max
+  }
+  return(JSDC)
+}
+
+
+
+
 #' @title measure_modularity
 #' @description Calculates the directed of undirected modularity measure of a network.
 #' The directed approach is described by \insertCite{Blondel.2008;textual}{EAD} as well as \insertCite{Newman.2006;textual}{EAD}.
@@ -139,7 +170,7 @@ measure_modularity<-function(A,preMember=NULL,plot_op=F){
 
       if(plot_op & is.null(preMember)){
         plot(net, col = membership(net_group),
-             mark.groups = communities(net_group))
+             mark.groups = communities(net_group),vertex.size=20,edge.width=5)
       }
   }else{
     output<-NA
@@ -176,10 +207,8 @@ measure_structuralcomplexity<-function(A,norm=F){
     C_3<-sum(svd(A)$d)
     output <- C_2*1/NROW(A)*C_3
     if(norm){
-      # B<-A
-      # B[A>=0]<-1
-      # output <- output/measure_structuralcomplexity(B)
-      C_3_max<-dim(A)[1]/2*(1+sqrt(dim(A)[1]))
+      # C_3_max<-dim(A)[1]/2*(1+sqrt(dim(A)[1]))
+      C_3_max<-dim(A)[1]*sqrt(dim(A)[1]-1)
       C2_max<-(prod(dim(A))-NROW(A)) # number of elements minus diagonal
       output=output/(C_3_max*C2_max)
     }
@@ -216,9 +245,11 @@ measure_neumannEntropy<-function(A,norm=T){
       if(x<=0) 0 else  x*log2(x)
       }))
     if(norm){
-      B<-A
-      B[A>=0]<-1
-      S<-S/measure_neumannEntropy(B,norm=F)
+      lambda_max<-rep(dim(A)[1],dim(A)[1])
+      S_max<-sum(sapply(lambda_max,function(x){
+        if(x<=0) 0 else  x*log2(x)
+      }))
+      S<-S/S_max
     }
   }else{
     S<-NA
@@ -536,7 +567,7 @@ measure_TOP10<-function(x){
 #' measure_NPV(P)
 measure_NPV<-function(P){
   temp<-lapply(1:NCOL(P),function(x){
-    unique(c(0,P[,x]))
+    unique(P[,x])
   })
   temp<-prod(sapply(temp,length))-1
   return(NROW(P)/temp)
@@ -560,10 +591,11 @@ measure_NPV<-function(P){
 #'        ncol = 5)
 #' measure_OV(P)
 measure_OV<-function(P,norm=T){
+  P[P>0]<-1
   mue<-apply(P,2,function(x) sum(x>0))/NROW(P)
   OV <- sum(sqrt(mue*(1-mue)))
   if(norm){
-    OV_max<-sum(sqrt(0.5*(1-0.5)))
+    OV_max<-sum(sqrt(0.5*(1-0.5)))*length(mue)
     OV <- OV / OV_max
   }
   return(OV)
@@ -587,35 +619,6 @@ measure_OV<-function(P,norm=T){
 #' measure_CI(P)
 measure_CI<-function(P){
   return(NCOL(P)/sum(P[P>0]))
-}
-
-
-#' @title Calculates the Generalized Complexity Index (GCI)
-#' @description This function calculates the generalized complexity index (GCI) as defined by \insertCite{JACOBS2013;textual}{EAD}.
-#' @param P A product matrix containing the products in rows and and features, components, process or resources in columns.
-#' @return Returns the GCI value
-#' @references
-#' \insertAllCited{}
-#' @examples
-#'
-#' P<-matrix(c(1,0,0,1,
-#'               0,1,0,0,
-#'               1,0,0,0,
-#'               0,1,1,0,
-#'               0,1,0,1),
-#'        nrow = 4,
-#'        ncol = 5)
-#' measure_GCI(P)
-measure_GCI<-function(P){
-  P<-unique(P)
-  V<-NROW(P) # number of variants
-  uel<-apply(P,2,function(x) length(unique(x)))
-  U<-sum(uel)# number of unique elements
-  t<-prod(dim(P)) # number of total elements
-  A<-U
-  M<-prod(uel) # maximum possible number of connections
-  GCI <- V*(1-U/t)*A/M
-  return(GCI)
 }
 
 
@@ -710,7 +713,7 @@ measure_CoupComp<-function(DSM){
 measure_HVM<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
   diag(DSM)<-0
-  E<-sum(DSM/2)
+  E<-sum(DSM)
   N<-NROW(DSM)
   HVM<-(E+N)*log(E+N)
   if(norm){
@@ -742,7 +745,7 @@ measure_HVM<-function(DSM,norm=T){
 measure_HIC<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
   diag(DSM)<-0
-  HIC<-sum(DSM/2)
+  HIC<-sum(DSM)
   if(norm){
     N <- NROW(DSM)
     HIC_max <- N^2-N
@@ -768,17 +771,15 @@ measure_HIC<-function(DSM,norm=T){
 #'
 #' measure_MCC(DSM)
 measure_MCC<-function(DSM,norm=T){
-  require(igraph)
   diag(DSM)<-0
+  DSM[DSM>1]<-1
   if(sum(DSM)==0){
     MCC<-0
   }else{
-    g<-graph_from_adjacency_matrix(DSM)
-    MCC <- sum(degree(g,mode="out"))+1
+    MCC<-sum(DSM)-NROW(DSM)+2
     if(norm){
       DSM_max<-matrix(1,nrow = NROW(DSM),ncol = NROW(DSM))
-      DSM_max[upper.tri(DSM_max)]<-0
-      diag(DSM)<-0
+      diag(DSM)<-1
       MCC_max<-measure_MCC(DSM_max,norm=F)
       MCC <- MCC / MCC_max
     }

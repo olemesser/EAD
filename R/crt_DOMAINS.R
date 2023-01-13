@@ -279,7 +279,7 @@ crt_DOMAINS<-function(P_FD,
                                          RD=measure_LOF(P$RD)))
 
   measures[['SYSTEM']]<-c(measures[['SYSTEM']],
-                         list(DENS=list(FD=measure_DENS(P$FD),
+                         list(DNS=list(FD=measure_DENS(P$FD),
                                         PD=measure_DENS(P$PD),
                                          PrD=measure_DENS(P$PrD),
                                          RD=measure_DENS(P$RD)),
@@ -291,23 +291,16 @@ crt_DOMAINS<-function(P_FD,
                                        PD=measure_diversificationINDEX(P$PD),
                                        PrD=measure_diversificationINDEX(P$PrD),
                                        RD=measure_diversificationINDEX(P$RD)),
-                              PV=list(FD=measure_DISTsum(P$FD)/2,
-                                      PD=measure_DISTsum(P$PD)/2,
-                                      PrD=measure_DISTsum(P$PrD)/2,
-                                      RD=measure_DISTsum(P$RD)/2),
                               NPV=list(FD=measure_NPV(P$FD)),
-                              CI=list(FD=measure_CI(P$FD), # Martin & Ishii (1996) commonality index
+                              CI=list(FD=measure_CI(P$FD),
                                       PD=measure_CI(P$PD),
                                       PrD=measure_CI(P$PrD),
                                       RD=measure_CI(P$RD)),
                               OV=list(FD=measure_OV(P$FD),
                                       PD=measure_OV(P$PD),
                                       PrD=measure_OV(P$PrD),
-                                      RD=measure_OV(P$RD)),
-                              GCI=list(FD=measure_GCI(P$FD),
-                                       PD=measure_GCI(P$PD),
-                                       PrD=measure_GCI(P$PrD),
-                                       RD=measure_GCI(P$RD))))
+                                      RD=measure_OV(P$RD))
+                              ))
 
   out<-list(P=P,
             DSM=DSM,
