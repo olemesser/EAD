@@ -7,7 +7,7 @@
 #' \describe{
 #'   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
 #'   \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
-#'   \item{dens}{Creates a product mix based on a pre defined density. The density must be within the bounds of \code{0<PARAM<=1}.}
+#'   \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
 #' }
 #' @return A list object containing the product mix. This list consists of:
 #' \describe{
@@ -22,8 +22,8 @@
 #' prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2)
 #' prodMIX$P_FD_const
 create_ProductMix<-function(N_FR=7,
-                            PARAM=0.2,
-                            method=c("combination","random","DENS")){
+                            PARAM=0.05,
+                            method=c("combination","random","PCI")){
 
   suppressWarnings(require(dplyr))
   suppressWarnings(require(tidyr))
@@ -103,7 +103,7 @@ create_ProductMix<-function(N_FR=7,
         PARAM<-PARAM*1.01
       }
     }
-  }else if(method=="dens"){
+  }else if(method=="PCI"){
     suppressWarnings(require(GA))
     DSM_FD<-diag(0,nrow = NCOL(P_FD))
     x_init<-sample(c(0,1),NROW(P_FD),replace = T)
@@ -113,15 +113,16 @@ create_ProductMix<-function(N_FR=7,
           PARAM = PARAM,
           nBits = length(x_init),
           suggestions=x_init,
-          popSize = 100,
-          run=75,
-          maxiter = 500,
+          popSize = 150,
+          run=100,
+          maxiter = ifelse(PARAM<0.25,4000,2000),
           monitor = F,
           keepBest = T,
-          pcrossover = 0.03,
+          pcrossover = 0.02,
           pmutation = 0.05,
           maxFitness = -0.01)
     P_FD_const<-P_FD[as.logical(x@solution[1,]),]
+    measure_PCI(P_FD_const)
   }
 
 
@@ -129,8 +130,8 @@ create_ProductMix<-function(N_FR=7,
   measures<-list(N_P=NROW(P_FD_const), # number of product variants
                  D_u=measure_diversificationINDEX(P_FD_const), # Diversification Index
                  LOF_10=measure_LOF(P_FD_const), # Local Outlier Factor
-                 PV=measure_DISS(P_FD_const), # Product Variety
-                 DENS_FD=sum(P_FD_const>0)/prod(dim(P_FD_const))) # density of DSM_FD
+                 DENS_FD=sum(P_FD_const>0)/prod(dim(P_FD_const)),# density of DSM_FD
+                 PCI_FD = measure_PCI(P_FD_const)) # product mix commonality
 
   productMIX<-list(
                     P_FD = P_FD,
@@ -146,9 +147,8 @@ create_ProductMix<-function(N_FR=7,
 
 objFct_productMix<-function(x,P,PARAM){
   prod<-sum(x)
-  # if(prod<50) x[sample(which(x==0),50-prod)]<-1
   if(prod<2) x[sample(which(x==0),3-prod)]<-1
-  temp<-P[as.logical(x),]
-  temp<-sum(temp>0)/prod(dim(temp))
+  temp<-P[as.logical(x),,drop = FALSE]
+  temp<-ifelse(all(colSums(temp)>0),measure_PCI(temp),measure_PCI(temp)*10)
   return(abs(temp-PARAM)*-1)
 }

@@ -149,7 +149,13 @@ crt_DOMAINS<-function(P_FD,
                                    FD_RD = DMM_FD_RD$S,
                                    PD_PrD = DMM_PD_PrD$S,
                                    PD_RD = DMM_PD_RD$S,
-                                   PrD_RD = DMM_PrD_RD$S)
+                                   PrD_RD = DMM_PrD_RD$S),
+                            JSDC=list(FD_PD = DMM_FD_PD$JSDC,
+                                      FD_PrD = DMM_FD_PrD$JSDC,
+                                      FD_RD = DMM_FD_RD$JSDC,
+                                      PD_PrD = DMM_PD_PrD$JSDC,
+                                      PD_RD = DMM_PD_RD$JSDC,
+                                      PrD_RD = DMM_PrD_RD$JSDC)
                             )
 
     DMM<-list(FD_PD = DMM_FD_PD$DMM,

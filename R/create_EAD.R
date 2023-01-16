@@ -5,10 +5,10 @@ crt_EAD<-function(DOE,
 
   #### Input Testing ####
   # x<-1
-  # DOE<-expand_grid(N_FR = 7, # number of functional requirements
-  #                   N_DD = 14, # number of physical domain elements
-  #                   N_PrD = 30, # number of process domain elements
-  #                   N_RD = 60, # number of resource domain elements
+  # DOE<-expand_grid(N_FR = c(list(c(7,9)),8), # number of functional requirements
+  #                   N_DD = list(c(14,20)), # number of physical domain elements
+  #                   N_PrD = list(c(30,40)), # number of process domain elements
+  #                   N_RD = list(c(60,80)), # number of resource domain elements
   #                   PARAM_FD = c(0.05,0.5), #density within the DSM_FD matrix. Creates product mixes where not all products are included
   #                   method_FD = "dens",
   #                   TOTAL_DEMAND = 10000, # total demand
@@ -33,9 +33,13 @@ crt_EAD<-function(DOE,
     DSM<-list()
     message<-list()
     P<-list()
+    DOE$N_FR[x]<-ifelse(length(DOE$N_FR[x][[1]])>1,sample(DOE$N_FR[[x]][1]:DOE$N_FR[[x]][2],1),DOE$N_FR[[x]][1])
+    DOE$N_DD[x]<-ifelse(length(DOE$N_DD[x][[1]])>1,sample(DOE$N_DD[[x]][1]:DOE$N_DD[[x]][2],1),DOE$N_DD[[x]][1])
+    DOE$N_PrD[x]<-ifelse(length(DOE$N_PrD[x][[1]])>1,sample(DOE$N_PrD[[x]][1]:DOE$N_PrD[[x]][2],1),DOE$N_PrD[[x]][1])
+    DOE$N_RD[x]<-ifelse(length(DOE$N_RD[x][[1]])>1,sample(DOE$N_RD[[x]][1]:DOE$N_RD[[x]][2],1),DOE$N_RD[[x]][1])
     #### 1. Create Product Mix & Demand ####
       ### 1.1 Product Mix Generation ###
-      prodMIX<-create_ProductMix(N_FR = DOE$N_FR[x],
+      prodMIX<-create_ProductMix(N_FR = DOE$N_FR[x][[1]],
                         PARAM = DOE$PARAM_FD[x],
                         method =DOE$method_FD[x])
       P[["FD"]]<-as.matrix(prodMIX$P_FD_const)
@@ -52,9 +56,9 @@ crt_EAD<-function(DOE,
 
     #### 2. Create Domains ####
       DOM<-crt_DOMAINS(P_FD = P[["FD"]],
-                       N_DD = DOE$N_DD[x],
-                       N_PrD = DOE$N_PrD[x],
-                       N_RD = DOE$N_RD[x],
+                       N_DD = DOE$N_DD[x][[1]],
+                       N_PrD = DOE$N_PrD[x][[1]],
+                       N_RD = DOE$N_RD[x][[1]],
                        DMM_PAR = DOE$DMM_PAR[x][[1]],
                        DMM_method=DOE$DMM_method[x],
                        DSM_method = "DENS",
@@ -67,7 +71,11 @@ crt_EAD<-function(DOE,
                                        RD=measure_diversificationINDEX(DOM$P$RD,DMD=DMD))
 
       measures[['SYSTEM']]<-c(measures[['SYSTEM']],DOM$measures$SYSTEM,
-                              TSS=DOE$N_FR[x]+DOE$N_DD[x]+DOE$N_PrD[x]+DOE$N_RD[x])
+                              N_FR = DOE$N_FR[x][[1]],
+                              N_PD = DOE$N_DD[x][[1]],
+                              N_PrD = DOE$N_PrD[x][[1]],
+                              N_RD = DOE$N_RD[x][[1]],
+                              TSS=DOE$N_FR[x][[1]]+DOE$N_DD[x][[1]]+DOE$N_PrD[x][[1]]+DOE$N_RD[x][[1]])
       measures[['PRODUCT']]<-c(measures[['PRODUCT']],DOM$measures$PRODUCT)
       DSM<-DOM$DSM
       DMM<-DOM$DMM
@@ -76,7 +84,7 @@ crt_EAD<-function(DOE,
       remove(DOM)
 
     #### 3. Create Costs ####
-          RC<-crt_RC(N_RD = DOE$N_RD[x],
+          RC<-crt_RC(N_RD = DOE$N_RD[x][[1]],
                      TC = DOE$TC[x],
                      ratio_fixedC = runif(1,min=DOE$ratio_fixedC[x][[1]][1],max=DOE$ratio_fixedC[x][[1]][2]),
                      RC_cor = runif(1,min=DOE$RC_cor[x][[1]][1],max=DOE$RC_cor[x][[1]][2]),

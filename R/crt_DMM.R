@@ -164,6 +164,7 @@ crt_DMM<-function(N_src,
     JSDC = measure_JSDC(DMM_bin),
     R = measure_reangularity(DMM_bin),
     S = measure_semiangularity(DMM_bin),
+    JSDC = measure_JSDC(DMM_bin),
     SDC_err= SDC_err
   )
 

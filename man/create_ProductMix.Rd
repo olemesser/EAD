@@ -6,8 +6,8 @@
 \usage{
 create_ProductMix(
   N_FR = 7,
-  PARAM = 0.2,
-  method = c("combination", "random", "DENS")
+  PARAM = 0.05,
+  method = c("combination", "random", "PCI")
 )
 }
 \arguments{
@@ -20,7 +20,7 @@ Product mixes with much more than 15 functional requirements require much RAM as
 \describe{
   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
   \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
-  \item{dens}{Creates a product mix based on a pre defined density. The density must be within the bounds of \code{0<PARAM<=1}.}
+  \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
 }}
 }
 \value{

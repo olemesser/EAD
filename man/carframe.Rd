@@ -3,7 +3,7 @@
 \docType{data}
 \name{carframe}
 \alias{carframe}
-\title{DSM of a cars frame}
+\title{A DSM containing component dependencies of the car frame as reported by \insertCite{Pandremenos.2011;textual}{EAD} in Figure 6.}
 \format{
 A DSM with 38 by 38 elements.
 }
