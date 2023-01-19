@@ -8,13 +8,14 @@
 #'   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
 #'   \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
 #'   \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
+#'   \item{DNS}{Creates a product matrix with a given density.}
 #' }
 #' @return A list object containing the product mix. This list consists of:
 #' \describe{
 #'   \item{P_FD}{The free product mix matrix}
 #'   \item{P_FD_const}{The constraint product mix matrix}
 #'   \item{DSM_FD}{The DSM_FD matrix containing the entries to constraint the variety.}
-#'   \item{measures}{A named list containg the following measures: number of product variants (N_P), uniform diversification index (D_u),
+#'   \item{measures}{A named list containing the following measures: number of product variants (N_P), uniform diversification index (D_u),
 #'     local outlier factor (LOF) and Product Variety (PV) }
 #' }
 #' @examples
@@ -23,7 +24,7 @@
 #' prodMIX$P_FD_const
 create_ProductMix<-function(N_FR=7,
                             PARAM=0.05,
-                            method=c("combination","random","PCI")){
+                            method=c("combination","random","PCI","DNS")){
 
   suppressWarnings(require(dplyr))
   suppressWarnings(require(tidyr))
@@ -122,7 +123,34 @@ create_ProductMix<-function(N_FR=7,
           pmutation = 0.05,
           maxFitness = -0.01)
     P_FD_const<-P_FD[as.logical(x@solution[1,]),]
-    measure_PCI(P_FD_const)
+  }else if(method=="DNS"){
+    if(PARAM<=0.07) PARAM<-0.07
+    suppressMessages(suppressWarnings(require(GA)))
+    DSM_FD<-diag(0,nrow = NCOL(P_FD))
+    dns_temp<-as.numeric(rowSums(P_FD)/NCOL(P_FD))
+    P_FD<-P_FD[dns_temp<=3*PARAM,]
+    x_init<-sample(c(0,1),NROW(P_FD),replace = T)
+    x<-ga(type = "binary",
+          fitness =  function(x,P_FD,PARAM){
+            prod<-sum(x)
+            if(prod<15) x[sample(which(x==0),15-prod)]<-1
+            temp<-P_FD[as.logical(x),,drop = FALSE]
+            temp<-measure_DENS(temp)*ifelse(all(colSums(temp)>0),1,2)
+            return(abs(mean(temp)-PARAM)*-1)
+          },
+          P = P_FD,
+          PARAM = PARAM,
+          nBits = length(x_init),
+          suggestions=x_init,
+          popSize = 40,
+          run=100,
+          maxiter = 1000,
+          monitor = F,
+          keepBest = T,
+          pcrossover = 0.02,
+          pmutation = 0.05,
+          maxFitness = -0.01)
+    P_FD_const<-P_FD[as.logical(x@solution[1,]),]
   }
 
 

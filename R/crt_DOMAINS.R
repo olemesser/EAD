@@ -77,21 +77,24 @@ crt_DOMAINS<-function(P_FD,
                        DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                        method=DMM_method,
                        binary=F,
-                       upper_Bound=1)
+                       upper_Bound=1,
+                       allowZero = F)
     ### 2.2 PD->PrD (DMM_PD_PrD) ###
     DMM_PD_PrD<-crt_DMM(N_src =N_DD,
                         N_tgt = N_PrD,
                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                         method=DMM_method,
                         binary=F,
-                        upper_Bound=1)
+                        upper_Bound=1,
+                        allowZero = F)
     ### 2.3 PD->PrD (DMM_PrD_RD) ###
     DMM_PrD_RD<-crt_DMM(N_src =N_PrD,
                         N_tgt = N_RD,
                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                         method=DMM_method,
                         binary=F,
-                        upper_Bound=1)
+                        upper_Bound=1,
+                        allowZero = F)
 
     ### 2.4  Create Off diagonal DMMs (DMM_FD_PrD,DMM_FD_RD) ###
     ## only if ut_DMM==T
@@ -235,7 +238,6 @@ crt_DOMAINS<-function(P_FD,
     #### 2.8. calculate product matrices ####
     ### 2.8.1 Calculate Physical Domain ###
     P_DD_1 <- P$FD %*% DMM$FD_PD
-    # P_DD_1[P_DD_1>0]<-1
     P_DD_2 <- P_DD_1 %*% DSM$PD
     ### second multiply with DSM
     P[["PD"]] <- pmax(P_DD_1,P_DD_2)
@@ -245,7 +247,7 @@ crt_DOMAINS<-function(P_FD,
     P[["PrD"]] <- P[["PD"]] %*% (( DMM$PD_PrD %*% DSM$PrD) + DMM$PD_PrD) + P[["FD"]] %*% DMM$FD_PrD
 
     ### 2.8.3 Calculate Resource Domain ###
-    P[["RD"]] <- P[["PrD"]] %*% (( DMM$PrD_RD %*% DSM$RD) + DMM$PrD_RD) + P[["FD"]] %*% DMM$FD_RD + P[["PrD"]] %*% DMM$PrD_RD
+    P[["RD"]] <- P[["PrD"]] %*% (( DMM$PrD_RD %*% DSM$RD) + DMM$PrD_RD) + P[["FD"]] %*% DMM$FD_RD + P[["PD"]] %*% DMM$PD_RD
 
 
     #### 2.9 Final Checks ####

@@ -35,7 +35,7 @@
 clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
   #### 0. Initial Checks ####
   if(is.null(DMD)) DMD<-rep(1,NROW(RES_CONS_PAT))
-  if (is.null(RC_fix)) RC_fix<-rep(0,length(RC_var))
+  if(is.null(RC_fix)) RC_fix<-rep(0,length(RC_var))
   if(!is.null(RC_var) & !is.null(RCU)) stop("RC_var and RCU supplied. \nPlease insert either RC_var or RCU.")
   if(is.null(RC_var) & is.null(RCU)) stop("RC_var and RCU are not supplied. \nPlease insert either RC_var or RCU.")
 
@@ -46,11 +46,12 @@ clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
   #### 2. Calculate TRC and RCU ####
   TRC<-colSums(RES_CONS_PAT * DMD)
   if(is.null(RCU) & !is.null(RC_var)) RCU <- RC_var/TRC
+  RCU<-ifelse(is.nan(RCU),0,RCU)
 
 
   #### 3. Calculate (true) Benchmark Costs ####
   PC_B_var <- RES_CONS_PAT %*% RCU
-  PC_B_fixed <-RES_CONS_PAT %*% (RC_fix/TRC)
+  PC_B_fixed <-RES_CONS_PAT %*% ifelse(is.infinite(RC_fix/TRC),0,(RC_fix/TRC))
   PC_B <- PC_B_var + PC_B_fixed
 
   return(list(PC_B=PC_B,RCU=RCU))

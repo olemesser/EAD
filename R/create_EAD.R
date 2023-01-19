@@ -5,24 +5,24 @@ crt_EAD<-function(DOE,
 
   #### Input Testing ####
   # x<-1
-  # DOE<-expand_grid(N_FR = c(list(c(7,9)),8), # number of functional requirements
-  #                   N_DD = list(c(14,20)), # number of physical domain elements
-  #                   N_PrD = list(c(30,40)), # number of process domain elements
-  #                   N_RD = list(c(60,80)), # number of resource domain elements
-  #                   PARAM_FD = c(0.05,0.5), #density within the DSM_FD matrix. Creates product mixes where not all products are included
-  #                   method_FD = "dens",
-  #                   TOTAL_DEMAND = 10000, # total demand
-  #                   DMD_cv = list(c(3,3)), # coefficient of variation for demand distribution
-  #                   DMM_PAR = list(c(0,0.075)),
-  #                   DMM_method="SDC",
-  #                   ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                   DSM_param=list(c(0,0)),
-  #                   TC = 10^6, # total costs
-  #                   ratio_fixedC = list(c(0,0)), # proportion of fixed costs on total costs
-  #                   RC_cor = list(c(-1,1)), # correlation between variable cost vector and fixed cost vector
-  #                   RC_cv = list(c(0,2)), # coefficient of variation for resource cost distribution
-  #                   N_RUN = 1:1 # number of runs
-  #                   )
+  # DOE<-expand_grid(N_FR = list(c(9,13)), # number of functional requirements
+  #                  N_DD = list(c(18,26)), # number of physical domain elements
+  #                  N_PrD = list(c(36,52)), # number of process domain elements
+  #                  N_RD = list(c(72,104)), # number of resource domain elements
+  #                  PARAM_FD = seq(0.07,0.5,0.05), #density within the DSM_FD matrix. Creates product mixes where not all products are included
+  #                  method_FD = "DNS",
+  #                  TOTAL_DEMAND = 10000, # total demand
+  #                  DMD_cv = list(c(0,3)), # coefficient of variation for demand distribution
+  #                  DMM_PAR = list(c(0,0.065)), # desired design complexity
+  #                  DMM_method="SDC", # method for generating the DMM
+  #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+  #                  DSM_param=list(c(0,0.14)), # density of the DSMs
+  #                  TC = 10^6, # total costs
+  #                  ratio_fixedC = list(c(0,0)), # proportion of fixed costs on total costs
+  #                  RC_cor = list(c(0,1)), # correlation between variable cost vector and fixed cost vector
+  #                  RC_cv = list(c(0,1.5)), # coefficient of variation for resource cost distribution
+  #                  N_RUN = 1:1 # number of runs
+  # )
   #### END Input Testing ####
 
 

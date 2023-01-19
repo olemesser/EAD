@@ -7,7 +7,7 @@
 create_ProductMix(
   N_FR = 7,
   PARAM = 0.05,
-  method = c("combination", "random", "PCI")
+  method = c("combination", "random", "PCI", "DNS")
 )
 }
 \arguments{
@@ -21,6 +21,7 @@ Product mixes with much more than 15 functional requirements require much RAM as
   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
   \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
   \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
+  \item{DNS}{Creates a product matrix with a given density.}
 }}
 }
 \value{
@@ -29,7 +30,7 @@ A list object containing the product mix. This list consists of:
   \item{P_FD}{The free product mix matrix}
   \item{P_FD_const}{The constraint product mix matrix}
   \item{DSM_FD}{The DSM_FD matrix containing the entries to constraint the variety.}
-  \item{measures}{A named list containg the following measures: number of product variants (N_P), uniform diversification index (D_u),
+  \item{measures}{A named list containing the following measures: number of product variants (N_P), uniform diversification index (D_u),
     local outlier factor (LOF) and Product Variety (PV) }
 }
 }

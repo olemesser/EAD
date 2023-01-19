@@ -53,6 +53,8 @@ cor_table<-function(res,filename,group=NULL){
     order<-match(CI$src_temp,rownames(res$r))
     res$r <-res$r[order,]
     res$r <-res$r[,order]
+    res$p <-res$p[order,]
+    res$p <-res$p[,order]
   }else{
     CI<-CI[match(rownames(res$stars),CI$src_temp),]
     CI<-CI[,c(1,2,match(CI$src_temp,colnames(CI)))]
@@ -70,11 +72,18 @@ cor_table<-function(res,filename,group=NULL){
     mutate_all(round,digits=3) %>%
     mutate(method=as.character(res$Call)[3],.before=1)
 
+  coef_pval<-res$p %>%
+    as_tibble() %>%
+    mutate_all(round,digits=3) %>%
+    mutate(method=as.character(res$Call)[3],.before=1)
+
 
   write.xlsx(coef,
              file = filename,sheetName = "coef")
   write.xlsx(coef_numb,
               file = filename,sheetName = "coef_numb",append = T)
+  write.xlsx(coef_pval,
+             file = filename,sheetName = "pval",append = T)
   write.xlsx( CI,
               file = filename,sheetName = "CI",append = T)
 
