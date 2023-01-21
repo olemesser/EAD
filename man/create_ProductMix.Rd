@@ -5,7 +5,7 @@
 \title{Create product mix (P_FD)}
 \usage{
 create_ProductMix(
-  N_FR = 7,
+  N_FR = 13,
   PARAM = 0.05,
   method = c("combination", "random", "PCI", "DNS")
 )

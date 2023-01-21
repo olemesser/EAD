@@ -22,7 +22,7 @@
 #' set.seed(1234)
 #' prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2)
 #' prodMIX$P_FD_const
-create_ProductMix<-function(N_FR=7,
+create_ProductMix<-function(N_FR=13,
                             PARAM=0.05,
                             method=c("combination","random","PCI","DNS")){
 
@@ -128,32 +128,44 @@ create_ProductMix<-function(N_FR=7,
     suppressMessages(suppressWarnings(require(GA)))
     DSM_FD<-diag(0,nrow = NCOL(P_FD))
     dns_temp<-as.numeric(rowSums(P_FD)/NCOL(P_FD))
-    P_FD<-P_FD[dns_temp<=3*PARAM,]
-    x_init<-sample(c(0,1),NROW(P_FD),replace = T)
+    range<-function(x){
+      y<-(x^2-(1)*x+0.39)
+      return(y*8)
+    }
+    P_FD<-P_FD[dns_temp<=PARAM*range(PARAM) & dns_temp>=PARAM*1/range(PARAM),]
+    max_p <- 200
+    prob<-ifelse(max_p>NROW(P_FD),NROW(P_FD),max_p)/NROW(P_FD)
+    x_init<-sample(c(0,1),NROW(P_FD),replace = T,prob = c(1-prob,prob))
+    prod<-sum(x_init)
+    if(prod<=15) x_init[sample(which(x_init==0),15-prod)]<-1
+    if(prod>=200) x_init[sample(which(x_init==1),prod-max_p)]<-0
     x<-ga(type = "binary",
-          fitness =  function(x,P_FD,PARAM){
+          fitness =  function(x,P_FD,PARAM,min_p,max_p){
             prod<-sum(x)
-            if(prod<15) x[sample(which(x==0),15-prod)]<-1
             temp<-P_FD[as.logical(x),,drop = FALSE]
             temp<-measure_DENS(temp)*ifelse(all(colSums(temp)>0),1,2)
-            return(abs(mean(temp)-PARAM)*-1)
+            obj<-abs(mean(temp)-PARAM)*-1
+            pen<-max(c(prod-max_p,min_p-prod))
+            pen<-ifelse(pen>0,pen*1.1,1)
+            obj<-ifelse(prod<min_p | prod>max_p,obj*pen,obj)
+            return(obj)
           },
           P = P_FD,
           PARAM = PARAM,
+          min_p = N_FR,
+          max_p = max_p,
           nBits = length(x_init),
           suggestions=x_init,
           popSize = 40,
-          run=100,
-          maxiter = 1000,
+          run=300,
+          maxiter = 2000,
           monitor = F,
           keepBest = T,
           pcrossover = 0.02,
           pmutation = 0.05,
-          maxFitness = -0.01)
+          maxFitness = -0.02)
     P_FD_const<-P_FD[as.logical(x@solution[1,]),]
   }
-
-
 
   measures<-list(N_P=NROW(P_FD_const), # number of product variants
                  D_u=measure_diversificationINDEX(P_FD_const), # Diversification Index
