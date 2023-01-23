@@ -16,7 +16,8 @@ crt_EAD<-function(DOE,
   #                  DMM_PAR = list(c(0,0.065)), # desired design complexity
   #                  DMM_method="SDC", # method for generating the DMM
   #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                  DSM_param=list(c(0,0.14)), # density of the DSMs
+  #                  DSM_param=list(c(0,0.14,0.1,1)), # density of the DSMs
+  #                  DSM_method="modular",
   #                  TC = 10^6, # total costs
   #                  ratio_fixedC = list(c(0,0)), # proportion of fixed costs on total costs
   #                  RC_cor = list(c(0,1)), # correlation between variable cost vector and fixed cost vector
@@ -61,7 +62,7 @@ crt_EAD<-function(DOE,
                        N_RD = DOE$N_RD[x][[1]],
                        DMM_PAR = DOE$DMM_PAR[x][[1]],
                        DMM_method=DOE$DMM_method[x],
-                       DSM_method = "DENS",
+                       DSM_method = DOE$DSM_method[x],
                        DSM_param = DOE$DSM_param[x][[1]],
                        ut_DMM=F)
 

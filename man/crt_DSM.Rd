@@ -4,32 +4,55 @@
 \alias{crt_DSM}
 \title{Create a domain dependency matrix (DSM)}
 \usage{
-crt_DSM(N_el, SC_adj_n_in = NULL, DENS = NULL, upper_Bound = 5, forced = NULL)
+crt_DSM(
+  N_el,
+  method = c("DNS", "modular", "SC"),
+  PARAM = list(DNS = 0.1, SC = 0.1, cv = 0.1),
+  upper_Bound = 5,
+  forced = NULL
+)
 }
 \arguments{
 \item{N_el}{Number of rows and columns for the DSM.}
 
-\item{SC_adj_n_in}{Double with \code{0<=SC_adj_n_in<1}. Specifies the system design complexity which should be generated. For further details see \link[EAD]{measure_structuralcomplexity}.}
+\item{method}{A character specifying the method used for DSM generation. The following methods are available:
+\describe{
+  \item{DNS}{Generates a DSM by sampling random matrices to achieve a given density. Only  \code{PARAM$DNS} is needed}
+  \item{modular}{Generates a DSM using two conditions. The procedure tries to achieve a certain density specified via should be achieved \code{PARAM$DNS} and, second,
+  tries to create a certain distribution for the off-diagonal elements which is specified via \code{PARAM$cv}. Low values of cv indicate a random distribution while high values indicate that values are more clustered around the DSM main diagonal.
+  The latter represents modular designs.}
+  \item{SC}{Creates a matrix in order to achieved a specified normalized structural complexity measure. For more details see: \link[EAD]{measure_structuralcomplexity}.}
+}}
 
-\item{DENS}{A numeric value specifying the density within the DSM. This is an alternative method to generate the DSM.}
+\item{PARAM}{A named list object with the following entries:
+\describe{
+  \item{DNS}{Density for the matrix}
+  \item{cv}{Coefficient of variation for off-diagonal entries.}
+  \item{SC}{Specifies the system design complexity which should be generated. For further details see \link[EAD]{measure_structuralcomplexity}.}
+}}
 
 \item{upper_Bound}{Integer, default \code{upper_Bound=20}, specifies the maximum number in the DMM if \code{binary=FALSE}}
 
 \item{forced}{A numeric vector containing indices of elements which cannot be zero since otherwise a invalid design is created later on.}
+
+\item{DENS}{A numeric value specifying the density within the DSM. This is an alternative method to generate the DSM.}
 }
 \value{
 A list object containing the product mix. This list consists of:
 \describe{
   \item{DSM}{The created DSM}
-  \item{DENS_DSM}{Density of the DSM}
-  \item{SC_adj_n}{The achieved adjusted and normalized structural complexity measure.}
+  \item{measures}{A list of measures for the given DSM. The measures are: \link[EAD]{measure_DENS}, \link[EAD]{measure_structuralcomplexity},
+  \link[EAD]{measure_modularity}, \link[EAD]{measure_neumannEntropy}, \link[EAD]{measure_MCC}, \link[EAD]{measure_HVM}, \link[EAD]{measure_HIC}}
 }
 }
 \description{
-Creates a \code{N_el} x \code{N_el}  domain dependency matrix (DSM) by trying to reach a given SC_adj_n or a DENS value.
+Creates a \code{N_el} x \code{N_el}  domain dependency matrix (DSM) based on different methods.
 }
 \examples{
 set.seed(1234)
-
-crt_DSM(N_el=7,SC_adj_n_in=0.01,upper_Bound=5)
+## using the DSM method ##
+crt_DSM(N_el=7,
+        PARAM=list(DNS=0.01),
+        method='DNS',
+        upper_Bound=5)
 }
