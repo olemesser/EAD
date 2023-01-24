@@ -35,7 +35,7 @@ crt_DSM<-function(N_el,
                   method=c('DNS','modular','SC'),
                   PARAM=list(DNS=0.1,
                              SC=0.1,
-                             cv=0.1),
+                             modular=0),
                   upper_Bound=5,
                   forced=NULL){
 
@@ -81,7 +81,7 @@ crt_DSM<-function(N_el,
   }else if(method=="modular"){
       DSM<-crt_DSMmod(N_el = N_el,
                       DNS = PARAM$DNS,
-                      cv = PARAM$cv)
+                      modular = PARAM$modular)
   }
   diag(DSM)<-0
   DSM<-force_DSMentries(DSM,forced = forced)
@@ -89,7 +89,8 @@ crt_DSM<-function(N_el,
   DSM[DSM>0]<-sample(1:upper_Bound,size=sum(DSM_bin>0),replace = T)
 
   measures<-list(DENS_DSM=measure_DENS(DSM),
-                 SC_adj_n=measure_structuralcomplexity(DSM,norm=T),
+                 SC=measure_structuralcomplexity(DSM,norm=F),
+                 SC_n=measure_structuralcomplexity(DSM,norm=T),
                  Q=measure_modularity(DSM),
                  NE=measure_neumannEntropy(DSM),
                  MCC=measure_MCC(DSM),
@@ -110,37 +111,28 @@ dsm_objFCT<-function(x,N_el,PARAM){
 
 
 
-crt_DSMmod<-function(N_el,DNS,cv){
+crt_DSMmod<-function(N_el,DNS,modular=0){
   require(Matrix)
-  require(GA)
   #### INput for testing ####
   # N_el<-10
-  # cv<-0.5
+  # modular<-0
   # DNS<-0.2
-  # n<-c(0,1)
   #### END input testing ####
 
-  x<-ga(type = "real-valued",
-        fitness = dsm_objFCT_mod,
-        N_el = N_el,
-        DNS = DNS,
-        cv = cv,
-        lower=c(0,0),
-        upper=c(1,10),
-        popSize = 40,
-        maxiter = 100,
-        run=10,
-        monitor = F,
-        keepBest = T,
-        pcrossover = 0.05,
-        pmutation = 0.02,
-        maxFitness = 0.01)
-
-  DSM<-dsm_objFCT_mod(x@solution[1,],
-                      N_el,
-                      DNS=DNS,
-                      cv = cv,
-                      opt = F)
+  size_bM<-rand_vect(3,N_el)
+  bm<-lapply(size_bM,function(x){
+    matrix(sample(0:1,x^2,replace = T,prob = c(1-modular,modular)),ncol=x)
+  })
+  DSM<-bdiag(bm)
+  DSM<-as.matrix(DSM)
+  DNS_is<-measure_DENS(DSM)
+  if(DNS_is>DNS){
+    el_rmv<-sum(DSM)-ceiling(NROW(DSM)^2*DNS)
+    DSM[DSM>0][sample(1:sum(DSM>0),el_rmv)]<-0
+  }else if(DNS_is<DNS){
+    el_add<-ceiling(NROW(DSM)^2*DNS)-sum(DSM)
+    DSM[DSM==0][sample(1:sum(DSM==0),el_add)]<-1
+  }
   return(DSM)
 }
 

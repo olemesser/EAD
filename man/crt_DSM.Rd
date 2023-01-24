@@ -7,7 +7,7 @@
 crt_DSM(
   N_el,
   method = c("DNS", "modular", "SC"),
-  PARAM = list(DNS = 0.1, SC = 0.1, cv = 0.1),
+  PARAM = list(DNS = 0.1, SC = 0.1, modular = 0),
   upper_Bound = 5,
   forced = NULL
 )

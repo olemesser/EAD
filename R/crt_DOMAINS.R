@@ -209,25 +209,25 @@ crt_DOMAINS<-function(P_FD,
                       PARAM=list(SC=DSM_param_RD),
                       upper_Bound = 1)
     }else if (DSM_method=="modular"){
-      DSM_paramcv_PD<-runif(1,min=DSM_param[3],max=DSM_param[4])
-      DSM_paramcv_PrD<-runif(1,min=DSM_param[3],max=DSM_param[4])
-      DSM_paramcv_RD<-runif(1,min=DSM_param[3],max=DSM_param[4])
+      DSM_paramMOD_PD<-runif(1,min=DSM_param[3],max=DSM_param[4])
+      DSM_paramMOD_PrD<-runif(1,min=DSM_param[3],max=DSM_param[4])
+      DSM_paramMOD_RD<-runif(1,min=DSM_param[3],max=DSM_param[4])
       DSM_PD<-crt_DSM(N_el = N_DD,
                       method='modular',
                       PARAM=list(DNS=DSM_param_PD,
-                                 cv = DSM_paramcv_PD),
+                                 modular = DSM_paramMOD_PD),
                       upper_Bound = 1,
                       forced = which(colSums(DMM$FD_PD)==0))
       DSM_PrD<-crt_DSM(N_el = N_PrD,
                        method='modular',
                        PARAM=list(DNS=DSM_param_PrD,
-                                  cv = DSM_paramcv_PrD),
+                                  modular = DSM_paramMOD_PrD),
                        upper_Bound = 1,
                        forced = which(colSums(DMM$PD_PrD)==0))
       DSM_RD<-crt_DSM(N_el = N_RD,
                       method='modular',
                       PARAM=list(DNS = DSM_param_RD,
-                                 cv = DSM_paramcv_RD),
+                                 modular = DSM_paramMOD_RD),
                       upper_Bound = 1,
                       forced = which(colSums(DMM$PrD_RD)==0))
     }

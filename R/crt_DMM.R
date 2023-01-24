@@ -31,7 +31,7 @@
 crt_DMM<-function(N_src,
                   N_tgt,
                   DMM_PAR,
-                  method=c('SDC','DENS'),
+                  method=c('SDC','DNS'),
                   binary=F,
                   upper_Bound=20,
                   allowZero=T){
@@ -47,7 +47,7 @@ crt_DMM<-function(N_src,
   #### END Testing ###
 
 
-  if(method=='DENS'){
+  if(method=='DNS'){
     tries<-0
     DMM_start<-DMM_PAR
     repeat{

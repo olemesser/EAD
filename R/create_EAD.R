@@ -4,7 +4,7 @@ crt_EAD<-function(DOE,
   suppressWarnings(require(tidyr))
 
   #### Input Testing ####
-  # x<-1
+  # x<-2
   # DOE<-expand_grid(N_FR = list(c(9,13)), # number of functional requirements
   #                  N_DD = list(c(18,26)), # number of physical domain elements
   #                  N_PrD = list(c(36,52)), # number of process domain elements

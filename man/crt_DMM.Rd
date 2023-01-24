@@ -8,7 +8,7 @@ crt_DMM(
   N_src,
   N_tgt,
   DMM_PAR,
-  method = c("SDC", "DENS"),
+  method = c("SDC", "DNS"),
   binary = F,
   upper_Bound = 20,
   allowZero = T

@@ -200,17 +200,17 @@ measure_modularity<-function(A,preMember=NULL,plot_op=F){
 #' measure_structuralcomplexity(DSM)
 measure_structuralcomplexity<-function(A,norm=F){
   if(dim(A)[1]==dim(A)[2]){
-    # A<-makeMatrixsymmetric(A)
     A[A>1]<-1
+    A<-makeMatrixsymmetric(A)
     diag(A)<-0
+    C_1<-NROW(A)
     C_2<-sum(A)
     C_3<-sum(svd(A)$d)
-    output <- C_2*1/NROW(A)*C_3
+    output <- C_1+C_2*C_3/NROW(A)
     if(norm){
-      # C_3_max<-dim(A)[1]/2*(1+sqrt(dim(A)[1]))
       C_3_max<-dim(A)[1]*sqrt(dim(A)[1]-1)
       C2_max<-(prod(dim(A))-NROW(A)) # number of elements minus diagonal
-      output=output/(C_3_max*C2_max)
+      output=C_2*C_3/(NROW(A)*C_3_max*C2_max)
     }
   }else{
     output<-NA
