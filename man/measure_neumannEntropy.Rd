@@ -4,7 +4,7 @@
 \alias{measure_neumannEntropy}
 \title{Calculate the von Neumann entropy for graphs.}
 \usage{
-measure_neumannEntropy(A, norm = T)
+measure_neumannEntropy(A, norm = F)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}

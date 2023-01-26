@@ -15,6 +15,23 @@
 #'          byrow=T)
 #'
 #' measure_designComplexity(A)
+#'
+#' ### Example of Modrak & Bednar (2015)  - Figure 4
+#' DMM_a<-matrix(c(1,0,
+#' 1,1),byrow = T,nrow=2)
+#' measure_designComplexity(DMM_a,norm=F) # should be 1.39
+#'
+#'
+#' DMM_b<-matrix(c(1,0,0,0,
+#'                 1,1,0,0,
+#'                 1,0,1,0,
+#'                 1,0,0,1,
+#'                 1,1,1,0,
+#'                 1,1,0,1,
+#'                 1,0,1,1,
+#'                 1,1,1,1),byrow = T,nrow=8)
+#' measure_designComplexity(DMM_b,norm=F) # should be 33.3
+#'
 measure_designComplexity<-function(A,norm=T){
   DC <- sum(apply(A,2,function(x){
     z<-sum(x[x>0])*log(sum(x[x>0]))
@@ -124,14 +141,13 @@ measure_JSDC<-function(DMM,norm=F){
 
 
 #' @title measure_modularity
-#' @description Calculates the directed of undirected modularity measure of a network.
-#' The directed approach is described by \insertCite{Blondel.2008;textual}{EAD} as well as \insertCite{Newman.2006;textual}{EAD}.
-#' The undirected measure is based on \insertCite{Leicht.2008;textual}{EAD}.
+#' @description Calculates the modularity measure of a undirected network as described by \insertCite{Blondel.2008;textual}{EAD}, \insertCite{Newman.2006;textual}{EAD} and \insertCite{Leicht.2008;textual}{EAD}.
+#' The implementation was checked by using the train boogie data set as reported by \insertCite{Sinha.2018;textual}{EAD}.
 #' @param A A data.frame containing the dependency structure matrix with information on element dependencies.
 #' @param preMember A numerical vector containing the assignment of vertices to cluster.
 #' The default value is \code{preMember=NULL} which means that the communities are identified using the \link[igraph]{fastgreedy.community}
 #' @param plot_op Boolean, default \code{plot_op=FALSE}. If set to true the graph is visualized.
-#' @return The calculated modularity measure
+#' @return The calculated modularity measure.
 #' @references
 #' \insertAllCited{}
 #' @examples
@@ -145,12 +161,16 @@ measure_JSDC<-function(DMM,norm=F){
 #'            nrow=3,
 #'            ncol=3,
 #'            byrow=T)
-#'   measure_modularity(DSM,symmetric=T)
+#'   measure_modularity(DSM,symmetric=T)#'
 #'
-#' ## unsymmetrical matrix as input
-#' ## not transformed into a symmetric matrix first
-#' ## use the directed approach by Leicht & Newmann (2008)
-#'   measure_modularity(DSM,symmetric=F)
+#' ### Example presented by Sinha & Suh (2018)
+#'   library(EAD)
+#'   DSM<-trainbogie
+#'   modules<-sapply(strsplit(rownames(DSM),"_"),function(x) x[1])
+#'
+#'   res<-measure_modularity(DSM,
+#'                           preMember = as.numeric(factor(modules))
+#'   res # should be 0.74
 #'
 measure_modularity<-function(A,preMember=NULL,plot_op=F){
    require(igraph)
@@ -180,25 +200,33 @@ measure_modularity<-function(A,preMember=NULL,plot_op=F){
 
 #' @title Calculate structural complexity
 #' @description This measure is defined by \insertCite{Sinha.2018;textual}{EAD} and \insertCite{Sinha.2014;textual}{EAD}.
-#' The C1 term is neglected here. Therefore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
 #' Non-symmetric matrices are transformed into a symmetric binary matrix.
 #' @param DSM A dependency structure matrix, reflecting the interfaces between elements.
-#' @param nrom Boolean, default=F. If set to true, the normalized measure is returned.
-#' \insertCite{Sinha.2016;textual}{EAD} proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}
 #' @return The calculated structural complexity measure.
 #' @references
 #' \insertAllCited{}
 #' @examples
+#' library(EAD)
 #'
-#' DSM<-matrix(c(1,0,0,
-#'             1,1,0,
-#'             1,1,1),
-#'          nrow=3,
-#'          ncol=3,
-#'          byrow=T)
+#' ## proof of matrix energy
+#' F2_left<-matrix(0,nrow=7,ncol=7)
+#' F2_left[2:7,1]<-1
+#' F2_left[1,2:7]<-1
+#'
+#' sum(svd(F2_left)$d) # should be 4.90
+#'
+#' F2_right<-matrix(0,nrow=7,ncol=7)
+#' F2_right[1,2:3]<-1
+#' F2_right[2,4:5]<-1
+#' F2_right[3,6:7]<-1
+#' F2_right<-makeMatrixsymmetric(F2_right)
+#' sum(svd(F2_right)$d) # should be 6.83
+#'
+#'
+#' DSM<-trainbogie
 #'
 #' measure_structuralcomplexity(DSM)
-measure_structuralcomplexity<-function(A,norm=F){
+measure_structuralcomplexity<-function(A){
   if(dim(A)[1]==dim(A)[2]){
     A[A>1]<-1
     A<-makeMatrixsymmetric(A)
@@ -207,11 +235,6 @@ measure_structuralcomplexity<-function(A,norm=F){
     C_2<-sum(A)
     C_3<-sum(svd(A)$d)
     output <- C_1+C_2*C_3/NROW(A)
-    if(norm){
-      C_3_max<-dim(A)[1]*sqrt(dim(A)[1]-1)
-      C2_max<-(prod(dim(A))-NROW(A)) # number of elements minus diagonal
-      output=C_2*C_3/(NROW(A)*C_3_max*C2_max)
-    }
   }else{
     output<-NA
   }
@@ -234,7 +257,7 @@ measure_structuralcomplexity<-function(A,norm=F){
 #'          byrow=T)
 #'
 #' measure_neumannEntropy(DSM)
-measure_neumannEntropy<-function(A,norm=T){
+measure_neumannEntropy<-function(A,norm=F){
   if(dim(A)[1]==dim(A)[2]){
     d<-A
     d<-makeMatrixsymmetric(d)

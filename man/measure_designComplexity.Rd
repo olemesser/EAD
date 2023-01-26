@@ -27,6 +27,23 @@ A<-matrix(c(1,0,0,
          byrow=T)
 
 measure_designComplexity(A)
+
+### Example of Modrak & Bednar (2015)  - Figure 4
+DMM_a<-matrix(c(1,0,
+1,1),byrow = T,nrow=2)
+measure_designComplexity(DMM_a,norm=F) # should be 1.39
+
+
+DMM_b<-matrix(c(1,0,0,0,
+                1,1,0,0,
+                1,0,1,0,
+                1,0,0,1,
+                1,1,1,0,
+                1,1,0,1,
+                1,0,1,1,
+                1,1,1,1),byrow = T,nrow=8)
+measure_designComplexity(DMM_b,norm=F) # should be 33.3
+
 }
 \references{
 \insertAllCited{}

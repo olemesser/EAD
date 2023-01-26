@@ -6,7 +6,7 @@
 \usage{
 crt_DSM(
   N_el,
-  method = c("DNS", "modular", "SC"),
+  method = c("DNS", "modular"),
   PARAM = list(DNS = 0.1, SC = 0.1, modular = 0),
   upper_Bound = 5,
   forced = NULL
@@ -21,14 +21,12 @@ crt_DSM(
   \item{modular}{Generates a DSM using two conditions. The procedure tries to achieve a certain density specified via should be achieved \code{PARAM$DNS} and, second,
   tries to create a certain distribution for the off-diagonal elements which is specified via \code{PARAM$cv}. Low values of cv indicate a random distribution while high values indicate that values are more clustered around the DSM main diagonal.
   The latter represents modular designs.}
-  \item{SC}{Creates a matrix in order to achieved a specified normalized structural complexity measure. For more details see: \link[EAD]{measure_structuralcomplexity}.}
 }}
 
 \item{PARAM}{A named list object with the following entries:
 \describe{
   \item{DNS}{Density for the matrix}
   \item{cv}{Coefficient of variation for off-diagonal entries.}
-  \item{SC}{Specifies the system design complexity which should be generated. For further details see \link[EAD]{measure_structuralcomplexity}.}
 }}
 
 \item{upper_Bound}{Integer, default \code{upper_Bound=20}, specifies the maximum number in the DMM if \code{binary=FALSE}}

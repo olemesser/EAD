@@ -15,12 +15,11 @@ The default value is \code{preMember=NULL} which means that the communities are 
 \item{plot_op}{Boolean, default \code{plot_op=FALSE}. If set to true the graph is visualized.}
 }
 \value{
-The calculated modularity measure
+The calculated modularity measure.
 }
 \description{
-Calculates the directed of undirected modularity measure of a network.
-The directed approach is described by \insertCite{Blondel.2008;textual}{EAD} as well as \insertCite{Newman.2006;textual}{EAD}.
-The undirected measure is based on \insertCite{Leicht.2008;textual}{EAD}.
+Calculates the modularity measure of a undirected network as described by \insertCite{Blondel.2008;textual}{EAD}, \insertCite{Newman.2006;textual}{EAD} and \insertCite{Leicht.2008;textual}{EAD}.
+The implementation was checked by using the train boogie data set as reported by \insertCite{Sinha.2018;textual}{EAD}.
 }
 \examples{
 
@@ -33,12 +32,16 @@ The undirected measure is based on \insertCite{Leicht.2008;textual}{EAD}.
            nrow=3,
            ncol=3,
            byrow=T)
-  measure_modularity(DSM,symmetric=T)
+  measure_modularity(DSM,symmetric=T)#'
 
-## unsymmetrical matrix as input
-## not transformed into a symmetric matrix first
-## use the directed approach by Leicht & Newmann (2008)
-  measure_modularity(DSM,symmetric=F)
+### Example presented by Sinha & Suh (2018)
+  library(EAD)
+  DSM<-trainbogie
+  modules<-sapply(strsplit(rownames(DSM),"_"),function(x) x[1])
+
+  res<-measure_modularity(DSM,
+                          preMember = as.numeric(factor(modules))
+  res # should be 0.74
 
 }
 \references{

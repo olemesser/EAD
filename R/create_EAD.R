@@ -13,10 +13,10 @@ crt_EAD<-function(DOE,
   #                  method_FD = "DNS",
   #                  TOTAL_DEMAND = 10000, # total demand
   #                  DMD_cv = list(c(0,3)), # coefficient of variation for demand distribution
-  #                  DMM_PAR = list(c(0,0.065)), # desired design complexity
+  #                  DMM_PAR = list(c(0,0.115)), # desired design complexity
   #                  DMM_method="SDC", # method for generating the DMM
   #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                  DSM_param=list(c(0,0.14,0.1,1)), # density of the DSMs
+  #                  DSM_param=list(c(0,0.14,0,1)), # density of the DSMs
   #                  DSM_method="modular",
   #                  TC = 10^6, # total costs
   #                  ratio_fixedC = list(c(0,0)), # proportion of fixed costs on total costs

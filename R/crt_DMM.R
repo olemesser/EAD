@@ -153,14 +153,15 @@ crt_DMM<-function(N_src,
   DMM_bin<-DMM
   if(binary) upper_Bound<-1
   DMM[DMM>0]<-sample(c(1:upper_Bound),size=sum(DMM>0),replace = T)
-  SDC<-measure_designComplexity(DMM_bin)
-  SDC_err <- (SDC-DMM_PAR)/DMM_PAR
+  SDC_n<-measure_designComplexity(DMM_bin,norm = T)
+  SDC_err <- (SDC_n-DMM_PAR)/DMM_PAR
   SDC_err<-ifelse(is.nan(SDC_err),0,SDC_err)
   #### Write Output object ####
   output<-list(
     DMM = DMM,
     DMM_bin = DMM_bin,
-    SDC = SDC,
+    SDC = measure_designComplexity(DMM_bin,norm = F),
+    SDC_n = SDC_n,
     JSDC = measure_JSDC(DMM_bin),
     R = measure_reangularity(DMM_bin),
     S = measure_semiangularity(DMM_bin),

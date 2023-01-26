@@ -4,30 +4,37 @@
 \alias{measure_structuralcomplexity}
 \title{Calculate structural complexity}
 \usage{
-measure_structuralcomplexity(A, norm = F)
+measure_structuralcomplexity(A)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}
-
-\item{nrom}{Boolean, default=F. If set to true, the normalized measure is returned.
-\insertCite{Sinha.2016;textual}{EAD} proof that the maximum matrix energy is always \eqn{E_max<=n^{3/2}}}
 }
 \value{
 The calculated structural complexity measure.
 }
 \description{
 This measure is defined by \insertCite{Sinha.2018;textual}{EAD} and \insertCite{Sinha.2014;textual}{EAD}.
-The C1 term is neglected here. Therefore only C2 and C3 are calculated. \code{SC=C2*C3*1/NROW(A)}.
 Non-symmetric matrices are transformed into a symmetric binary matrix.
 }
 \examples{
+library(EAD)
 
-DSM<-matrix(c(1,0,0,
-            1,1,0,
-            1,1,1),
-         nrow=3,
-         ncol=3,
-         byrow=T)
+## proof of matrix energy
+F2_left<-matrix(0,nrow=7,ncol=7)
+F2_left[2:7,1]<-1
+F2_left[1,2:7]<-1
+
+sum(svd(F2_left)$d) # should be 4.90
+
+F2_right<-matrix(0,nrow=7,ncol=7)
+F2_right[1,2:3]<-1
+F2_right[2,4:5]<-1
+F2_right[3,6:7]<-1
+F2_right<-makeMatrixsymmetric(F2_right)
+sum(svd(F2_right)$d) # should be 6.83
+
+
+DSM<-trainbogie
 
 measure_structuralcomplexity(DSM)
 }

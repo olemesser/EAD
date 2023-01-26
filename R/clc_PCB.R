@@ -46,7 +46,7 @@ clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
   #### 2. Calculate TRC and RCU ####
   TRC<-colSums(RES_CONS_PAT * DMD)
   if(is.null(RCU) & !is.null(RC_var)) RCU <- RC_var/TRC
-  RCU<-ifelse(is.nan(RCU),0,RCU)
+  RCU<-ifelse(is.nan(RCU) | is.infinite(RCU),0,RCU)
 
 
   #### 3. Calculate (true) Benchmark Costs ####
@@ -54,5 +54,8 @@ clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
   PC_B_fixed <-RES_CONS_PAT %*% ifelse(is.infinite(RC_fix/TRC),0,(RC_fix/TRC))
   PC_B <- PC_B_var + PC_B_fixed
 
-  return(list(PC_B=PC_B,RCU=RCU))
+  return(list(PC_B=PC_B,
+              RCU=RCU,
+              PC_B_fixed=PC_B_fixed,
+              PC_B_var=PC_B_var))
 }
