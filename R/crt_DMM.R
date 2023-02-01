@@ -58,7 +58,6 @@ crt_DMM<-function(N_src,
       # each 100 tries increase DMM_PAR by 5%
       if(tries %% 500 ==0) DMM_PAR<-DMM_PAR*1.05
       if(DMM_PAR>1) DMM_PAR<-1
-
       if(DMM_start==0 & N_src<=N_tgt){
           DMM_left<-diag(1,N_src)
           if(allowZero){
@@ -141,7 +140,6 @@ crt_DMM<-function(N_src,
         cond_3<-T
       }else{
         cond_2<-all(colSums(DMM)>0)
-        # cond_3<-rankMatrix(DMM)==min(dim(DMM))
         cond_3<-T
       }
 
@@ -165,7 +163,6 @@ crt_DMM<-function(N_src,
     JSDC = measure_JSDC(DMM_bin),
     R = measure_reangularity(DMM_bin),
     S = measure_semiangularity(DMM_bin),
-    JSDC = measure_JSDC(DMM_bin),
     SDC_err= SDC_err
   )
 

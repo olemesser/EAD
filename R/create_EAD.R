@@ -72,10 +72,11 @@ crt_EAD<-function(DOE,
                                        RD=measure_diversificationINDEX(DOM$P$RD,DMD=DMD))
 
       measures[['SYSTEM']]<-c(measures[['SYSTEM']],DOM$measures$SYSTEM,
-                              N_FR = DOE$N_FR[x][[1]],
-                              N_PD = DOE$N_DD[x][[1]],
-                              N_PrD = DOE$N_PrD[x][[1]],
-                              N_RD = DOE$N_RD[x][[1]],
+                              N_FD = NCOL(DOM$P$FD),
+                              N_PD = NCOL(DOM$P$PD),
+                              N_PrD = NCOL(DOM$P$PrD),
+                              N_RD = NCOL(DOM$P$RD),
+                              N_PROD = NROW(DOM$P$FD),
                               TSS=DOE$N_FR[x][[1]]+DOE$N_DD[x][[1]]+DOE$N_PrD[x][[1]]+DOE$N_RD[x][[1]])
       measures[['PRODUCT']]<-c(measures[['PRODUCT']],DOM$measures$PRODUCT)
       DSM<-DOM$DSM
