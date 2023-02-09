@@ -72,6 +72,7 @@ simulate_costEffects<-function(DOE){
                 #             PC_B_setup = PC_setupChange),
                 PCI_PD = measure_PCI(EAD[[1]]$P$PD[idx,]),
                 DMD_T10 = measure_TOP10(EAD[[1]]$DEMAND[idx]),
+                SDC_n_FD_PD = EAD[[1]]$measures$SYSTEM$SDC_n$FD_PD,
                 SDC_n_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC_n$PD_PrD)
       return(out)
     })
