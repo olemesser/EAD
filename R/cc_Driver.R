@@ -29,12 +29,12 @@ processVariety<-function(PrD,
 
   #### 3. Demand for each product variant ####
   PrVD<-lapply(1:length(PrVV),function(x){
-    temp<-tibble(PrD=PrD[includedProd,x],
+    temp<-tibble(PrD_n=PrD[includedProd,x],
            DMD=DMD[includedProd]) %>%
-      group_by(PrD) %>%
+      group_by(PrD_n) %>%
       summarise(DMD=sum(DMD)) %>%
-      filter(PrD!=0)
-    return(temp$DMD[match(PrVV[[x]],temp$PrD)])
+      filter(PrD_n!=0)
+    return(temp$DMD[match(PrVV[[x]],temp$PrD_n)])
   })
 
   #### 4. Costs per Setup changes ####

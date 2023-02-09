@@ -127,7 +127,7 @@ simulate_costEffects_MC<-function(DOE,
                                    return(res)
                                  }, packages = c("EAD","odegoparallel",
                                                  "dplyr", "rpicosat", "tidyr", "GA",
-                                                 "Matrix", "digest", "faux",
+                                                 "Matrix", "digest", "faux","data.table",
                                                  "plyr", "DescTools", "igraph", "R.utils","fGarch"),
                                  errorhandlingNodes = ehNodes)
   }else{
