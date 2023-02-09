@@ -72,7 +72,7 @@ simulate_costEffects<-function(DOE){
                 #             PC_B_setup = PC_setupChange),
                 PCI_PD = measure_PCI(EAD[[1]]$P$PD[idx,]),
                 DMD_T10 = measure_TOP10(EAD[[1]]$DEMAND[idx]),
-                SDC_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC$PD_PrD)
+                SDC_n_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC_n$PD_PrD)
       return(out)
     })
     df<-lapply(res,function(t){
@@ -80,7 +80,7 @@ simulate_costEffects<-function(DOE){
                  DMD_total = t$DMD_total,
                  PCI_PD = t$PCI_PD,
                  DMD_T10 = t$DMD_T10,
-                 SDC_PD_PrD = t$SDC_PD_PrD,
+                 SDC_n_PD_PrD = t$SDC_n_PD_PrD,
                  TC=t$TC$TC,
                  TC_setup=t$TC$TC_setup)
     })
