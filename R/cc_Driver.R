@@ -1,46 +1,90 @@
-processVariety<-function(EAD,
+processVariety<-function(PrD,
+                         PrC,
+                         DMD,
                          includedProd=NULL,
-                         prop_setupChange=c(0.05,0.1),
-                         samples=10){
+                         prop_setupChange=c(0.5,0.5),
+                         prop_setupTime=1,
+                         prop_demand=0.5){
+  require(dplyr)
+  #### Input for Testing ####
+  # PrD <- matrix(c(10,12,10,0,0,
+  #               6,5,2,2,4),ncol = 2)
+  # PrC <- c(120,130)
+  # prop_setupChange <- c(0.5,0.5)
+  # includedProd <- c(4,5)
+  # DMD <- c(100,250,300,20,120)
+  # prop_setupTime <- 0.1
+  # prop_demand <- 0.5
+  #### END Input for Testing ####
 
-  if(is.null(includedProd)) includedProd<-1:NROW(EAD[[1]]$P$PrD)
+  #### 1. Calculate Process costs for each process ####
+  mean_process_duration<-apply(PrD,2,function(x) mean(x[x!=0]))
+  setupCosts <- PrC * runif(length(PrC),min = prop_setupChange[1], max = prop_setupChange[2]) * prop_setupTime * mean_process_duration
 
-  ## calculate process variants
-  variety<-apply(EAD[[1]]$P$PrD[includedProd,],2,function(t){
-    length(unique(t[t>0]))
+  #### 2. Calculate process variants for each process ####
+  if(is.null(includedProd)) includedProd<-1:NROW(PrD)
+  PrVV<-apply(PrD[includedProd,],2,function(t){
+    unique(t[t>0])
   })
 
-  ## calculate costs for each process
-  RD<-diag(1,ncol = NCOL(EAD[[1]]$P$PrD),nrow = NCOL(EAD[[1]]$P$PrD)) %*% (( EAD[[1]]$DMM$PrD_RD %*% EAD[[1]]$DSM$RD) + EAD[[1]]$DMM$PrD_RD)
-  costs<-clc_PCB(RD,DMD = 1,RC_var = EAD[[1]]$RC$var)
-  ## derive setup costs
-  setupCosts <- costs$PC_B %*% runif(samples,min = prop_setupChange[1], max = prop_setupChange[2])
-
-  i<-1
-  PC_setup<-sapply(1:NCOL(setupCosts),function(i){
-    ## costs for a single setup change
-    ## -1 is added since if there is only one process variant no changes are needed
-    costs_perChange<-setupCosts[,i] / (variety-1)
-    costs_perChange<-ifelse(is.infinite(costs_perChange),0,costs_perChange)
-    ## distribute costs based on the product variety
-    pr<-1
-    df<-sapply(1:NCOL(EAD[[1]]$P$PrD),function(pr){
-      vec<-EAD[[1]]$P$PrD[includedProd,pr]
-      temp<-dplyr::as_tibble(table(vec)) %>%
-        mutate(costspCh=costs_perChange[pr],
-               costspCh=ifelse(vec==0,0,costspCh))
-      temp$costspCh[match(vec,as.numeric(temp$vec))]
-      # %>%
-      #   left_join(tibble(vec=as.character(EAD[[1]]$P$PrD[includedProd,pr]),
-      #                    DMD=EAD[[1]]$DEMAND[includedProd]) %>%
-      #               group_by(vec) %>%
-      #               summarise(DMD=sum(DMD)),
-      #             by="vec") %>%
-      #   mutate(costPROD=costspCh/DMD)
-        return(temp$costPROD[match(vec,as.numeric(temp$vec))])
-      })
-    return(rowSums(df))
+  #### 3. Demand for each product variant ####
+  PrVD<-lapply(1:length(PrVV),function(x){
+    temp<-tibble(PrD=PrD[includedProd,x],
+           DMD=DMD[includedProd]) %>%
+      group_by(PrD) %>%
+      summarise(DMD=sum(DMD)) %>%
+      filter(PrD!=0)
+    return(temp$DMD[match(PrVV[[x]],temp$PrD)])
   })
+
+  #### 4. Costs per Setup changes ####
+
+  PrV_setupCosts<-lapply(1:length(PrVD),function(x){
+    setupCosts[x] / PrVD[[x]] * clc_meanSetups(lotSize = ceiling(mean(PrVD[[x]])*prop_demand),
+                                               DMD = PrVD[[x]],
+                                               runs = 100)
+  })
+
+  #### 5. Costs per Changes and Product ####
+  PC_setup<-sapply(1:length(PrVD),function(x){
+    PC_setups<-PrV_setupCosts[[x]][match(PrD[,x],PrVV[[x]])]
+    return(ifelse(is.na(PC_setups),0,PC_setups))
+  })
+  PC_setup<-rowSums(PC_setup)
+  PC_setup[-includedProd] <- 0
   return(PC_setup)
 }
 
+clc_processCostRate<-function(EAD,RCU){
+  ## calculate costs for each process
+  RD<-diag(1,NCOL(EAD[[1]]$P$PrD)) %*% ((EAD[[1]]$DMM$PrD_RD %*% EAD[[1]]$DSM$RD) + EAD[[1]]$DMM$PrD_RD)
+  return(RD %*% RCU)
+}
+
+
+clc_meanSetups<-function(lotSize,DMD,runs=50){
+  #### INput for Testing ####
+  # lotSize<-79
+  # DMD<-c(400,250)
+  #### END Input for Testing ####
+
+  DMD_restore<-DMD
+  probs <- DMD/sum(DMD)
+  setups<-t(sapply(1:runs,function(i){
+    DMD<-DMD_restore
+    setups<-rep(0,length(DMD))
+    while (any(DMD>0)) {
+      DMD_choose <- which(DMD>0)
+      if(length(DMD_choose)>1){
+        idx<-sample(DMD_choose,1,prob=probs[DMD_choose])
+        setups[idx] <- setups[idx]+1
+        DMD[idx]<- DMD[idx] - lotSize
+      }else{
+        DMD[DMD_choose]<-0
+        setups[DMD_choose] <- 1
+      }
+    }
+    return(setups)
+  }))
+  return(ceiling(colMeans(setups)))
+}

@@ -4,7 +4,7 @@
 \alias{measure_structuralcomplexity}
 \title{Calculate structural complexity}
 \usage{
-measure_structuralcomplexity(A)
+measure_structuralcomplexity(A, norm = F)
 }
 \arguments{
 \item{DSM}{A dependency structure matrix, reflecting the interfaces between elements.}

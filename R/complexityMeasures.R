@@ -226,7 +226,7 @@ measure_modularity<-function(A,preMember=NULL,plot_op=F){
 #' DSM<-trainbogie
 #'
 #' measure_structuralcomplexity(DSM)
-measure_structuralcomplexity<-function(A){
+measure_structuralcomplexity<-function(A,norm=F){
   if(dim(A)[1]==dim(A)[2]){
     A[A>1]<-1
     A<-makeMatrixsymmetric(A)
@@ -234,7 +234,11 @@ measure_structuralcomplexity<-function(A){
     C_1<-NROW(A)
     C_2<-sum(A)
     C_3<-sum(svd(A)$d)
-    output <- C_1+C_2*C_3/NROW(A)
+    if(norm==FALSE){
+      output <- C_1+0.5*C_2*C_3/NROW(A)
+    }else{
+      output<-C_2/(C_1^2-C_1)*C_3/(C_1^2*sqrt(C_1-1))
+    }
   }else{
     output<-NA
   }
@@ -261,7 +265,7 @@ measure_neumannEntropy<-function(A,norm=F){
   if(dim(A)[1]==dim(A)[2]){
     d<-A
     d<-makeMatrixsymmetric(d)
-    diag(d)<-0
+    diag(d)<-1
     L<-diag(rowSums(d))-d # create Laplacian matrix
     lambda<-eigen(L)$values
     S<-sum(sapply(lambda,function(x){
@@ -340,26 +344,6 @@ measure_DISTsum<-function(P){
   return(m)
 }
 
-#' @title product distance mean coefficient of variation.
-#' @description Calculates the mean distance of each product. This vector is used to calculate the coefficient of variation (cv) in a second step.
-#' A cv of zero means, that all products are equally distributed. Larger cv values imply a more heterogeneous product mix.
-#' @param P A product matrix with products in rows and attributes in columns.
-#' @return The coefficient of variation of products' mean distances.
-#' @examples
-#'
-#' P<-matrix(c(1,1,1,1,0,
-#'             0,1,1,0,1,
-#'             0,0,1,1,1),
-#'            nrow = 5,
-#'            ncol = 3)
-#'
-#' measure_DISTcv(P)
-measure_DISTcv<-function(P){
-  dist_P<-as.matrix(dist(P))
-  dist_P<-rowMeans(dist_P)
-  return(sd(dist_P)/mean(dist_P))
-}
-
 
 #' @title Calculate intra-product heterogeneity
 #' @description Calculates the INTRA measure defined by \insertCite{Gupta.1993;textual}{EAD} and adapted by \insertCite{Mertens.2020;textual}{EAD}.
@@ -414,14 +398,6 @@ measure_INTER<-function(P){
   cm_mat<-matrix(rep(colMeans(P_scaled),NROW(P_scaled)),nrow =NROW(P_scaled),byrow = T)
   INTER<-rowSums(((P_scaled-cm_mat)/cm_mat)^2)
   return(INTER)
-}
-
-
-
-measure_EXOTICNESS<-function(P){
-  dist_mat<-as.matrix(dist(P))
-  prod_mean_dist_uw<-rowMeans(dist_mat)
-  return(prod_mean_dist_uw/mean(prod_mean_dist_uw))
 }
 
 
@@ -506,9 +482,11 @@ measure_diversificationINDEX<-function(P,DMD=NULL){
 #'        ncol = 5)
 #'
 #' measure_PCI(P)
-measure_PCI<-function(P){
+P<-measure_PCI<-function(P){
   # transform into binary matrix
   P[P>1]<-1
+  n_i<-colSums(P)
+  P<-P[,n_i>0]
   n_i<-colSums(P)
   MinCCI<-sum(1/n_i^2)
   PCI<-(sum(n_i)-MinCCI)/(NROW(P)*NCOL(P)-MinCCI)
@@ -662,7 +640,7 @@ measure_CI<-function(P){
 #' measure_HVM(DSM)
 measure_HVM<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
-  diag(DSM)<-0
+  diag(DSM)<-1
   E<-sum(DSM)
   N<-NROW(DSM)
   HVM<-(E+N)*log(E+N)
@@ -694,7 +672,7 @@ measure_HVM<-function(DSM,norm=T){
 #' measure_HIC(DSM)
 measure_HIC<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
-  diag(DSM)<-0
+  diag(DSM)<-1
   HIC<-sum(DSM)
   if(norm){
     N <- NROW(DSM)
@@ -721,7 +699,7 @@ measure_HIC<-function(DSM,norm=T){
 #'
 #' measure_MCC(DSM)
 measure_MCC<-function(DSM,norm=T){
-  diag(DSM)<-0
+  diag(DSM)<-1
   DSM[DSM>1]<-1
   if(sum(DSM)==0){
     MCC<-0
