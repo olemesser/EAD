@@ -31,9 +31,10 @@ processVariety<-function(PrD,
   PrVD<-lapply(1:length(PrVV),function(x){
     temp<-tibble(PrD_n=PrD[includedProd,x],
            DMD=DMD[includedProd]) %>%
-      group_by(PrD_n) %>%
-      summarise(DMD=sum(DMD)) %>%
-      filter(PrD_n!=0)
+      dplyr::group_by(PrD_n) %>%
+      dplyr::summarise(DMD=sum(DMD)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(PrD_n!=0)
     return(temp$DMD[match(PrVV[[x]],temp$PrD_n)])
   })
 
