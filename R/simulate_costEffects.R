@@ -81,6 +81,7 @@ simulate_costEffects<-function(DOE){
                  DMD_total = t$DMD_total,
                  PCI_PD = t$PCI_PD,
                  DMD_T10 = t$DMD_T10,
+                 SDC_n_FD_PD = t$SDC_n_FD_PD,
                  SDC_n_PD_PrD = t$SDC_n_PD_PrD,
                  TC=t$TC$TC,
                  TC_setup=t$TC$TC_setup)
