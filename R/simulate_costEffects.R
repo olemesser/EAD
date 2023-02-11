@@ -61,8 +61,10 @@ simulate_costEffects<-function(DOE){
                                      DMD = EAD[[1]]$DEMAND,
                                      includedProd=idx,
                                      prop_setupChange=c(0.5,0.5),
-                                     prop_setupTime=1)
-      TC_setup<-sum(PC_setupChange * DMD_temp)
+                                     prop_setupTime=1,
+                                     r_Order_to_Hold=2)
+
+      TC_setup<-sum(PC_setupChange$PC_setup * DMD_temp)
 
       out<-list(NPV=qty,
                 DMD_total = sum(DMD_temp),
@@ -73,7 +75,8 @@ simulate_costEffects<-function(DOE){
                 PCI_PD = measure_PCI(EAD[[1]]$P$PD[idx,]),
                 DMD_T10 = measure_TOP10(EAD[[1]]$DEMAND[idx]),
                 SDC_n_FD_PD = EAD[[1]]$measures$SYSTEM$SDC_n$FD_PD,
-                SDC_n_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC_n$PD_PrD)
+                SDC_n_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC_n$PD_PrD,
+                mean_lotsize = PC_setupChange$lotsize)
       return(out)
     })
     df<-lapply(res,function(t){
@@ -83,6 +86,7 @@ simulate_costEffects<-function(DOE){
                  DMD_T10 = t$DMD_T10,
                  SDC_n_FD_PD = t$SDC_n_FD_PD,
                  SDC_n_PD_PrD = t$SDC_n_PD_PrD,
+                 mean_lotsize = t$mean_lotsize,
                  TC=t$TC$TC,
                  TC_setup=t$TC$TC_setup)
     })

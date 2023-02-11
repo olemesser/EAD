@@ -4,7 +4,7 @@ processVariety<-function(PrD,
                          includedProd=NULL,
                          prop_setupChange=c(0.5,0.5),
                          prop_setupTime=1,
-                         prop_demand=0.5){
+                         r_Order_to_Hold=2){
   require(dplyr)
   #### Input for Testing ####
   # PrD <- matrix(c(10,12,10,0,0,
@@ -14,7 +14,7 @@ processVariety<-function(PrD,
   # includedProd <- c(4,5)
   # DMD <- c(100,250,300,20,120)
   # prop_setupTime <- 0.1
-  # prop_demand <- 0.5
+  # r_Order_to_Hold <- 2
   #### END Input for Testing ####
 
   #### 1. Calculate Process costs for each process ####
@@ -39,21 +39,32 @@ processVariety<-function(PrD,
   })
 
   #### 4. Costs per Setup changes ####
-
   PrV_setupCosts<-lapply(1:length(PrVD),function(x){
-    setupCosts[x] / PrVD[[x]] * clc_meanSetups(lotSize = ceiling(mean(PrVD[[x]])*prop_demand),
-                                               DMD = PrVD[[x]],
-                                               runs = 100)
+    ## economic order quantity ##
+    if (length(PrVD[[x]])==0) {
+      lotSize<-NA
+      costs<-0
+    }else{
+      lotSize<-ceiling(sqrt(2*PrVD[[x]]*r_Order_to_Hold))
+      costs<-setupCosts[x] / PrVD[[x]] * clc_meanSetups(lotSize = lotSize,DMD = PrVD[[x]],runs = 50)
+    }
+    temp<-list(costs = costs,
+               mean_LotSize = mean(lotSize))
+    return(temp)
   })
 
   #### 5. Costs per Changes and Product ####
   PC_setup<-sapply(1:length(PrVD),function(x){
-    PC_setups<-PrV_setupCosts[[x]][match(PrD[,x],PrVV[[x]])]
+    PC_setups<-PrV_setupCosts[[x]]$costs[match(PrD[,x],PrVV[[x]])]
     return(ifelse(is.na(PC_setups),0,PC_setups))
   })
+  mean_LotSize<-mean(na.omit(sapply(PrV_setupCosts,function(x) x$mean_LotSize)))
   PC_setup<-rowSums(PC_setup)
   PC_setup[-includedProd] <- 0
-  return(PC_setup)
+
+  out<-list(PC_setup=PC_setup,
+            lotsize=mean_LotSize)
+  return(out)
 }
 
 clc_processCostRate<-function(EAD,RCU){
@@ -65,25 +76,31 @@ clc_processCostRate<-function(EAD,RCU){
 
 clc_meanSetups<-function(lotSize,DMD,runs=50){
   #### INput for Testing ####
-  # lotSize<-79
-  # DMD<-c(400,250)
+  # lotSize<-c(40,1)
+  # DMD<-c(100,50)
+  # runs=50
   #### END Input for Testing ####
 
+  if(length(lotSize)==1) lotSize<-rep(lotSize,length(DMD))
   DMD_restore<-DMD
   probs <- DMD/sum(DMD)
+
   setups<-t(sapply(1:runs,function(i){
     DMD<-DMD_restore
     setups<-rep(0,length(DMD))
+    idx_old<-0
     while (any(DMD>0)) {
       DMD_choose <- which(DMD>0)
-      if(length(DMD_choose)>1){
-        idx<-sample(DMD_choose,1,prob=probs[DMD_choose])
-        setups[idx] <- setups[idx]+1
-        DMD[idx]<- DMD[idx] - lotSize
-      }else{
-        DMD[DMD_choose]<-0
-        setups[DMD_choose] <- 1
-      }
+        if(length(DMD_choose)==1){
+          idx<-DMD_choose
+        }else{
+          idx<-sample(DMD_choose,1,prob = probs[DMD_choose])
+        }
+        if(idx_old!=idx & DMD[idx]>0){
+          setups[idx] <- setups[idx]+1
+        }
+        DMD[idx]<- DMD[idx] - lotSize[idx]
+        idx_old<-idx
     }
     return(setups)
   }))
