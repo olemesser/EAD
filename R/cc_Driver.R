@@ -11,7 +11,7 @@ processVariety<-function(PrD,
   #               6,5,2,2,4),ncol = 2)
   # PrC <- c(120,130)
   # prop_setupChange <- c(0.5,0.5)
-  # includedProd <- c(4,5)
+  # includedProd <- c(1,2,3,4,5)
   # DMD <- c(100,250,300,20,120)
   # prop_setupTime <- 0.1
   # r_Order_to_Hold <- 2
@@ -44,12 +44,15 @@ processVariety<-function(PrD,
     if (length(PrVD[[x]])==0) {
       lotSize<-NA
       costs<-0
+      mean_setup<-NA
     }else{
       lotSize<-ceiling(sqrt(2*PrVD[[x]]*r_Order_to_Hold))
-      costs<-setupCosts[x] / PrVD[[x]] * clc_meanSetups(lotSize = lotSize,DMD = PrVD[[x]],runs = 50)
+      mean_setup<-clc_meanSetups(lotSize = lotSize,DMD = PrVD[[x]],runs = 50)
+      costs<-setupCosts[x] / PrVD[[x]] * mean_setup
     }
     temp<-list(costs = costs,
-               mean_LotSize = mean(lotSize))
+               mean_LotSize = mean(lotSize),
+               mean_setup = mean_setup)
     return(temp)
   })
 
@@ -58,21 +61,61 @@ processVariety<-function(PrD,
     PC_setups<-PrV_setupCosts[[x]]$costs[match(PrD[,x],PrVV[[x]])]
     return(ifelse(is.na(PC_setups),0,PC_setups))
   })
-  mean_LotSize<-mean(na.omit(sapply(PrV_setupCosts,function(x) x$mean_LotSize)))
+  mean_LotSize<-sapply(PrV_setupCosts,function(x) x$mean_LotSize)
   PC_setup<-rowSums(PC_setup)
   PC_setup[-includedProd] <- 0
 
   out<-list(PC_setup=PC_setup,
-            lotsize=mean_LotSize)
+            lotsize=mean_LotSize,
+            setups=sapply(PrV_setupCosts,function(x) x$mean_setup))
   return(out)
 }
 
-clc_processCostRate<-function(EAD,RCU){
-  ## calculate costs for each process
-  RD<-diag(1,NCOL(EAD[[1]]$P$PrD)) %*% ((EAD[[1]]$DMM$PrD_RD %*% EAD[[1]]$DSM$RD) + EAD[[1]]$DMM$PrD_RD)
-  return(RD %*% RCU)
-}
+clc_setupCosts<-function(EAD,
+                         RCU_var,
+                         includedProd = NULL,
+                         prop_setupChange=c(0.5,0.5),
+                         prop_setupTime=1,
+                         r_Order_to_Hold=2){
 
+  DMM_PD_PrD <- EAD[[1]]$DMM$PD_PrD
+  DMM_PrD_RD <- EAD[[1]]$DMM$PrD_RD
+  DSM_PrD <- EAD[[1]]$DSM$PrD
+  DSM_RD <- EAD[[1]]$DSM$RD
+  DMD <- EAD[[1]]$DEMAND
+  P_PD <- EAD[[1]]$P$PD
+  if(is.null(includedProd)) includedProd<-1:NROW(PrD)
+
+
+  #### Calculate Resource Usage for producing each component ####
+  P_PD_PD<-diag(1,nrow=ncol(P_PD))
+  P_PrD<-P_PD_PD %*% DMM_PD_PrD + (P_PD_PD %*% DMM_PD_PrD) %*% DSM_PrD
+  P_RD<-P_PrD %*% DMM_PrD_RD + (P_PrD %*% DMM_PrD_RD) %*% DSM_RD
+
+  #### calculate lot sizes ####
+  ### economic order quantity model
+  DMD_PD<-colSums(P_PD[includedProd,]*DMD[includedProd])
+  lotSize<-ceiling(sqrt(2*DMD_PD*r_Order_to_Hold))
+
+  #### Calculate Setup Changes ####
+  mean_SetupMatrix<-apply(P_RD,2,function(x){
+    DMD_temp <- DMD_PD
+    DMD_temp[x==0]<-0
+    clc_meanSetups(lotSize = lotSize,DMD =DMD_temp,runs = 50)
+  })
+
+  c_Setup <- RCU_var * runif(length(RCU_var),min=prop_setupChange[1],max = prop_setupChange[2]) * apply(P_RD,2,function(x) mean(x[x>0]))
+
+  TC_setup <- mean_SetupMatrix %*% c_Setup
+
+  PC_setup <- P_PD %*% (TC_setup / DMD_PD)
+  PC_setup[-includedProd] <- 0
+
+  out<-list(PC_setup=PC_setup,
+            lotsize=mean(lotSize),
+            setups=apply(mean_SetupMatrix,1,function(x) mean(x[x>0])))
+  return(out)
+}
 
 clc_meanSetups<-function(lotSize,DMD,runs=50){
   #### INput for Testing ####
@@ -83,8 +126,8 @@ clc_meanSetups<-function(lotSize,DMD,runs=50){
 
   if(length(lotSize)==1) lotSize<-rep(lotSize,length(DMD))
   DMD_restore<-DMD
-  probs <- DMD/sum(DMD)
-
+  # probs <- DMD/sum(DMD)
+  probs <- (DMD /lotSize) / sum(DMD / lotSize)
   setups<-t(sapply(1:runs,function(i){
     DMD<-DMD_restore
     setups<-rep(0,length(DMD))
@@ -106,3 +149,14 @@ clc_meanSetups<-function(lotSize,DMD,runs=50){
   }))
   return(ceiling(colMeans(setups)))
 }
+
+
+
+
+clc_processCostRate<-function(EAD,RCU){
+  ## calculate costs for each process
+  RD<-diag(1,NCOL(EAD[[1]]$P$PrD)) %*% ((EAD[[1]]$DMM$PrD_RD %*% EAD[[1]]$DSM$RD) + EAD[[1]]$DMM$PrD_RD)
+  return(RD %*% RCU)
+}
+
+

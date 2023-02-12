@@ -468,6 +468,7 @@ measure_diversificationINDEX<-function(P,DMD=NULL){
 #' @title Calculate the Product Line Commonality Index
 #' @description This index was introduced by \insertCite{Kota2000;textual}{EAD}. The f-values as defined by Kota are set to one.
 #' @param P A product matrix representing the components per product (P_DD) with products in rows and components in columns.
+#' @param DMD An optional demand vector. If this vector is provided, a demand weighted PCI is calculated.
 #' @return Returns the corresponding index value
 #' @references
 #' \insertAllCited{}
@@ -482,14 +483,23 @@ measure_diversificationINDEX<-function(P,DMD=NULL){
 #'        ncol = 5)
 #'
 #' measure_PCI(P)
-P<-measure_PCI<-function(P){
+measure_PCI<-function(P,DMD=NULL){
   # transform into binary matrix
   P[P>1]<-1
-  n_i<-colSums(P)
-  P<-P[,n_i>0]
-  n_i<-colSums(P)
-  MinCCI<-sum(1/n_i^2)
-  PCI<-(sum(n_i)-MinCCI)/(NROW(P)*NCOL(P)-MinCCI)
+  if(is.null(DMD)){
+
+    P<-P[,n_i>0]
+    n_i<-colSums(P)
+    MinCCI<-sum(1/n_i^2)
+    PCI<-(sum(n_i)-MinCCI)/(NROW(P)*NCOL(P)-MinCCI)
+  }else{
+    n_i<-colSums(P)
+    P<-P[,n_i>0]
+    n_i<-colSums(P*DMD)
+    MinCCI<-sum(1/n_i^2)
+    PCI<-(sum(n_i)-MinCCI)/(sum(DMD)*NCOL(P)-MinCCI)
+  }
+
   return(PCI)
 
 }

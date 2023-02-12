@@ -53,16 +53,14 @@ simulate_costEffects<-function(DOE){
               RC_fix = EAD[[1]]$RC$fix)
       TC<-sum(costs$PC_B*DMD_temp)
 
-      #### complexity costs due to additional process variety
-      PrC<-clc_processCostRate(EAD,
-                          RCU = RCU_initial)
-      PC_setupChange<-processVariety(PrD = EAD[[1]]$P$PrD,
-                                     PrC = PrC,
-                                     DMD = EAD[[1]]$DEMAND,
-                                     includedProd=idx,
-                                     prop_setupChange=c(0.5,0.5),
-                                     prop_setupTime=1,
-                                     r_Order_to_Hold=2)
+      #### complexity costs due to smaller lot sizes
+      PC_setupChange<- clc_setupCosts(EAD,
+                           RCU_var = RCU_initial,
+                           includedProd = idx,
+                           prop_setupChange=c(0.5,0.5),
+                           prop_setupTime=1,
+                           r_Order_to_Hold=2)
+
 
       TC_setup<-sum(PC_setupChange$PC_setup * DMD_temp)
 
@@ -73,22 +71,14 @@ simulate_costEffects<-function(DOE){
                 # PC_B = data.frame(PC_B= costs$PC_B,
                 #             PC_B_setup = PC_setupChange),
                 PCI_PD = measure_PCI(EAD[[1]]$P$PD[idx,]),
+                PCI_PD_w = measure_PCI(EAD[[1]]$P$PD[idx,],DMD=DMD_temp[idx]),
                 DMD_T10 = measure_TOP10(EAD[[1]]$DEMAND[idx]),
                 SDC_n_FD_PD = EAD[[1]]$measures$SYSTEM$SDC_n$FD_PD,
                 SDC_n_PD_PrD = EAD[[1]]$measures$SYSTEM$SDC_n$PD_PrD,
-                mean_lotsize = PC_setupChange$lotsize)
+                mean_lotsize = PC_setupChange$lotsize,
+                mean_setups = sum(PC_setupChange$setups))
+      out<-as.data.frame(out)
       return(out)
-    })
-    df<-lapply(res,function(t){
-      data.frame(NPV=t$NPV,
-                 DMD_total = t$DMD_total,
-                 PCI_PD = t$PCI_PD,
-                 DMD_T10 = t$DMD_T10,
-                 SDC_n_FD_PD = t$SDC_n_FD_PD,
-                 SDC_n_PD_PrD = t$SDC_n_PD_PrD,
-                 mean_lotsize = t$mean_lotsize,
-                 TC=t$TC$TC,
-                 TC_setup=t$TC$TC_setup)
     })
     df<-data.table::rbindlist(df)
     return(df)
