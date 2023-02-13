@@ -58,11 +58,11 @@ Let's assume that we have four functional requirements which result in 15 produc
 
 ```{r,include=F,eval=F}
 ## Create a Product Mix, where 20% of the total products
-P_FD<-create_ProductMix(N_FR=4,PARAM=0.2,method="random")
+# P_FD<-create_ProductMix(N_FR=4,PARAM=0.2,method="random")
 
-P_FD$P_FD_const # returns the constraint product matrix
+# P_FD$P_FD_const # returns the constraint product matrix
 
-P_FD$measures # returns the measures
+# P_FD$measures # returns the measures
 ```
 
 ## 1.2 Create Product Demand
