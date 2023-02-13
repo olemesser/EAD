@@ -56,11 +56,11 @@ While the combination method refers to industrial procedure of restricting featu
 
 Let's assume that we have four functional requirements which result in 15 products under free combination.
 
-```{r,include=TRUE,eval=F}
+```{r,include=F,eval=F}
 ## Create a Product Mix, where 20% of the total products
 P_FD<-create_ProductMix(N_FR=4,PARAM=0.2,method="random")
 
-P_FD$P_FD_const # returns the constraint product maxtrix
+P_FD$P_FD_const # returns the constraint product matrix
 
 P_FD$measures # returns the measures
 ```
@@ -169,4 +169,3 @@ DMM$SDC # returns the actual SDC value
 ### 2.6 Create DSM
 
 ## References
-
