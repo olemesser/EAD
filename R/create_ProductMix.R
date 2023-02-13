@@ -20,7 +20,7 @@
 #' }
 #' @examples
 #' set.seed(1234)
-#' prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2)
+#' prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2,method="random")
 #' prodMIX$P_FD_const
 create_ProductMix<-function(N_FR=13,
                             PARAM=0.05,

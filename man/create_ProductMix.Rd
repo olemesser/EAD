@@ -39,6 +39,6 @@ Creates a product mix based on a given number of functional requirements \code{N
 }
 \examples{
 set.seed(1234)
-prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2)
+prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2,method="random")
 prodMIX$P_FD_const
 }

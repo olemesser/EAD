@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   comment = "#>"
 )
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ## EAD Creation Process
@@ -168,3 +169,4 @@ DMM$SDC # returns the actual SDC value
 ### 2.6 Create DSM
 
 ## References
+
