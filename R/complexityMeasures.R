@@ -487,7 +487,7 @@ measure_PCI<-function(P,DMD=NULL){
   # transform into binary matrix
   P[P>1]<-1
   if(is.null(DMD)){
-
+    n_i<-colSums(P)
     P<-P[,n_i>0]
     n_i<-colSums(P)
     MinCCI<-sum(1/n_i^2)

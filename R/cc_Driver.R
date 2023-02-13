@@ -101,18 +101,18 @@ clc_setupCosts<-function(EAD,
   mean_SetupMatrix<-apply(P_RD,2,function(x){
     DMD_temp <- DMD_PD
     DMD_temp[x==0]<-0
-    clc_meanSetups(lotSize = lotSize,DMD =DMD_temp,runs = 50)
+    clc_meanSetups(lotSize = lotSize,DMD =DMD_temp,runs = 20)
   })
 
   c_Setup <- RCU_var * runif(length(RCU_var),min=prop_setupChange[1],max = prop_setupChange[2]) * apply(P_RD,2,function(x) mean(x[x>0]))
 
   TC_setup <- mean_SetupMatrix %*% c_Setup
 
-  PC_setup <- P_PD %*% (TC_setup / DMD_PD)
+  PC_setup <- P_PD %*% ifelse(is.nan(TC_setup / DMD_PD),0,TC_setup / DMD_PD)
   PC_setup[-includedProd] <- 0
 
   out<-list(PC_setup=PC_setup,
-            lotsize=mean(lotSize),
+            lotsize=mean(lotSize[lotSize>0]),
             setups=apply(mean_SetupMatrix,1,function(x) mean(x[x>0])))
   return(out)
 }
@@ -127,7 +127,8 @@ clc_meanSetups<-function(lotSize,DMD,runs=50){
   if(length(lotSize)==1) lotSize<-rep(lotSize,length(DMD))
   DMD_restore<-DMD
   # probs <- DMD/sum(DMD)
-  probs <- (DMD /lotSize) / sum(DMD / lotSize)
+  probs_vec<-ifelse(is.nan( (DMD /lotSize)),0, (DMD /lotSize))
+  probs <- probs_vec / sum(probs_vec)
   setups<-t(sapply(1:runs,function(i){
     DMD<-DMD_restore
     setups<-rep(0,length(DMD))

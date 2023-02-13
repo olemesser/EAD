@@ -36,7 +36,7 @@ par_apply<-function(cl, X, FUN,export=NULL,packages=loadedNamespaces(),...){
   out<-foreach(param=X,  .options.snow=opts,
                .packages = packages,
                .export = export,
-               .errorhandling = 'stop') %dopar% {
+               .errorhandling = 'remove') %dopar% {
                   temp<-tryCatch({withTimeout(FUN(param), timeout=time_limit)},
                            error=function(e){
                              message("Time limit reached!")
