@@ -141,9 +141,9 @@ sim_SetupCosts_MC<-function(DOE=NULL,
     DOE_list<-DOE %>%
       group_split(split=1:n())%>%
       as.list()
-    is_EAD <- FALSE
+    is_EAD <<- FALSE
   }else{
-    is_EAD <- TRUE
+    is_EAD <<- TRUE
     DOE_list <- lapply(EAD,function(x) list(x))
   }
 
