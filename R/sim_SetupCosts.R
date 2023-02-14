@@ -1,4 +1,4 @@
-sim_SetupCosts<-function(DOE,is_EAD=FALSE){
+sim_SetupCosts<-function(DOE){
   require(EAD)
   suppressWarnings(require(digest))
   suppressWarnings(require(tidyr))
@@ -27,20 +27,13 @@ sim_SetupCosts<-function(DOE,is_EAD=FALSE){
   #### END Input for Testing ####
 
   #### For each DOE ####
-  if(is.list(DOE)) is_EAD<-TRUE
-  if(is_EAD==FALSE){
     DOE<-DOE %>%
       group_by_all() %>%
       group_split()
-  }
 
   res<-lapply(1:length(DOE),function(x){
       #### Create an EAD ###
-        if(is_EAD==FALSE){
-          EAD<-crt_EAD(DOE[[x]])
-        }else{
-          EAD<-DOE[[x]]
-        }
+        EAD<-crt_EAD(DOE[[x]])
         P_PD<-EAD[[1]]$P$PD
         P_PD[P_PD>0] <- 1
 
@@ -126,7 +119,6 @@ sim_SetupCosts<-function(DOE,is_EAD=FALSE){
 
 
 sim_SetupCosts_MC<-function(DOE=NULL,
-                            EAD=NULL,
                             NUMB_CORES=4,
                             cluster=F,
                             logfile="",
@@ -137,31 +129,21 @@ sim_SetupCosts_MC<-function(DOE=NULL,
   suppressWarnings(require(foreach))
   suppressWarnings(require(dplyr))
 
-  if(!is.null(DOE)){
     DOE_list<-DOE %>%
       group_split(split=1:n())%>%
       as.list()
-    is_EAD <<- FALSE
-  }else{
-    is_EAD <<- TRUE
-    DOE_list <- lapply(EAD,function(x) list(x))
-  }
 
   if(extMC_lib){
     library(odegoparallel)
     cl <- odegoparallel::initMC(NUMB_CORES = NUMB_CORES,
                                 cluster = cluster,
                                 logfile = logfile)
-    parallel::clusterExport(cl, envir = globalenv(),c("time_limit","is_EAD"))
+    parallel::clusterExport(cl, envir = globalenv(),c("time_limit"))
     print(cl)
     res <- odegoparallel::run_MC(cl, X = DOE_list,
                                  FUN = function(ip, ...) {
                                    res<-list()
-                                   if(is_EAD){
-                                     res<-with_timeout(sim_SetupCosts(DOE=ip,is_EAD=TRUE),timeout = time_limit)
-                                   }else{
-                                     res<-with_timeout(sim_SetupCosts(DOE=ip,is_EAD=FALSE),timeout = time_limit)
-                                   }
+                                     res<-with_timeout(sim_SetupCosts(DOE=ip),timeout = time_limit)
                                    gc()
                                    return(res)
                                  }, packages = c("EAD","odegoparallel",
