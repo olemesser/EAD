@@ -36,6 +36,8 @@ crt_DMM<-function(N_src,
                   upper_Bound=20,
                   allowZero=T){
   require(EAD)
+  require(dplyr)
+  require(data.table)
   #### Testing ####
   # N_src<-7
   # N_tgt<-16
@@ -96,7 +98,7 @@ crt_DMM<-function(N_src,
     }
 
     ## run optimization ##
-    if(N_src>N_tgt){
+    if(N_src>=N_tgt){
       x_init<-DMM_left[,1:N_tgt]
     }else if(N_src<N_tgt){
       DMM_right<-matrix(0,nrow = N_src,ncol = N_tgt-N_src)

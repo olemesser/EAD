@@ -20,6 +20,8 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## EAD Creation Process
 
+The function `crt_EAD` generates a EAD realization for each row in the design of experiments table. If you want to know how to use this function, please have a look in packages readme file. The following graph shows the control flow chart for this function.
+
 ![General Process for EAD Generation](images/ead_flow.svg){width="200"}
 
 Before we go through the code step-by-step we load the library and set the seed.
@@ -33,18 +35,18 @@ set.seed(1234)
 
 ### Input
 
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Variable   | Description                                                                                                                                                                      | low values                                                                                                       | high values                                                                                                                                                                                                    |
-+============+==================================================================================================================================================================================+==================================================================================================================+================================================================================================================================================================================================================+
-| PARAM      | Parameter which is used differently across individual method~PM~.\                                                                                                               | `method="random"`: small product mix.                                                                            | `method="random"`: product mix is larger as many products are selected.\                                                                                                                                       |
-|            | `method="random"`: defines the proportion of products within the product mix.\                                                                                                   |                                                                                                                  | `method="combination"`: product mix is constrained and, therefore, less products are offered (small product mix). `method="density"`: majority of products have many features selected (dense product matrix). |
-|            | `method="combination"`: defines the proportion of entries within the product mix constraining matrix DSM~FD~. `method="density"`: defines the density of the later P~FD~ matrix. | `method="combination"`: No constraints on functional requirements combination resulting in a large product mix.\ |                                                                                                                                                                                                                |
-|            |                                                                                                                                                                                  | `method="density"`: majority of products have only some features selected (sparse product matrix)                |                                                                                                                                                                                                                |
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| method     | Method for generating the product mix. Depending on the method PARAM has different meanings.                                                                                     |                                                                                                                  |                                                                                                                                                                                                                |
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| N_FR       | Number of elements in the functional domain                                                                                                                                      | Only a few functional requirements necessary to realize the product mix.                                         | Many functional requirements necessary to realize the product mix.                                                                                                                                             |
-+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable | Description                                                                                                                                                                      | low values                                                                                                       | high values                                                                                                                                                                                                    |
++==========+==================================================================================================================================================================================+==================================================================================================================+================================================================================================================================================================================================================+
+| PARAM    | Parameter which is used differently across individual method~PM~.\                                                                                                               | `method="random"`: small product mix.                                                                            | `method="random"`: product mix is larger as many products are selected.\                                                                                                                                       |
+|          | `method="random"`: defines the proportion of products within the product mix.\                                                                                                   |                                                                                                                  | `method="combination"`: product mix is constrained and, therefore, less products are offered (small product mix). `method="density"`: majority of products have many features selected (dense product matrix). |
+|          | `method="combination"`: defines the proportion of entries within the product mix constraining matrix DSM~FD~. `method="density"`: defines the density of the later P~FD~ matrix. | `method="combination"`: No constraints on functional requirements combination resulting in a large product mix.\ |                                                                                                                                                                                                                |
+|          |                                                                                                                                                                                  | `method="density"`: majority of products have only some features selected (sparse product matrix)                |                                                                                                                                                                                                                |
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| method   | Method for generating the product mix. Depending on the method PARAM has different meanings.                                                                                     |                                                                                                                  |                                                                                                                                                                                                                |
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| N_FR     | Number of elements in the functional domain                                                                                                                                      | Only a few functional requirements necessary to realize the product mix.                                         | Many functional requirements necessary to realize the product mix.                                                                                                                                             |
++----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ### Generation Process
 
@@ -56,7 +58,7 @@ While the combination method refers to industrial procedure of restricting featu
 
 Let's assume that we have four functional requirements which result in 15 products under free combination.
 
-```{r,include=F}
+```{r,include=T}
 ## Create a Product Mix, where 20% of the total products
 P_FD<-create_ProductMix(N_FR=4,PARAM=0.2,method="random")
 
@@ -69,13 +71,10 @@ P_FD$measures # returns the measures
 
 ### Input
 
-+-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
-| Variable    | Description                                        | low values                                     | high values                                                                   |
-+=============+====================================================+================================================+===============================================================================+
-| DMD_cv      | Coefficient of variation for the demand vector.    | Sales are equally distributed across products. | Some products with a high share on sales and many products with low quantity. |
-+-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
-| TD          | Total number of sales for the created product mix. | Product mix with low number of total sales.    | Product mix with high number of total sales.                                  |
-+-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
+| Variable | Description                                        | low values                                     | high values                                                                   |
+|----------|----------------------------------------------------|------------------------------------------------|-------------------------------------------------------------------------------|
+| DMD_cv   | Coefficient of variation for the demand vector.    | Sales are equally distributed across products. | Some products with a high share on sales and many products with low quantity. |
+| TD       | Total number of sales for the created product mix. | Product mix with low number of total sales.    | Product mix with high number of total sales.                                  |
 
 ### Generation Process
 
@@ -85,7 +84,7 @@ Following the Anand model, product demand is assumed to be given exogenously. A 
 
 Create a demand vector with 120 products, a total demand of 1000 units and a coefficient of variation of 2.
 
-```{r, include=TRUE}
+```{r, include=T}
 DMD<-crt_DEMAND(n_PROD=120,TOTAL_DEMAND=1000,cv=1)
 
 DMD$DEMAND # demand vector
@@ -134,19 +133,13 @@ $$
 
 The following table shows the main input variables for the domain mapping matrix generation. `upper_Bound` and `binary` are not shown here. For a detailed describes see documentation of `?crt_DMM()`
 
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | Variable    | Description                                                                                                                                  | low values                                   | high values                         |
-+=============+==============================================================================================================================================+==============================================+=====================================+
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|-------------------------------------|
 | N_src       | Number of source elements, rows of the later DMM matrix.                                                                                     | Small number of source elements.             | Large number of source elements.    |
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | N_tgt       | Number of target elements, columns of the later DMM matrix.                                                                                  | Small number of target elements.             | Large number of target elements.    |
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | DMM_PAR     | Specifies either the system design complexity which should be generated `method="SDC"` or the percentage of non-zero entries `method="DENS"` | An uncoupled design matrix (diagonal matrix) | A (strongly) coupled design matrix. |
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | method      | Method for pattern generation.                                                                                                               |                                              |                                     |
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | upper_Bound | Upper bound of an integer uniform distribution for integer sampling.                                                                         | Small heterogeneity in design.               | Large heterogeneity in design.      |
-+-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 
 #### Generation Process
 
@@ -154,7 +147,7 @@ In a first step of the domain generation process, the inter-domain matrix $DMM_{
 
 #### Example
 
-```{r, include=TRUE}
+```{r, include=T}
 DMM<-crt_DMM(N_src=5,
              N_tgt=10,
              method="SDC",

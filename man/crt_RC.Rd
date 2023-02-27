@@ -4,31 +4,44 @@
 \alias{crt_RC}
 \title{Create a resource cost object}
 \usage{
-crt_RC(N_RD, TC = 10^6, ratio_fixedC, RC_cor, RC_cv, max_tries = 15)
+crt_RC(N_RD, TC = 10^6, r_in, r_fix, RC_cor_fix, cv, max_tries = 15)
 }
 \arguments{
 \item{N_RD}{Number of resources.}
 
 \item{TC}{Total costs.}
 
-\item{ratio_fixedC}{Proportion of fixed costs on total costs}
+\item{r_in}{Proportion of indirect costs on total costs.}
 
-\item{RC_cor}{Correlation between variable cost vector and fixed cost vector}
+\item{r_fix}{Proportion of fixed costs on total indirect costs.}
 
-\item{RC_cv}{Coefficient of variation for resource cost distribution}
+\item{RC_cor_fix}{Correlation between variable indirect cost vector and fixed indirect cost vector.}
+
+\item{cv}{Coefficient of variation for resource cost distribution.}
+
+\item{RC_cor_in}{Correlation between total indirect cost vector and direct cost vector.}
 }
 \value{
 A list containing the fixed and variable cost vector and the measured coefficient of variation for each cost vector as well as
 the top 10% largest resource costs for each vector.
 }
 \description{
-This function creates two resource cost vectors.
-A fixed resource cost vector representing the total fixed costs as proportion of total costs defined by \code{TC*ratio_fixedC}.
-Variable costs are given as \code{TC*(1-ratio_fixedC)}.
+This function creates three resource cost vectors according to traditional costing systems.
+In a first step, a direct material cost vector is created by generate a direct cost vector with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
+The remaining \code{TC*r_in} costs are indirect costs.
+The distribution of indirect costs is defined by a correlation \code{(RC_cor_in)} between the direct cost vector and the indirect cost vector.
+In a last step, the indirect costs are further separated into indirect variable and indirect fixed costs based on \code{TC*r_in*r_fix}.
+The correlation between both indirect cost vectors is defined by \code{RC_cor_fix}.
 }
 \examples{
 set.seed(1234)
 
-RC<-crt_RC(N_RD=50,TC=10^6,ratio_fixedC=0.4,RC_cor=0.5,RC_cv=0.2)
+RC<-crt_RC(N_RD=50,
+           TC=10^6,
+           r_in = 0.5,
+           r_fix=0.4,
+           RC_cor_in=0.5,
+           RC_cor_fix=0.5,
+           cv=0.2)
 
 }
