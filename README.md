@@ -48,7 +48,7 @@ by the design of experiments
 
 ``` r
 set.seed(1234) # set random seed to reproduce the results
-time_limit <<- 20 # global time limit in seconds
+time_limit <<- 50 # global time limit in seconds
 # setwd()
 ```
 
@@ -66,10 +66,13 @@ Third, define a design of experiment (DoE). For each
                    DMM_PAR = list(c(0,0.05)), # desired design complexity
                    DMM_method="SDC", # method for generating the DMM
                    ut_DMM = F, # if the upper triangle DMMs should be generated
-                   DSM_param=list(c(0,0.1)), # density of the DSMs
+                   DSM_param=list(c(0,0.14,0,1)), # the first to entries refer to the density range of the dsm, the second on the weight of the modular structure
+                   DSM_method="modular", # method for generating DSMs
                    TC = 10^6, # total costs
-                   ratio_fixedC = list(c(0.2,0.8)), # prop. of fixed costs on TC 
-                   RC_cor = list(c(0,1)),# cor of resource costs
+                   r_in = list(c(0,0.9)),
+                   r_fix = list(c(0,1)), # proportion of fixed costs on total costs
+                   cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
+                   cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
                    RC_cv = list(c(0,1)), # skewness of resource costs
                    N_RUN = 1:100 # number of runs
                     )
@@ -101,14 +104,46 @@ The following chunk calculates the product benchmark costs for the given
 design.
 
 ``` r
+# variable indirect costs and the direct costs which are always variable are summed up
+RC_var <- EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                DMD = EAD[[1]][[1]]$DEMAND,
-               RC_var = EAD[[1]][[1]]$RC$var,
+               RC_var = RC_var,
                RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
+#> [1] FALSE
+
 PC_B_full<-costs$PC_B
+PC_B_full
+#>          [,1]
+#> 166  93.97619
+#> 30   85.16543
+#> 153  85.71759
+#> 247 138.66876
+#> 33   30.33795
+#> 45   79.96588
+#> 78  100.07538
+#> 211 101.53840
+#> 62  115.50337
+#> 204 152.49754
+#> 138 102.17045
+#> 120 125.70433
+#> 140 128.86535
+#> 44  126.68362
+#> 213  69.54327
+#> 48  133.47603
+#> 3    38.78754
+#> 2    26.81526
+#> 119 117.58072
+#> 125 112.68616
+#> 122 126.11002
+#> 202 125.80265
+#> 74   93.28297
+#> 150  75.40278
+#> 57   92.25810
+#> 215 108.33081
 ```
 
 If the product mix (available products) or the demand varies, the costs
@@ -121,7 +156,7 @@ DMD[1:10]<-0
 costs<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 DMD = DMD,
                 RC_fix = EAD[[1]][[1]]$RC$fix,
-               RCU=costs$RCU)
+                RCU=costs$RCU)
 
 PC_B_reduced<-costs$PC_B
 

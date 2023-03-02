@@ -13,7 +13,10 @@ crt_DOMAINS(
   DMM_method = c("SDC", "DNS"),
   DSM_method = c("DNS", "SC", "modular"),
   DSM_param,
-  ut_DMM = F
+  ut_DMM = F,
+  uB_DMM = 1,
+  ub_DSM = 1,
+  allowZero = F
 )
 }
 \arguments{

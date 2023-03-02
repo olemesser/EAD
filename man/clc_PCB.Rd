@@ -33,9 +33,11 @@ There are two options to use this function:
 \examples{
 ### Calculate product costs for the designed EAD ###
 data("exampleEAD")
+RC_var <- exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct
+TC =  sum(RC_var + exampleEAD[[1]][[1]]$RC$fix)
 costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
                 DMD = exampleEAD[[1]][[1]]$DEMAND,
-                RC_var = exampleEAD[[1]][[1]]$RC$var,
+                RC_var = RC_var,
                 RC_fix = exampleEAD[[1]][[1]]$RC$fix)
 
 costs$PC_B

@@ -53,10 +53,13 @@ crt_DOMAINS<-function(P_FD,
                       DMM_method=c("SDC","DNS"),
                       DSM_method=c("DNS","SC","modular"),
                       DSM_param,
-                      ut_DMM=F){
+                      ut_DMM=F,
+                      uB_DMM=1,
+                      ub_DSM=1,
+                      allowZero=F){
 
 
-  require(EAD)
+  suppressMessages(require(EAD))
   max_tries<-20
   message<-"success"
 
@@ -78,24 +81,24 @@ crt_DOMAINS<-function(P_FD,
                        DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                        method=DMM_method,
                        binary=F,
-                       upper_Bound=1,
-                       allowZero = F)
+                       upper_Bound=uB_DMM,
+                       allowZero = allowZero)
     ### 2.2 PD->PrD (DMM_PD_PrD) ###
     DMM_PD_PrD<-crt_DMM(N_src =N_DD,
                         N_tgt = N_PrD,
                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                         method=DMM_method,
                         binary=F,
-                        upper_Bound=1,
-                        allowZero = F)
+                        upper_Bound=uB_DMM,
+                        allowZero = allowZero)
     ### 2.3 PD->PrD (DMM_PrD_RD) ###
     DMM_PrD_RD<-crt_DMM(N_src =N_PrD,
                         N_tgt = N_RD,
                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                         method=DMM_method,
                         binary=F,
-                        upper_Bound=1,
-                        allowZero = F)
+                        upper_Bound=uB_DMM,
+                        allowZero = allowZero)
 
     ### 2.4  Create Off diagonal DMMs (DMM_FD_PrD,DMM_FD_RD) ###
     ## only if ut_DMM==T
@@ -106,19 +109,22 @@ crt_DOMAINS<-function(P_FD,
                           DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                           method=DMM_method,
                           binary=F,
-                          upper_Bound=1)
+                          upper_Bound=uB_DMM,
+                          allowZero = allowZero)
       DMM_FD_RD<-crt_DMM(N_src =N_FR,
                          N_tgt = N_RD,
                          DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                          method=DMM_method,
                          binary=F,
-                         upper_Bound=1)
+                         upper_Bound=uB_DMM,
+                         allowZero = allowZero)
       DMM_PD_RD<-crt_DMM(N_src =N_DD,
                          N_tgt = N_RD,
                          DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
                          method=DMM_method,
                          binary=F,
-                         upper_Bound=1)
+                         upper_Bound=uB_DMM,
+                         allowZero = allowZero)
     }else{
       DMM_FD_PrD<-list(DMM=matrix(0,
                                   nrow = N_FR,
@@ -189,31 +195,31 @@ crt_DOMAINS<-function(P_FD,
       DSM_PD<-crt_DSM(N_el = N_DD,
                       method='DNS',
                       PARAM=list(DNS=DSM_param_PD),
-                      upper_Bound = 1,
+                      upper_Bound = ub_DSM,
                       forced = which(colSums(DMM$FD_PD)==0))
       DSM_PrD<-crt_DSM(N_el = N_PrD,
                        method='DNS',
                        PARAM=list(DNS=DSM_param_PrD),
-                       upper_Bound = 1,
+                       upper_Bound = ub_DSM,
                        forced = which(colSums(DMM$PD_PrD)==0))
       DSM_RD<-crt_DSM(N_el = N_RD,
                       method='DNS',
                       PARAM=list(DNS=DSM_param_RD),
-                      upper_Bound = 1,
+                      upper_Bound = ub_DSM,
                       forced = which(colSums(DMM$PrD_RD)==0))
     }else if(DSM_method=="SC"){
       DSM_PD<-crt_DSM(N_el = N_DD,
                       method='SC',
                       PARAM=list(SC=DSM_param_PD),
-                      upper_Bound = 1)
+                      upper_Bound = ub_DSM)
       DSM_PrD<-crt_DSM(N_el = N_PrD,
                        method='SC',
                        PARAM=list(SC=DSM_param_PrD),
-                       upper_Bound = 1)
+                       upper_Bound = ub_DSM)
       DSM_RD<-crt_DSM(N_el = N_RD,
                       method='SC',
                       PARAM=list(SC=DSM_param_RD),
-                      upper_Bound = 1)
+                      upper_Bound = ub_DSM)
     }else if (DSM_method=="modular"){
       DSM_paramMOD_PD<-runif(1,min=DSM_param[3],max=DSM_param[4])
       DSM_paramMOD_PrD<-runif(1,min=DSM_param[3],max=DSM_param[4])
@@ -222,19 +228,19 @@ crt_DOMAINS<-function(P_FD,
                       method='modular',
                       PARAM=list(DNS=DSM_param_PD,
                                  modular = DSM_paramMOD_PD),
-                      upper_Bound = 1,
+                      upper_Bound = ub_DSM,
                       forced = which(colSums(DMM$FD_PD)==0))
       DSM_PrD<-crt_DSM(N_el = N_PrD,
                        method='modular',
                        PARAM=list(DNS=DSM_param_PrD,
                                   modular = DSM_paramMOD_PrD),
-                       upper_Bound = 1,
+                       upper_Bound = ub_DSM,
                        forced = which(colSums(DMM$PD_PrD)==0))
       DSM_RD<-crt_DSM(N_el = N_RD,
                       method='modular',
                       PARAM=list(DNS = DSM_param_RD,
                                  modular = DSM_paramMOD_RD),
-                      upper_Bound = 1,
+                      upper_Bound = ub_DSM,
                       forced = which(colSums(DMM$PrD_RD)==0))
     }
 

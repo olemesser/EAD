@@ -16,9 +16,11 @@
 #' @examples
 #' ### Calculate product costs for the designed EAD ###
 #' data("exampleEAD")
+#' RC_var <- exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct
+#' TC =  sum(RC_var + exampleEAD[[1]][[1]]$RC$fix)
 #' costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
 #'                 DMD = exampleEAD[[1]][[1]]$DEMAND,
-#'                 RC_var = exampleEAD[[1]][[1]]$RC$var,
+#'                 RC_var = RC_var,
 #'                 RC_fix = exampleEAD[[1]][[1]]$RC$fix)
 #'
 #' costs$PC_B
@@ -32,7 +34,11 @@
 #'                DMD = DMD,
 #'                RC_fix = exampleEAD[[1]][[1]]$RC$fix,
 #'                RCU=costs$RCU)
-clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
+clc_PCB<-function(RES_CONS_PAT,
+                  DMD=NULL,
+                  RC_var=NULL,
+                  RC_fix=NULL,
+                  RCU=NULL){
   #### 0. Initial Checks ####
   if(is.null(DMD)) DMD<-rep(1,NROW(RES_CONS_PAT))
   if(is.null(RC_fix)) RC_fix<-rep(0,length(RC_var))
@@ -56,6 +62,7 @@ clc_PCB<-function(RES_CONS_PAT,DMD=NULL,RC_var=NULL,RC_fix=NULL,RCU=NULL){
 
   return(list(PC_B=PC_B,
               RCU=RCU,
+              TRC = TRC,
               PC_B_fixed=PC_B_fixed,
               PC_B_var=PC_B_var))
 }

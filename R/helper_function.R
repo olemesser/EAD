@@ -28,7 +28,7 @@ setupMC<-function(NUMB_CORES=1,logfile=""){
 }
 
 
-par_apply<-function(cl, X, FUN,export=NULL,packages=loadedNamespaces(),...){
+par_apply<-function(cl, X, FUN,export=NULL,packages=loadedNamespaces(),errorhandling='remove',...){
   pb <- txtProgressBar(max=length(X),style=3)
   on.exit(close(pb))
   progress <- function(n) setTxtProgressBar(pb, n)
@@ -36,7 +36,7 @@ par_apply<-function(cl, X, FUN,export=NULL,packages=loadedNamespaces(),...){
   out<-foreach(param=X,  .options.snow=opts,
                .packages = packages,
                .export = export,
-               .errorhandling = 'remove') %dopar% {
+               .errorhandling = errorhandling) %dopar% {
                   temp<-tryCatch({withTimeout(FUN(param), timeout=time_limit)},
                            error=function(e){
                              message("Time limit reached!")

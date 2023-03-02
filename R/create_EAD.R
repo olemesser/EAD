@@ -1,4 +1,7 @@
 crt_EAD<-function(DOE,
+                  uB_DMM=1,
+                  ub_DSM=1,
+                  allowZero=F,
                   file_output=F){
   suppressWarnings(require(digest))
   suppressWarnings(require(tidyr))
@@ -19,11 +22,14 @@ crt_EAD<-function(DOE,
   #                  DSM_param=list(c(0,0.14,0,1)), # density of the DSMs
   #                  DSM_method="modular",
   #                  TC = 10^6, # total costs
-  #                  ratio_fixedC = list(c(0,0)), # proportion of fixed costs on total costs
-  #                  RC_cor = list(c(0,1)), # correlation between variable cost vector and fixed cost vector
+  #                  r_in = list(c(0,0.9)),
+  #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
+  #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
+  #                  cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
   #                  RC_cv = list(c(0,1.5)), # coefficient of variation for resource cost distribution
   #                  N_RUN = 1:1 # number of runs
   # )
+  # DOE<-DOE[1:4,]
   #### END Input Testing ####
 
 
@@ -64,7 +70,10 @@ crt_EAD<-function(DOE,
                        DMM_method=DOE$DMM_method[x],
                        DSM_method = DOE$DSM_method[x],
                        DSM_param = DOE$DSM_param[x][[1]],
-                       ut_DMM=F)
+                       ut_DMM=F,
+                       uB_DMM=uB_DMM,
+                       ub_DSM=ub_DSM,
+                       allowZero=allowZero)
 
       DOM$measures$SYSTEM[['D']]<-list(FD=measure_diversificationINDEX(DOM$P$FD,DMD=DMD),
                                        DD=measure_diversificationINDEX(DOM$P$PD,DMD=DMD),
@@ -88,17 +97,24 @@ crt_EAD<-function(DOE,
     #### 3. Create Costs ####
           RC<-crt_RC(N_RD = DOE$N_RD[x][[1]],
                      TC = DOE$TC[x],
-                     ratio_fixedC = runif(1,min=DOE$ratio_fixedC[x][[1]][1],max=DOE$ratio_fixedC[x][[1]][2]),
-                     RC_cor = runif(1,min=DOE$RC_cor[x][[1]][1],max=DOE$RC_cor[x][[1]][2]),
-                     RC_cv = runif(1,min=DOE$RC_cv[x][[1]][1],max=DOE$RC_cv[x][[1]][2]))
+                     r_fix = runif(1,min=DOE$r_fix[x][[1]][1],max=DOE$r_fix[x][[1]][2]),
+                     r_in = runif(1,min=DOE$r_in[x][[1]][1],max=DOE$r_in[x][[1]][2]),
+                     cor_var = runif(1,min=DOE$cor_var[x][[1]][1],max=DOE$cor_var[x][[1]][2]),
+                     cor_fix = runif(1,min=DOE$cor_fix[x][[1]][1],max=DOE$cor_fix[x][[1]][2]),
+                     cv = runif(1,min=DOE$RC_cv[x][[1]][1],max=DOE$RC_cv[x][[1]][2]))
+
 
           measures[['SYSTEM']][['RC']]<-list(RC_var_cv =  RC$RC_var$cv,
                                              RC_var_top10 = RC$RC_var$top10,
                                              RC_fix_cv =  RC$RC_fix$cv,
                                              RC_fix_top10 = RC$RC_fix$top10,
-                                             cor=RC$cor_check,
-                                             ratio_fixedC=RC$ratio_fixedC)
-          RC<-list(var=RC$RC_var$RC,
+                                             cor_fix = RC$cor_fix,
+                                             cor_var = RC$cor_var,
+                                             cor_fix_var = RC$cor_fix_var,
+                                             r_fix = RC$r_fix,
+                                             r_in = RC$r_in)
+          RC<-list(direct = RC$RC_direct$RC,
+                   var=RC$RC_var$RC,
                    fix=RC$RC_fix$RC)
 
     #### 4. Write Output object ####
@@ -219,7 +235,7 @@ crt_EAD_MC<-function(DOE,NUMB_CORES=4,cluster=F,logfile="",extMC_lib=F,ehNodes="
     print(cl)
     print(paste0("Time  Limit set to: ",time_limit, " seconds per EAD realization."))
     snow::clusterExport(cl,"time_limit")
-    EAD<-par_apply(cl,X=DOE_list,FUN=crt_EAD)
+    EAD<-par_apply(cl,X=DOE_list,FUN=crt_EAD,errorhandling=ehNodes)
   }
   EAD<-EAD[sapply(EAD,length)>0]
   return(EAD)

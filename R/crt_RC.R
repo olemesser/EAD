@@ -1,19 +1,19 @@
 #' @title Create a resource cost object
 #' @description This function creates three resource cost vectors according to traditional costing systems.
-#' In a first step, a direct material cost vector is created by generate a direct cost vector with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
+#' In a first step, a direct cost vector is created by generate with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
 #' The remaining \code{TC*r_in} costs are indirect costs.
-#' The distribution of indirect costs is defined by a correlation \code{(RC_cor_in)} between the direct cost vector and the indirect cost vector.
-#' In a last step, the indirect costs are further separated into indirect variable and indirect fixed costs based on \code{TC*r_in*r_fix}.
-#' The correlation between both indirect cost vectors is defined by \code{RC_cor_fix}.
+#' Both, the variable and fixed indirect cost vector are created via sampling of values. The final vectors have a correlation of \code{cor_fix} and \code{cor_var} regarding the direct cost vector.
+#' The total fixed an indirect costs are defined as \code{(TC*r_in*r_fix)}.
 #' @param N_RD Number of resources.
 #' @param TC Total costs.
 #' @param r_in Proportion of indirect costs on total costs.
 #' @param r_fix Proportion of fixed costs on total indirect costs.
-#' @param RC_cor_in Correlation between total indirect cost vector and direct cost vector.
-#' @param RC_cor_fix Correlation between variable indirect cost vector and fixed indirect cost vector.
+#' @param cor_var Correlation between direct cost vector and variable indirect cost vector.
+#' @param cor_fix Correlation between direct cost vector and fixed indirect cost vector.
 #' @param cv Coefficient of variation for resource cost distribution.
-#' @return A list containing the fixed and variable cost vector and the measured coefficient of variation for each cost vector as well as
-#' the top 10% largest resource costs for each vector.
+#' @return A list containing the three cost vectors. For each vector the coefficient of variation as well as the top 10% largest resource costs for each vector are calculated.
+#' Since the procedure is not able to match the exact input values, the final correlation value are measured. \code{cor_fix} measures the correlation between indirect fixed costs and direct cost vector.
+#' \code{cor_var} between indirect variable costs and direct cost vector and \code{cor_fix_var} between both indirect cost vectors.
 #' @examples
 #' set.seed(1234)
 #'
@@ -21,15 +21,16 @@
 #'            TC=10^6,
 #'            r_in = 0.5,
 #'            r_fix=0.4,
-#'            RC_cor_in=0.5,
-#'            RC_cor_fix=0.5,
+#'            cor_var=0.5,
+#'            cor_fix=0.5,
 #'            cv=0.2)
 #'
 crt_RC<-function(N_RD,
                  TC=10^6,
                  r_in,
                  r_fix,
-                 RC_cor_fix,
+                 cor_var,
+                 cor_fix,
                  cv,
                  max_tries=15){
   suppressMessages(suppressWarnings(require(faux)))

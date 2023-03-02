@@ -34,7 +34,19 @@ install_github("olemesser/EAD",build_vignettes = TRUE)
 
 First, load all relevant libraries:
 
-```{r loading, eval=FALSE, include=TRUE}
+```{r loading_init, eval=T, include=F}
+#### Load Libraries ####
+library(EAD)
+library(dplyr)
+library(tidyr)
+library(parallel)
+library(doSNOW)
+library(foreach)
+library(R.utils)
+library(ids)
+```
+
+```{r loading, eval=F, include=TRUE}
 #### Load Libraries ####
 library(EAD)
 library(dplyr)
@@ -48,15 +60,15 @@ library(ids)
 
 Second, define global parameter such as the output path, seed and a timeout. Important note: the `time_limit` variable must be defined as a global variable via double arrows as shown below. In this example, the EAD generation process is interrupted after 20 seconds. The individual time limit may vary from hardware configuration and input values defined by the design of experiments
 
-```{r parameter, eval=FALSE, include=TRUE}
+```{r parameter, eval=T, include=TRUE}
 set.seed(1234) # set random seed to reproduce the results
-time_limit <<- 20 # global time limit in seconds
+time_limit <<- 50 # global time limit in seconds
 # setwd()
 ```
 
 Third, define a design of experiment (DoE). For each
 
-```{r doe, eval=FALSE, include=TRUE}
+```{r doe, eval=T, include=TRUE}
  DOE<-expand_grid(N_FR = 8, # number of functional requirements
                    N_DD = 14, # number of physical domain elements
                    N_PrD = 30, # number of process domain elements
@@ -68,10 +80,13 @@ Third, define a design of experiment (DoE). For each
                    DMM_PAR = list(c(0,0.05)), # desired design complexity
                    DMM_method="SDC", # method for generating the DMM
                    ut_DMM = F, # if the upper triangle DMMs should be generated
-                   DSM_param=list(c(0,0.1)), # density of the DSMs
+                   DSM_param=list(c(0,0.14,0,1)), # the first to entries refer to the density range of the dsm, the second on the weight of the modular structure
+                   DSM_method="modular", # method for generating DSMs
                    TC = 10^6, # total costs
-                   ratio_fixedC = list(c(0.2,0.8)), # prop. of fixed costs on TC 
-                   RC_cor = list(c(0,1)),# cor of resource costs
+                   r_in = list(c(0,0.9)),
+                   r_fix = list(c(0,1)), # proportion of fixed costs on total costs
+                   cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
+                   cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
                    RC_cv = list(c(0,1)), # skewness of resource costs
                    N_RUN = 1:100 # number of runs
                     )
@@ -79,7 +94,14 @@ Third, define a design of experiment (DoE). For each
 
 Now you are ready to run the model. In this example, the EAD is created only for the first four rows of `DOE`. The code is optimized to multi-core processing. Where `NUMB_CORES` defines the number of cores used.
 
-```{r run, eval=FALSE, include=TRUE}
+```{r run_silent, eval=T, include=F}
+## run EAD generation procedure
+  EAD<-crt_EAD_MC(DOE[1:4,],
+                  NUMB_CORES=c(4),
+                  logfile="")
+```
+
+```{r run, eval=F, include=TRUE}
 ## run EAD generation procedure
   EAD<-crt_EAD_MC(DOE[1:4,],
                   NUMB_CORES=c(4),
@@ -97,15 +119,19 @@ Finally, write the created EAD environments to a file to conduct further experim
 
 The following chunk calculates the product benchmark costs for the given design.
 
-```{r costs, eval=FALSE, include=TRUE}
+```{r costs, eval=T, include=TRUE}
+# variable indirect costs and the direct costs which are always variable are summed up
+RC_var <- EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                DMD = EAD[[1]][[1]]$DEMAND,
-               RC_var = EAD[[1]][[1]]$RC$var,
+               RC_var = RC_var,
                RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
+
 PC_B_full<-costs$PC_B
+PC_B_full
 ```
 
 If the product mix (available products) or the demand varies, the costs are calculated as:
@@ -117,7 +143,7 @@ DMD[1:10]<-0
 costs<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 DMD = DMD,
                 RC_fix = EAD[[1]][[1]]$RC$fix,
-               RCU=costs$RCU)
+                RCU=costs$RCU)
 
 PC_B_reduced<-costs$PC_B
 
@@ -130,6 +156,10 @@ cbind(PC_B_full,PC_B_reduced)
 For the full documentation use the included vignettes as:
 
 ```{r,eval=FALSE, include=TRUE}
+## list available vignettes
+utils::vignette(package = "EAD")
+
+## open main documentation
 utils::vignette("documentation",package ="EAD")
 ```
 

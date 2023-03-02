@@ -26,8 +26,8 @@ create_ProductMix<-function(N_FR=13,
                             PARAM=0.05,
                             method=c("combination","random","PCI","DNS")){
 
-  suppressWarnings(require(dplyr))
-  suppressWarnings(require(tidyr))
+  suppressMessages(suppressWarnings(require(dplyr)))
+  suppressMessages(suppressWarnings(require(tidyr)))
 
   if(N_FR>15) stop("The maximum N_FR values is hardcoded to 15. Please reduce N_FR!")
   #### 1.1 Create Free Product Mix ####

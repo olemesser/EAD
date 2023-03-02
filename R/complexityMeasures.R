@@ -33,6 +33,7 @@
 #' measure_designComplexity(DMM_b,norm=F) # should be 33.3
 #'
 measure_designComplexity<-function(A,norm=T){
+  A[A>1] <- 1
   DC <- sum(apply(A,2,function(x){
     z<-sum(x[x>0])*log(sum(x[x>0]))
     if(sum(x)==0) z<-0
@@ -682,7 +683,6 @@ measure_HVM<-function(DSM,norm=T){
 #' measure_HIC(DSM)
 measure_HIC<-function(DSM,norm=T){
   DSM<-makeMatrixsymmetric(DSM)
-  diag(DSM)<-1
   HIC<-sum(DSM)
   if(norm){
     N <- NROW(DSM)
