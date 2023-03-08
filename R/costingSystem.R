@@ -224,7 +224,7 @@ stage_twoAllocation<-function(CC,RES_CONS_PAT,AD=c("big-pool","indexed-2","index
 #' @param method The allocation method. The following methods are available:
 #' \describe{
 #'  \item{PU}{Indirect costs are allocated equally across products.}
-#'  \item{DC}{Indirect costs are allocated based on the direct costs.}
+#'  \item{DC-0.2}{Indirect costs are allocated based on the direct costs. The index 0.2 indicates that the 20 percentage largest direct costs are used as an estimation basis}
 #' }
 #' @return Returns the reported product costs vector (PC_H)
 #' @examples
@@ -246,25 +246,29 @@ costingSystem_VD<-function(RES_CONS_PAT,
                            RC_direct,
                            RC_indirect,
                            DMD,
-                           method=c("PU","DC")){
+                           method=c("PU","DC-0.8")){
   #### Input for Testing ####
   # EAD <- exampleEAD
   # RES_CONS_PAT <- EAD[[4]][[1]]$P$RD
   # RC_indirect <- EAD[[4]][[1]]$RC$var + EAD[[4]][[1]]$RC$fix
   # RC_direct <- EAD[[4]][[1]]$RC$direct
   # DMD <-  EAD[[4]][[1]]$DEMAND
-  # method <- "PU"
+  # method <- "DC-0.1"
+  # PC_B<-clc_PCB(RES_CONS_PAT,DMD,RC_indirect)$PC_B
   #### END Testing ####
 
   #### Method Selection ####
-  ### PU - indirect costs are allocated equally across products
-  ### DC - indirect costs are allocated based on the direct costs
   if(method=="PU"){
+    ### PU - indirect costs are allocated equally across products
     PC_H <- sum(RC_indirect)/sum(DMD)
-  }else if(method=="DC"){
+  }else if(startsWith(as.character(method),"DC")){
+    ### DC - indirect costs are allocated based on the direct costs
+    p_res<-as.numeric(strsplit(as.character(method),"DC-")[[1]][2])
+    p_res<-ceiling(NCOL(RES_CONS_PAT)*p_res)
     TRC<-colSums(RES_CONS_PAT * DMD)
     RCU <- RC_direct/TRC
     RCU<-ifelse(is.nan(RCU) | is.infinite(RCU),0,RCU)
+    RCU[-order(RC_direct,decreasing = T)[1:p_res]]<-0
     PC_direct <- (RES_CONS_PAT %*% RCU) * DMD
     PC_direct <- PC_direct/sum(PC_direct)
     PC_H <- PC_direct * sum(RC_indirect) / DMD

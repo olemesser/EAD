@@ -4,21 +4,21 @@ experiment_PCS<-function(DOE){
   df<-lapply(1:NROW(DOE), function(i){
     #### Create EAD ####
       output<-list()
-      EAD <- crt_EAD(DOE[i,],uB_DMM = 5)
+      EAD <- crt_EAD(DOE[i,],uB_DMM = 10)
       measures_system <- data.frame(t(unlist(EAD[[1]]$measures$SYSTEM)))
       output[['measures_system']] <- t(na.omit(measures_system))
       costs <- clc_PCB(EAD[[1]]$P$RD,
                         DMD = EAD[[1]]$DEMAND,
-                        RC_var = EAD[[1]]$RC$var + EAD[[1]]$RC$fix,
+                        RC_var = EAD[[1]]$RC$var,
                         RC_fix = rep(0,NCOL(EAD[[1]]$P$RD)))
       RCU_direct <-  EAD[[1]]$RC$direct/(colSums(EAD[[1]]$P$RD * EAD[[1]]$DEMAND))
       PC_direct <- EAD[[1]]$P$RD %*% RCU_direct
 
     #### 2. Create Variety Scenario ####
-      ### start with 50% of variety and increase 2% in each step
+      ### start with 30% of variety and increase 2% in each step
       DMD_sort <- sort(EAD[[1]]$DEMAND,decreasing = T,index.return=TRUE)
       step_width<-ceiling(length(DMD_sort$ix)*0.02)
-      products_in <- DMD_sort$ix[1:ceiling(length(DMD_sort$ix)*0.5)]
+      products_in <- DMD_sort$ix[1:ceiling(length(DMD_sort$ix)*0.3)]
       products_out <- setdiff(DMD_sort$ix,products_in)
       ### for each scenario calculate product costs
       ### update product level measures (PCI, DNS)
@@ -30,8 +30,6 @@ experiment_PCS<-function(DOE){
           products_in <- c(products_in,products_out[1:step_width_max])
           products_out <- products_out[-c(1:step_width_max)]
         }
-
-
 
         P_FD <- EAD[[1]]$P$FD[products_in,]
         P_RD <- EAD[[1]]$P$RD[products_in,]
@@ -49,27 +47,27 @@ experiment_PCS<-function(DOE){
                                     HIC_n.PrD = measures_system$HIC_n.PrD,
                                     HIC_n.RD = measures_system$HIC_n.RD)
 
-
         #### Calculate True Costs ####
+
         benchmark <- clc_PCB(P_RD,
                         DMD = DMD,
                         RCU = costs$RCU,
-                        RC_fix = rep(0,NCOL(P_RD)))
+                        RC_fix =  ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix))
         PC_B <- benchmark$PC_B + PC_direct[products_in]
         #### Calculate Reported Costs #####
-        cs_DOE<-expand.grid(ACP=c(1,2,3,4,5,6,8,10,12,14,16,18,20),
-                            method = c("random","size-misc","correl-random","PU","DC"))
+        cs_DOE<-expand.grid(ACP=c(1,2,3,4,5,6,8,10,12,14,16,18,20,25,30),
+                            method = c("random","correl-random","PU","DC-0.2"))
         reported<-lapply(1:NROW(cs_DOE),function(c){
-          if(cs_DOE$method[c] %in% c("PU","DC")){
-            PC_H <- costingSystem_VD(P_RD,
-                                     RC_indirect = costs$RCU * benchmark$TRC,
+          if(cs_DOE$method[c] %in% c("PU","DC") | startsWith(as.character(cs_DOE$method[c]),"DC")){
+            PC_H <- costingSystem_VD(RES_CONS_PAT = P_RD,
+                                     RC_indirect = costs$RCU * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix),
                                      RC_direct = RCU_direct * benchmark$TRC,
                                      DMD = DMD,
                                      method = cs_DOE$method[c])
           }else if (cs_DOE$method[c] %in% c("random","size-misc","correl-random")){
             PC_H <- costingSystem_ABC(P_RD,
                                       DMD = DMD,
-                                      RC_indirect = costs$RCU * benchmark$TRC,
+                                      RC_indirect = costs$RCU * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix),
                                       RD = cs_DOE$method[c],
                                       AD = "big-pool",
                                       ACP = cs_DOE$ACP[c])
@@ -79,6 +77,7 @@ experiment_PCS<-function(DOE){
                       MPE = mean(abs((PC_B - PC_H))/PC_B),
                       PC_H = PC_H,
                       PC_B = PC_B,
+                      TC = sum(PC_B * DMD),
                       MPE_prod = (PC_B - PC_H)/PC_B))
         })
 
@@ -86,7 +85,8 @@ experiment_PCS<-function(DOE){
           ### On System level for each variety step ###
             error <- lapply(reported,function(x){
                       data.frame(EUCD=x$EUCD,
-                                 MPE=x$MPE)
+                                 MPE=x$MPE,
+                                 TC=x$TC)
                       })
             error <- data.table::rbindlist(error)
             system_level_data[[l]]<-data.frame(id = EAD[[1]]$ID,

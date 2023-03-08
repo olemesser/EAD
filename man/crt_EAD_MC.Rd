@@ -6,6 +6,7 @@
 \usage{
 crt_EAD_MC(
   DOE,
+  allowZero = F,
   NUMB_CORES = 4,
   cluster = F,
   logfile = "",

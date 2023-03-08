@@ -9,7 +9,7 @@ costingSystem_VD(
   RC_direct,
   RC_indirect,
   DMD,
-  method = c("PU", "DC")
+  method = c("PU", "DC-0.8")
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ costingSystem_VD(
 \item{method}{The allocation method. The following methods are available:
 \describe{
  \item{PU}{Indirect costs are allocated equally across products.}
- \item{DC}{Indirect costs are allocated based on the direct costs.}
+ \item{DC-0.2}{Indirect costs are allocated based on the direct costs. The index 0.2 indicates that the 20 percentage largest direct costs are used as an estimation basis}
 }}
 }
 \value{

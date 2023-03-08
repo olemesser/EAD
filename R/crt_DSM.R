@@ -38,11 +38,13 @@ crt_DSM<-function(N_el,
                   forced=NULL){
 
   #### Input Testing ###
-  # N_el<-10
+  # set.seed(12)
+  # N_el<-6
   # upper_Bound<-20
-  # PARAM=list(DNS=0.,
+  # PARAM=list(DNS=0.2,
   #            SC=0.1,
-  #            cv=0.1)
+  #            cv=0.1,
+  #            modular=0.5)
   # forced=c(1,4)
   # method<-'modular'
   # P<-expand.grid(list(c(0,1),
@@ -50,9 +52,12 @@ crt_DSM<-function(N_el,
   #                  c(0,1),
   #                  c(0,1)))
   # P<-as.matrix(P)
-  # DMM<-cbind(diag(1,4),matrix(0,nrow=4,ncol = 6))
+  # DMM<-crt_DMM(4,N_el,method='SDC',
+  #              DMM_PAR=0.1,
+  #              upper_Bound=1,
+  #              allowZero = T)$DMM
   # forced<-which(colSums(DMM)==0)
-  # P %*% (( DMM %*% DSM) + DMM)
+  # P %*% ((DMM %*% DSM) + DMM)
   #### END Input for Testing ####
   if(length(forced)==0) forced<-NULL
 
