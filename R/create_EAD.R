@@ -195,7 +195,7 @@ crt_EAD<-function(DOE,
 #'                       N_RUN = 1:N_RUN))
 #'
 #' crt_EAD_MC(DOE,NUMB_CORES=4,logfile="log.txt")
-crt_EAD_MC<-function(DOE,allowZero=F,NUMB_CORES=4,cluster=F,logfile="",extMC_lib=F,ehNodes="remove"){
+crt_EAD_MC<-function(DOE,uB_DMM = uB_DMM,ub_DSM = ub_DSM,allowZero=F,NUMB_CORES=4,cluster=F,logfile="",extMC_lib=F,ehNodes="remove"){
   suppressWarnings(require(parallel))
   suppressWarnings(require(doSNOW))
   suppressWarnings(require(foreach))
@@ -215,7 +215,10 @@ crt_EAD_MC<-function(DOE,allowZero=F,NUMB_CORES=4,cluster=F,logfile="",extMC_lib
     EAD <- odegoparallel::run_MC(cl, X = DOE_list,
                                     FUN = function(DOE, ...) {
                                       res<-list()
-                                      res<-with_timeout(crt_EAD(DOE[1,],allowZero = allowZero),timeout = time_limit)
+                                      res<-with_timeout(crt_EAD(DOE[1,],
+                                                                ub_DSM = ub_DSM,
+                                                                uB_DMM = uB_DMM,
+                                                                allowZero = allowZero),timeout = time_limit)
                                       if(res$message=="error"){
                                         res<-list()
                                       }else if(res$message=="success"){

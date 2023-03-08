@@ -41,7 +41,7 @@ crt_DSM<-function(N_el,
   # set.seed(12)
   # N_el<-6
   # upper_Bound<-1
-  # PARAM=list(DNS=0.2,
+  # PARAM=list(DNS=0,
   #            SC=0.1,
   #            cv=0.1,
   #            modular=0.5)
@@ -61,22 +61,43 @@ crt_DSM<-function(N_el,
   # measure_DENS(P_src)
   # measure_DENS(P_tgt)
   #### END Input for Testing ####
+
   if(length(forced)==0) forced<-NULL
 
+  ## number of steps after which the density is increased by step_width
+  max_steps<-20
+  step_width<-0.01
+  cnt<-0
   if(method=="DNS"){
     repeat{
       DSM<-matrix(sample(c(0,1),N_el^2,prob = c(1-PARAM$DNS,PARAM$DNS),replace = T),nrow = N_el,ncol = N_el)
-      if(check_DSMValidity(DSM)) break
+      diag(DSM)<-0
+      cnt <- cnt+1
+      if(check_DSMValidity(DSM,forced = forced)){
+        if(!is.null(forced)) DSM[forced,]<-0
+        break
+      }else if(cnt>=max_steps){
+        PARAM$DNS <- PARAM$DNS + 0.01
+        cnt<-0
+      }
     }
   }else if(method=="modular"){
     repeat{
       DSM<-crt_DSMmod(N_el = N_el,
                       DNS = PARAM$DNS,
                       modular = PARAM$modular)
-      if(check_DSMValidity(DSM)) break
+      diag(DSM)<-0
+      cnt <- cnt+1
+      if(check_DSMValidity(DSM,forced = forced)){
+        if(!is.null(forced)) DSM[forced,]<-0
+        break
+      }else if(cnt>=max_steps){
+        PARAM$DNS <- PARAM$DNS + 0.01
+        cnt<-0
+      }
     }
   }
-  diag(DSM)<-0
+
   # DSM<-force_DSMentries(DSM,forced = forced)
   DSM_bin<-DSM
   DSM[DSM>0]<-sample(1:upper_Bound,size=sum(DSM_bin>0),replace = T)
@@ -144,7 +165,7 @@ force_DSMentries<-function(DSM,forced=NULL){
 
 check_DSMValidity<-function(DSM,forced=NULL){
   if(!is.null(forced)){
-    return(all(colSums(DSM[-forced,forced])>0))
+    return(all(colSums(DSM[-forced,forced,drop=F])>0))
   }else{
     return(TRUE)
   }
