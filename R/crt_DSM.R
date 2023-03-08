@@ -40,36 +40,44 @@ crt_DSM<-function(N_el,
   #### Input Testing ###
   # set.seed(12)
   # N_el<-6
-  # upper_Bound<-20
+  # upper_Bound<-1
   # PARAM=list(DNS=0.2,
   #            SC=0.1,
   #            cv=0.1,
   #            modular=0.5)
   # forced=c(1,4)
   # method<-'modular'
-  # P<-expand.grid(list(c(0,1),
+  # P_src<-expand.grid(list(c(0,1),
   #                  c(0,1),
   #                  c(0,1),
   #                  c(0,1)))
-  # P<-as.matrix(P)
+  # P_src<-as.matrix(P_src)
   # DMM<-crt_DMM(4,N_el,method='SDC',
   #              DMM_PAR=0.1,
   #              upper_Bound=1,
   #              allowZero = T)$DMM
   # forced<-which(colSums(DMM)==0)
-  # P %*% ((DMM %*% DSM) + DMM)
+  # P_tgt <- P_src %*% ((DMM %*% DSM) + DMM)
+  # measure_DENS(P_src)
+  # measure_DENS(P_tgt)
   #### END Input for Testing ####
   if(length(forced)==0) forced<-NULL
 
   if(method=="DNS"){
-    DSM<-matrix(sample(c(0,1),N_el^2,prob = c(1-PARAM$DNS,PARAM$DNS),replace = T),nrow = N_el,ncol = N_el)
+    repeat{
+      DSM<-matrix(sample(c(0,1),N_el^2,prob = c(1-PARAM$DNS,PARAM$DNS),replace = T),nrow = N_el,ncol = N_el)
+      if(check_DSMValidity(DSM)) break
+    }
   }else if(method=="modular"){
+    repeat{
       DSM<-crt_DSMmod(N_el = N_el,
                       DNS = PARAM$DNS,
                       modular = PARAM$modular)
+      if(check_DSMValidity(DSM)) break
+    }
   }
   diag(DSM)<-0
-  DSM<-force_DSMentries(DSM,forced = forced)
+  # DSM<-force_DSMentries(DSM,forced = forced)
   DSM_bin<-DSM
   DSM[DSM>0]<-sample(1:upper_Bound,size=sum(DSM_bin>0),replace = T)
 
@@ -131,4 +139,13 @@ force_DSMentries<-function(DSM,forced=NULL){
     }
   }
   return(DSM)
+}
+
+
+check_DSMValidity<-function(DSM,forced=NULL){
+  if(!is.null(forced)){
+    return(all(colSums(DSM[-forced,forced])>0))
+  }else{
+    return(TRUE)
+  }
 }
