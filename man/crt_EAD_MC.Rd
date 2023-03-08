@@ -6,9 +6,6 @@
 \usage{
 crt_EAD_MC(
   DOE,
-  uB_DMM = uB_DMM,
-  ub_DSM = ub_DSM,
-  allowZero = F,
   NUMB_CORES = 4,
   cluster = F,
   logfile = "",

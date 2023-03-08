@@ -77,7 +77,7 @@ crt_DOMAINS<-function(P_FD,
     ### 2.1 FD->PD (DMM_FD_PD) ###
     DMM_FD_PD<-crt_DMM(N_src = N_FR,
                        N_tgt = N_DD,
-                       DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                       DMM_PAR = runif(1,min=DMM_PAR$FD_PD[[1]][1],max=DMM_PAR$FD_PD[[1]][2]),
                        method=DMM_method,
                        binary=F,
                        upper_Bound=uB_DMM,
@@ -85,7 +85,7 @@ crt_DOMAINS<-function(P_FD,
     ### 2.2 PD->PrD (DMM_PD_PrD) ###
     DMM_PD_PrD<-crt_DMM(N_src =N_DD,
                         N_tgt = N_PrD,
-                        DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                        DMM_PAR = runif(1,min=DMM_PAR$PD_PrD[[1]][1],max=DMM_PAR$PD_PrD[[1]][2]),
                         method=DMM_method,
                         binary=F,
                         upper_Bound=uB_DMM,
@@ -93,7 +93,7 @@ crt_DOMAINS<-function(P_FD,
     ### 2.3 PD->PrD (DMM_PrD_RD) ###
     DMM_PrD_RD<-crt_DMM(N_src =N_PrD,
                         N_tgt = N_RD,
-                        DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                        DMM_PAR = runif(1,min=DMM_PAR$PrD_RD[[1]][1],max=DMM_PAR$PrD_RD[[1]][2]),
                         method=DMM_method,
                         binary=F,
                         upper_Bound=uB_DMM,
@@ -101,25 +101,24 @@ crt_DOMAINS<-function(P_FD,
 
     ### 2.4  Create Off diagonal DMMs (DMM_FD_PrD,DMM_FD_RD) ###
     ## only if ut_DMM==T
-
     if(ut_DMM){
       DMM_FD_PrD<-crt_DMM(N_src =N_FR,
                           N_tgt = N_PrD,
-                          DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                          DMM_PAR = runif(1,min=DMM_PAR$FD_PrD[[1]][1],max=DMM_PAR$FD_PrD[[1]][2]),
                           method=DMM_method,
                           binary=F,
                           upper_Bound=uB_DMM,
                           allowZero = allowZero)
       DMM_FD_RD<-crt_DMM(N_src =N_FR,
                          N_tgt = N_RD,
-                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                         DMM_PAR = runif(1,min=DMM_PAR$FD_RD[[1]][1],max=DMM_PARFD_RD[[1]][2]),
                          method=DMM_method,
                          binary=F,
                          upper_Bound=uB_DMM,
                          allowZero = allowZero)
       DMM_PD_RD<-crt_DMM(N_src =N_DD,
                          N_tgt = N_RD,
-                         DMM_PAR = runif(1,min=DMM_PAR[1],max=DMM_PAR[2]),
+                         DMM_PAR = runif(1,min=DMM_PAR$PD_RD[[1]][1],max=DMM_PAR$PD_RD[[1]][2]),
                          method=DMM_method,
                          binary=F,
                          upper_Bound=uB_DMM,
@@ -187,9 +186,9 @@ crt_DOMAINS<-function(P_FD,
     remove(DMM_PrD_RD)
 
     ### 2.6 Create DSM matrices ###
-    DSM_param_PD<-runif(1,min=DSM_param[1],max=DSM_param[2])
-    DSM_param_PrD<-runif(1,min=DSM_param[1],max=DSM_param[2])
-    DSM_param_RD<-runif(1,min=DSM_param[1],max=DSM_param[2])
+    DSM_param_PD<-runif(1,min=DSM_param$PD[[1]][1],max=DSM_param$PD[[1]][2])
+    DSM_param_PrD<-runif(1,min=DSM_param$PrD[[1]][1],max=DSM_param$PrD[[1]][2])
+    DSM_param_RD<-runif(1,min=DSM_param$RD[[1]][1],max=DSM_param$RD[[1]][2])
     if(DSM_method=="DNS"){
       DSM_PD<-crt_DSM(N_el = N_DD,
                       method='DNS',
@@ -207,9 +206,9 @@ crt_DOMAINS<-function(P_FD,
                       upper_Bound = ub_DSM,
                       forced = which(colSums(DMM$PrD_RD)==0))
     }else if (DSM_method=="modular"){
-      DSM_paramMOD_PD<-runif(1,min=DSM_param[3],max=DSM_param[4])
-      DSM_paramMOD_PrD<-runif(1,min=DSM_param[3],max=DSM_param[4])
-      DSM_paramMOD_RD<-runif(1,min=DSM_param[3],max=DSM_param[4])
+      DSM_paramMOD_PD<-runif(1,min=DSM_param$PD[[1]][3],max=DSM_param$PD[[1]][4])
+      DSM_paramMOD_PrD<-runif(1,min=DSM_param$PrD[[1]][3],max=DSM_param$PrD[[1]][4])
+      DSM_paramMOD_RD<-runif(1,min=DSM_param$RD[[1]][3],max=DSM_param$RD[[1]][4])
       DSM_PD<-crt_DSM(N_el = N_DD,
                       method='modular',
                       PARAM=list(DNS=DSM_param_PD,

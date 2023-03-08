@@ -1,13 +1,10 @@
-experiment_PCS<-function(DOE,uB_DMM=1,ub_DSM=1,allowZero=F){
+experiment_PCS<-function(DOE){
   suppressWarnings(suppressMessages(require(EAD)))
   suppressWarnings(suppressMessages(require(data.table)))
   df<-lapply(1:NROW(DOE), function(i){
     #### Create EAD ####
       output<-list()
-      EAD <- crt_EAD(DOE[i,],
-                     uB_DMM = uB_DMM,
-                     ub_DSM= ub_DSM,
-                     allowZero = allowZero)
+      EAD <- crt_EAD(DOE[i,])
       measures_system <- data.frame(t(unlist(EAD[[1]]$measures$SYSTEM)))
       output[['measures_system']] <- t(na.omit(measures_system))
       costs <- clc_PCB(EAD[[1]]$P$RD,
@@ -127,9 +124,6 @@ experiment_PCS<-function(DOE,uB_DMM=1,ub_DSM=1,allowZero=F){
 
 
 experiment_PCS_MC<-function(DOE=NULL,
-                            uB_DMM=1,
-                            ub_DSM=1,
-                            allowZero=F,
                             NUMB_CORES=4,
                             cluster=F,
                             logfile="",
@@ -154,10 +148,7 @@ experiment_PCS_MC<-function(DOE=NULL,
     res <- odegoparallel::run_MC(cl, X = DOE_list,
                                  FUN = function(ip, ...) {
                                    res<-list()
-                                   res<-with_timeout(experiment_PCS(DOE = ip,
-                                                                    uB_DMM = uB_DMM,
-                                                                    ub_DSM = ub_DSM,
-                                                                    allowZero = allowZero),
+                                   res<-with_timeout(experiment_PCS(DOE = ip),
                                                      timeout = time_limit)
                                    gc()
                                    return(res)

@@ -1,7 +1,4 @@
 crt_EAD<-function(DOE,
-                  uB_DMM=1,
-                  ub_DSM=1,
-                  allowZero=F,
                   file_output=F){
   suppressWarnings(require(digest))
   suppressWarnings(require(tidyr))
@@ -16,11 +13,15 @@ crt_EAD<-function(DOE,
   #                  method_FD = "DNS",
   #                  TOTAL_DEMAND = 10000, # total demand
   #                  DMD_cv = list(c(0,3)), # coefficient of variation for demand distribution
-  #                  DMM_PAR = list(c(0,0.115)), # desired design complexity
+  #                  DMM_PAR = expand_grid(FD_PD=list(c(0,0.08)),
+  #                                        PD_PrD=list(c(0,0.1)),
+  #                                        PrD_RD=list(c(0,0.1))), # desired system design complexity
   #                  DMM_method="SDC", # method for generating the DMM
   #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                  DSM_param=list(c(0,0.14,0,1)), # density of the DSMs
-  #                  DSM_method="modular",
+  #                  DSM_param=expand_grid(PD=list(c(0,0.05,0,1)),
+  #                                        PrD=list(c(0,0.05,0,1)),
+  #                                        RD=list(c(0,0.05,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+  #                  DSM_method='modular',
   #                  TC = 10^6, # total costs
   #                  r_in = list(c(0,0.9)),
   #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
@@ -35,6 +36,9 @@ crt_EAD<-function(DOE,
 
   #### For each DOE Setting ####
   EAD<-lapply(1:NROW(DOE),function(x){
+    uB_DMM <- DOE$uB_DMM[x]
+    ub_DSM <- DOE$ub_DSM[x]
+    allowZero <- DOE$allowZero[x]
     measures<-list()
     DMM<-list()
     DSM<-list()
@@ -66,10 +70,10 @@ crt_EAD<-function(DOE,
                        N_DD = DOE$N_DD[x][[1]],
                        N_PrD = DOE$N_PrD[x][[1]],
                        N_RD = DOE$N_RD[x][[1]],
-                       DMM_PAR = DOE$DMM_PAR[x][[1]],
+                       DMM_PAR = DOE$DMM_PAR[x,],
                        DMM_method=DOE$DMM_method[x],
                        DSM_method = DOE$DSM_method[x],
-                       DSM_param = DOE$DSM_param[x][[1]],
+                       DSM_param = DOE$DSM_param[x,],
                        ut_DMM=F,
                        uB_DMM=uB_DMM,
                        ub_DSM=ub_DSM,
@@ -195,7 +199,12 @@ crt_EAD<-function(DOE,
 #'                       N_RUN = 1:N_RUN))
 #'
 #' crt_EAD_MC(DOE,NUMB_CORES=4,logfile="log.txt")
-crt_EAD_MC<-function(DOE,uB_DMM = uB_DMM,ub_DSM = ub_DSM,allowZero=F,NUMB_CORES=4,cluster=F,logfile="",extMC_lib=F,ehNodes="remove"){
+crt_EAD_MC<-function(DOE,
+                     NUMB_CORES=4,
+                     cluster=F,
+                     logfile="",
+                     extMC_lib=F,
+                     ehNodes="remove"){
   suppressWarnings(require(parallel))
   suppressWarnings(require(doSNOW))
   suppressWarnings(require(foreach))
@@ -215,10 +224,7 @@ crt_EAD_MC<-function(DOE,uB_DMM = uB_DMM,ub_DSM = ub_DSM,allowZero=F,NUMB_CORES=
     EAD <- odegoparallel::run_MC(cl, X = DOE_list,
                                     FUN = function(DOE, ...) {
                                       res<-list()
-                                      res<-with_timeout(crt_EAD(DOE[1,],
-                                                                ub_DSM = ub_DSM,
-                                                                uB_DMM = uB_DMM,
-                                                                allowZero = allowZero),timeout = time_limit)
+                                      res<-with_timeout(crt_EAD(DOE[1,]),timeout = time_limit)
                                       if(res$message=="error"){
                                         res<-list()
                                       }else if(res$message=="success"){

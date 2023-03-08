@@ -63,11 +63,18 @@ Third, define a design of experiment (DoE). For each
                    method_FD = "random",
                    TOTAL_DEMAND = 10000, # total demand
                    DMD_cv = list(c(0,3)), # demand skewness
-                   DMM_PAR = list(c(0,0.05)), # desired design complexity
+                   DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
+                                PD_PrD=list(c(0,0.05)),
+                                PrD_RD=list(c(0,0.05))), # desired system design complexity
                    DMM_method="SDC", # method for generating the DMM
-                   ut_DMM = F, # if the upper triangle DMMs should be generated
-                   DSM_param=list(c(0,0.14,0,1)), # the first to entries refer to the density range of the dsm, the second on the weight of the modular structure
-                   DSM_method="modular", # method for generating DSMs
+                   uB_DMM = 10,
+                   allowZero = T,
+                   ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+                   DSM_param=expand_grid(PD=list(c(0,0.1,0,1)),
+                                       PrD=list(c(0,0,0,1)),
+                                       RD=list(c(0,0,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+                   DSM_method='modular',
+                   ub_DSM = 1,
                    TC = 10^6, # total costs
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
@@ -117,33 +124,33 @@ sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
 
 PC_B_full<-costs$PC_B
 PC_B_full
-#>          [,1]
-#> 166  93.97619
-#> 30   85.16543
-#> 153  85.71759
-#> 247 138.66876
-#> 33   30.33795
-#> 45   79.96588
-#> 78  100.07538
-#> 211 101.53840
-#> 62  115.50337
-#> 204 152.49754
-#> 138 102.17045
-#> 120 125.70433
-#> 140 128.86535
-#> 44  126.68362
-#> 213  69.54327
-#> 48  133.47603
-#> 3    38.78754
-#> 2    26.81526
-#> 119 117.58072
-#> 125 112.68616
-#> 122 126.11002
-#> 202 125.80265
-#> 74   93.28297
-#> 150  75.40278
-#> 57   92.25810
-#> 215 108.33081
+#>           [,1]
+#> 7    52.095851
+#> 255 178.655879
+#> 104 152.624248
+#> 59  111.921369
+#> 196 151.288262
+#> 151  94.970152
+#> 234 172.499959
+#> 201  93.291248
+#> 153  79.037897
+#> 97   56.864679
+#> 197  69.403810
+#> 66   64.983404
+#> 249 133.233277
+#> 55   89.368580
+#> 58  117.100042
+#> 251 171.718321
+#> 226 141.674962
+#> 21   13.362545
+#> 118 109.193691
+#> 5     8.965509
+#> 247 151.834831
+#> 131  86.304858
+#> 192 203.669210
+#> 113  58.592415
+#> 17    4.397035
+#> 241  99.738980
 ```
 
 If the product mix (available products) or the demand varies, the costs
@@ -169,6 +176,10 @@ cbind(PC_B_full,PC_B_reduced)
 For the full documentation use the included vignettes as:
 
 ``` r
+## list available vignettes
+utils::vignette(package = "EAD")
+
+## open main documentation
 utils::vignette("documentation",package ="EAD")
 ```
 
