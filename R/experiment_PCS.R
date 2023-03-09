@@ -35,25 +35,30 @@ experiment_PCS<-function(DOE){
         P_RD <- EAD[[1]]$P$RD[products_in,]
         P_RD <- P_RD[,colSums(P_RD)>0]
         DMD <- EAD[[1]]$DEMAND[products_in]
-        measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
-                                    DNS.RD = measure_DENS(P_RD),
-                                    DMD_T10 = measure_TOP10(DMD),
-                                    NPV.FD = measure_NPV(P_FD),
-                                    N_RD = NCOL(P_RD),
-                                    SDC_n.FD_PD = measures_system$SDC_n.FD_PD,
-                                    SDC_n.PD_PrD = measures_system$SDC_n.PD_PrD,
-                                    SDC_n.PrD_RD = measures_system$SDC_n.PrD_RD,
-                                    HIC_n.PD = measures_system$HIC_n.PD,
-                                    HIC_n.PrD = measures_system$HIC_n.PrD,
-                                    HIC_n.RD = measures_system$HIC_n.RD)
 
         #### Calculate True Costs ####
-
         benchmark <- clc_PCB(P_RD,
-                        DMD = DMD,
-                        RCU = costs$RCU,
-                        RC_fix =  ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix))
+                             DMD = DMD,
+                             RCU = costs$RCU,
+                             RC_fix =  ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix))
         PC_B <- benchmark$PC_B + PC_direct[products_in]
+
+        #### Create Measure Object ####
+        measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
+                                        DNS.RD = measure_DENS(P_RD),
+                                        DMD_T10 = measure_TOP10(DMD),
+                                        NPV.FD = measure_NPV(P_FD),
+                                        N_RD = NCOL(P_RD),
+                                        N_PROD = NROW(P_RD),
+                                        RC_cor.indirect = measures_system$RC.cor_indirect,
+                                        r_indirect = sum(benchmark$PC_B*DMD) /sum(PC_B*DMD),
+                                        SDC_n.FD_PD = measures_system$SDC_n.FD_PD,
+                                        SDC_n.PD_PrD = measures_system$SDC_n.PD_PrD,
+                                        SDC_n.PrD_RD = measures_system$SDC_n.PrD_RD,
+                                        HIC_n.PD = measures_system$HIC_n.PD,
+                                        HIC_n.PrD = measures_system$HIC_n.PrD,
+                                        HIC_n.RD = measures_system$HIC_n.RD)
+
         #### Calculate Reported Costs #####
         cs_DOE<-expand.grid(ACP=c(1,2,3,4,5,6,8,10,12,14,16,18,20,25,30),
                             method = c("random","correl-random","PU","DC-0.2"))

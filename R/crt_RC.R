@@ -41,8 +41,8 @@ crt_RC<-function(N_RD,
   # TC=10^6
   # r_in=0.3
   # r_fix=0.5
-  # cor_var=1
-  # cor_fix=-1
+  # cor_var=0
+  # cor_fix=0
   # cv=0.5
   # max_tries=100
   #### End Input for Testing ####
@@ -119,6 +119,7 @@ crt_RC<-function(N_RD,
                  cor_fix = suppressWarnings(cor(fix$RC,RC_direct)),
                  cor_var = suppressWarnings(cor(RC_direct,var$RC)),
                  cor_fix_var = suppressWarnings(cor(fix$RC,var$RC)),
+                 cor_indirect = suppressWarnings(cor((fix$RC+var$RC),RC_direct)),
                  r_fix = r_fix,
                  r_in = r_in,
                  TC = sum(var$RC+fix$RC+RC_direct))

@@ -115,6 +115,7 @@ crt_EAD<-function(DOE,
                                              cor_fix = RC$cor_fix,
                                              cor_var = RC$cor_var,
                                              cor_fix_var = RC$cor_fix_var,
+                                             cor_indirect = RC$cor_indirect,
                                              r_fix = RC$r_fix,
                                              r_in = RC$r_in)
           RC<-list(direct = RC$RC_direct$RC,
