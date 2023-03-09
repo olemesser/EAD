@@ -100,8 +100,8 @@ experiment_PCS<-function(DOE){
 
         if(length(products_out)==0){
           ### On product level only under full variety ###
-          ### select ACP==10
-          product_level_data <- lapply(which(cs_DOE$ACP==10),function(s){
+          ### select some ACPs
+          product_level_data <- lapply(which(cs_DOE$ACP %in% c(4,10,20)),function(s){
             data.frame(id= EAD[[1]]$ID,
                        LOF.RD =  EAD[[1]]$measures$PRODUCT$LOF$RD,
                        INTER.RD = EAD[[1]]$measures$PRODUCT$INTER$RD,
