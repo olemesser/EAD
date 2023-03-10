@@ -89,9 +89,10 @@ experiment_PCS<-function(DOE){
         #### Create Output Object ####
           ### On System level for each variety step ###
             error <- lapply(reported,function(x){
-                      data.frame(EUCD=x$EUCD,
-                                 MPE=x$MPE,
-                                 TC=x$TC)
+                      data.frame(EUCD = x$EUCD,
+                                 MPE = x$MPE,
+                                 MPE_qt95 = quantile(abs(x$MPE_prod),0.95),
+                                 TC = x$TC)
                       })
             error <- data.table::rbindlist(error)
             system_level_data[[l]]<-data.frame(id = EAD[[1]]$ID,
