@@ -32,6 +32,7 @@ experiment_PCS<-function(DOE){
         }
 
         P_FD <- EAD[[1]]$P$FD[products_in,]
+        P_PD <- EAD[[1]]$P$PD[products_in,]
         P_RD <- EAD[[1]]$P$RD[products_in,]
         P_RD <- P_RD[,colSums(P_RD)>0]
         DMD <- EAD[[1]]$DEMAND[products_in]
@@ -45,6 +46,7 @@ experiment_PCS<-function(DOE){
 
         #### Create Measure Object ####
         measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
+                                         PCI.PD = measure_PCI(P_PD),
                                         DNS.RD = measure_DENS(P_RD),
                                         DMD_T10 = measure_TOP10(DMD),
                                         NPV.FD = measure_NPV(P_FD),
@@ -57,7 +59,9 @@ experiment_PCS<-function(DOE){
                                         SDC_n.PrD_RD = measures_system$SDC_n.PrD_RD,
                                         HIC_n.PD = measures_system$HIC_n.PD,
                                         HIC_n.PrD = measures_system$HIC_n.PrD,
-                                        HIC_n.RD = measures_system$HIC_n.RD)
+                                        HIC_n.RD = measures_system$HIC_n.RD,
+                                        TC_fix = sum(benchmark$PC_B_fixed * DMD),
+                                        TC_var = sum(benchmark$PC_B_var * DMD))
 
         #### Calculate Reported Costs #####
         cs_DOE<-expand.grid(ACP=c(1,2,3,4,5,6,8,10,12,14,16,18,20,25,30),
