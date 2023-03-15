@@ -148,7 +148,7 @@ crt_EAD<-function(DOE,
 
 #' @title Create EADs using a design of experiments (DOE)
 #' @description This function creates EAD realizations using a design of experiments (DOE). The design is specified by \code{DOE}
-#' @param DOE A data.frame, where each row contain a parameter set for an EAd realization. The data frame contain the following columns.
+#' @param DOE A data.frame, where each row contain a parameter set for an EAD realization. The data frame contain the following columns.
 #' \describe{
 #'   \item{N_FR}{The number of elements in the functional domain (FD)}
 #'   \item{N_DD}{The number of elements in the physcial domain (PD)}
