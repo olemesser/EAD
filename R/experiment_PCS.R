@@ -115,7 +115,10 @@ experiment_PCS<-function(DOE){
                        ACP = cs_DOE$ACP[s],
                        method = cs_DOE$method[s],
                        PC_B = reported[[s]]$PC_B,
-                       PC_H = reported[[s]]$PC_H)
+                       PC_H = reported[[s]]$PC_H,
+                       PC_direct = PC_direct[products_in],
+                       PC_B_var = benchmark$PC_B_var,
+                       PC_B_fix = benchmark$PC_B_fixed)
           })
           product_level_data <- data.table::rbindlist(product_level_data)
           system_level_data <- data.table::rbindlist(system_level_data)

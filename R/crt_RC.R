@@ -43,14 +43,15 @@ crt_RC<-function(N_RD,
   # r_fix=0.5
   # cor_var=0
   # cor_fix=0
-  # cv=0.5
-  # max_tries=100
+  # cv=2
+  # max_tries=2000
   #### End Input for Testing ####
 
   #### 0. Initial Checks ####
   if(r_in>0.9) stop("You selected more than 90% of the costs as indirect. The maximum is proportion is 90%. Please reduce r_in!")
   if(r_in<0) stop("The proportion of indirect costs cannot be negative. Please set r_in>=0!")
   if(r_fix<0 | r_fix>1) stop("r_fix must be within the bound of 0<=r_fix<=1")
+  if(cv==0) cv<-0.1
 
   #### 1. Split Costs according the input ratios ####
   TC_direct <- TC * (1-r_in)
@@ -59,37 +60,12 @@ crt_RC<-function(N_RD,
   TC_var <- TC_indirect - TC_fix
 
   #### 2. Create Direct Cost Vector ####
-  x<-ga(type = "real-valued",
-        fitness = obj_DMD,
-        N_RD = N_RD,
-        TC = TC_direct,
-        cv = cv,
-        lower = c(0,0,-1),
-        upper = c(TC_direct/N_RD*10000,10^7,4),
-        popSize = 50,
-        suggestions = c(TC_direct/N_RD,10^7,1),
-        run=75,
-        maxiter = 200,
-        monitor = F,
-        keepBest = T,
-        pcrossover = 0.4,
-        pmutation = 0.2,
-        maxFitness = -0.04)
+  RC_direct<- sample_RC(N_RD = N_RD,
+                        TC = TC_direct,
+                        cv = cv,
+                        max_run = max_tries)
 
-  direct<-lapply(1:50,function(i){
-    RC<-fGarch::rsnorm(N_RD ,mean = x@solution[1,1], sd = x@solution[1,2], xi=x@solution[1,3])
-    RC<-abs(RC)
-    RC<-RC/sum(RC)*TC_direct
-    cv_is<-sd(RC)/mean(RC)
-    cv_is-cv
-    return(list(cv = cv_is,
-                RC = RC,
-                delta = abs(cv_is-cv)))
-  })
-  direct <- direct[[which.min(sapply(direct, function(x) x$delta))]]
-  cv_direct_is <- direct$cv
-  RC_direct <- direct$RC
-  remove(direct)
+  cv_direct_is <- sd(RC_direct)/mean(RC_direct)
 
   #### 3. Create Indirect cost vector ####
     ### 3.1 fixed costs ###
@@ -128,14 +104,35 @@ crt_RC<-function(N_RD,
 
 }
 
-
+sample_RC<-function(N_RD,TC,cv,max_run=1000){
+  x<-rep(0,N_RD)
+  x[-1]<-TC/length(x)*.001
+  x[1]<-TC-sum(x)
+  x<-x
+  run<-0
+  repeat{
+    rm_costs<-x[1]*runif(1,min=0.001,max=0.01)
+    if(x[1]-rm_costs<0) break
+    idx<-sample(2:length(x),1)
+    x[idx]<-x[idx]+rm_costs
+    x[1]<-x[1]-rm_costs
+    cv_is <- sd(x)/mean(x)
+    check_cv<-abs(cv_is-cv)/cv
+    run<-run+1
+    if((check_cv<=0.05 | run>max_run) & all(x>0)) break
+  }
+  x<-x[sample(1:length(x))]
+  return(x)
+}
 
 obj_DMD<-function(x,N_RD,TC,cv){
-  cv_is<-sapply(1:50,function(i){
+  cv_is<-sapply(1:1,function(i){
+    set.seed(1)
     RC<-fGarch::rsnorm(N_RD ,mean = x[1], sd = x[2], xi=x[3])
     RC<-abs(RC)
     RC<-RC/sum(RC)*TC
     cv_is<-sd(RC)/mean(RC)
+    set.seed(NULL)
     return(cv_is)
   })
   cv_is<-mean(cv_is)

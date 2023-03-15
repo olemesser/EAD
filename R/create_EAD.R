@@ -105,7 +105,8 @@ crt_EAD<-function(DOE,
                      r_in = runif(1,min=DOE$r_in[x][[1]][1],max=DOE$r_in[x][[1]][2]),
                      cor_var = runif(1,min=DOE$cor_var[x][[1]][1],max=DOE$cor_var[x][[1]][2]),
                      cor_fix = runif(1,min=DOE$cor_fix[x][[1]][1],max=DOE$cor_fix[x][[1]][2]),
-                     cv = runif(1,min=DOE$RC_cv[x][[1]][1],max=DOE$RC_cv[x][[1]][2]))
+                     cv = runif(1,min=DOE$RC_cv[x][[1]][1],max=DOE$RC_cv[x][[1]][2]),
+                     max_tries = 2000)
 
 
           measures[['SYSTEM']][['RC']]<-list(RC_var_cv =  RC$RC_var$cv,

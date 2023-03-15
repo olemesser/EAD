@@ -14,7 +14,7 @@ crt_EAD_MC(
 )
 }
 \arguments{
-\item{DOE}{A data.frame, where each row contain a parameter set for an EAd realization. The data frame contain the following columns.
+\item{DOE}{A data.frame, where each row contain a parameter set for an EAD realization. The data frame contain the following columns.
 \describe{
   \item{N_FR}{The number of elements in the functional domain (FD)}
   \item{N_DD}{The number of elements in the physcial domain (PD)}
