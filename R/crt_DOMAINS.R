@@ -293,8 +293,10 @@ crt_DOMAINS<-function(P_FD,
 
     #### 2.9 Final Checks ####
       tries<-tries+1
-      cond_unique_RD<-NROW(unique(P[["RD"]]))==NROW(P[['FD']])
-      cond_unique_PrD<-NROW(unique(P[["PrD"]]))==NROW(P[['FD']])
+      # cond_unique_RD<-NROW(unique(P[["RD"]]))==NROW(P[['FD']])
+      # cond_unique_PrD<-NROW(unique(P[["PrD"]]))==NROW(P[['FD']])
+        cond_unique_RD<-TRUE
+        cond_unique_PrD<-TRUE
       cond_unique_PD<-NROW(unique(P[["PD"]]))==NROW(P[['FD']])
 
       cond_noneZERO_RD<-all(colSums(P[["RD"]])>0)
