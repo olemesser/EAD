@@ -82,12 +82,15 @@ experiment_PCS<-function(DOE){
                                       ACP = cs_DOE$ACP[c])
           }
           PC_H <- PC_H + PC_direct[products_in]
-          return(list(EUCD = sqrt(sum((PC_B - PC_H)^2)),
-                      MPE = mean(abs((PC_B - PC_H))/PC_B),
+          costingError<-clc_costingERROR(PC_B,PC_H)
+          costingError_w<-clc_costingERROR(PC_B,PC_H,DMD=DMD)
+          return(list(EUCD = costingError$EUCD,
+                      EUCD_w = costingError_w$EUCD,
+                      MPE = costingError$MPE,
+                      MPE_w = costingError_w$MPE,
                       PC_H = PC_H,
                       PC_B = PC_B,
-                      TC = sum(PC_B * DMD),
-                      MPE_prod = (PC_B - PC_H)/PC_B))
+                      TC = sum(PC_B * DMD)))
         })
 
         #### Create Output Object ####
@@ -95,7 +98,8 @@ experiment_PCS<-function(DOE){
             error <- lapply(reported,function(x){
                       data.frame(EUCD = x$EUCD,
                                  MPE = x$MPE,
-                                 MPE_qt95 = quantile(abs(x$MPE_prod),0.95),
+                                 EUCD_w = x$EUCD_w,
+                                 MPE_w = x$MPE_w,
                                  TC = x$TC)
                       })
             error <- data.table::rbindlist(error)

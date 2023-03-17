@@ -66,3 +66,18 @@ clc_PCB<-function(RES_CONS_PAT,
               PC_B_fixed=PC_B_fixed,
               PC_B_var=PC_B_var))
 }
+
+
+
+clc_costingERROR<-function(PC_B,PC_H,DMD=NULL){
+  if(is.null(DMD)) DMD<-rep(1,length(PC_B))
+  PC_B<-rep(PC_B,DMD)
+  PC_H<-rep(PC_H,DMD)
+  PE <- (PC_B - PC_H)/PC_B
+  output<-list(EUCD = sqrt(sum((PC_B - PC_H)^2)),
+               MPE = as.numeric(mean(abs(PE))),
+               PE = as.numeric(PE),
+               APE = as.numeric(abs(PE)))
+
+  return(output)
+}
