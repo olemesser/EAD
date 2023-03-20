@@ -4,7 +4,16 @@
 \alias{clc_PCB}
 \title{Calculate (true) Product Costs}
 \usage{
-clc_PCB(RES_CONS_PAT, DMD = NULL, RC_var = NULL, RC_fix = NULL, RCU = NULL)
+clc_PCB(
+  RES_CONS_PAT,
+  P_RD_fix = NULL,
+  DMD = NULL,
+  RC_direct = NULL,
+  RC_var = NULL,
+  RC_fix = NULL,
+  RCU = NULL,
+  RCU_direct = NULL
+)
 }
 \arguments{
 \item{RES_CONS_PAT}{The resource consumption pattern matrix.}
@@ -15,7 +24,9 @@ clc_PCB(RES_CONS_PAT, DMD = NULL, RC_var = NULL, RC_fix = NULL, RCU = NULL)
 
 \item{RC_fix}{A resource cost vector holding the fixed costs.}
 
-\item{RCU}{A vector holding the resource costs per unit.}
+\item{RCU}{A vector holding the resource costs per unit for the variable indirect costs.}
+
+\item{RCU_direct}{A vector holding the resource costs per unit for the variable direct costs.}
 }
 \value{
 Calculates the true product costs (PC_B) and returns the resource costs per unit (RCU)
@@ -33,11 +44,12 @@ There are two options to use this function:
 \examples{
 ### Calculate product costs for the designed EAD ###
 data("exampleEAD")
-RC_var <- exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct
-TC =  sum(RC_var + exampleEAD[[1]][[1]]$RC$fix)
+TC =  sum(exampleEAD[[1]][[1]]$RC$fix + exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct)
 costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
+                P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
                 DMD = exampleEAD[[1]][[1]]$DEMAND,
-                RC_var = RC_var,
+                RC_direct = exampleEAD[[1]][[1]]$RC$direct,
+                RC_var = exampleEAD[[1]][[1]]$RC$var,
                 RC_fix = exampleEAD[[1]][[1]]$RC$fix)
 
 costs$PC_B
@@ -48,7 +60,9 @@ costs$PC_B
 DMD<-exampleEAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
 costs<-clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
+               P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
                DMD = DMD,
+               RC_direct = exampleEAD[[1]][[1]]$RC$direct,
                RC_fix = exampleEAD[[1]][[1]]$RC$fix,
                RCU=costs$RCU)
 }

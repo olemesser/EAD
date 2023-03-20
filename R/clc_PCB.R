@@ -11,16 +11,18 @@
 #' @param DMD A demand vector. If no demand vector is supplied, each product is assumed to have a demand of one.
 #' @param RC_var A resource cost vector holding the variable costs.
 #' @param RC_fix A resource cost vector holding the fixed costs.
-#' @param RCU A vector holding the resource costs per unit.
+#' @param RCU A vector holding the resource costs per unit for the variable indirect costs.
+#' @param RCU_direct A vector holding the resource costs per unit for the variable direct costs.
 #' @return Calculates the true product costs (PC_B) and returns the resource costs per unit (RCU)
 #' @examples
 #' ### Calculate product costs for the designed EAD ###
 #' data("exampleEAD")
-#' RC_var <- exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct
-#' TC =  sum(RC_var + exampleEAD[[1]][[1]]$RC$fix)
+#' TC =  sum(exampleEAD[[1]][[1]]$RC$fix + exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct)
 #' costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
+#'                 P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
 #'                 DMD = exampleEAD[[1]][[1]]$DEMAND,
-#'                 RC_var = RC_var,
+#'                 RC_direct = exampleEAD[[1]][[1]]$RC$direct,
+#'                 RC_var = exampleEAD[[1]][[1]]$RC$var,
 #'                 RC_fix = exampleEAD[[1]][[1]]$RC$fix)
 #'
 #' costs$PC_B
@@ -31,38 +33,54 @@
 #' DMD<-exampleEAD[[1]][[1]]$DEMAND
 #' DMD[1:10]<-0
 #' costs<-clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
+#'                P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
 #'                DMD = DMD,
+#'                RC_direct = exampleEAD[[1]][[1]]$RC$direct,
 #'                RC_fix = exampleEAD[[1]][[1]]$RC$fix,
 #'                RCU=costs$RCU)
 clc_PCB<-function(RES_CONS_PAT,
-                  DMD=NULL,
-                  RC_var=NULL,
-                  RC_fix=NULL,
-                  RCU=NULL){
+                  P_RD_fix = NULL,
+                  DMD = NULL,
+                  RC_direct = NULL,
+                  RC_var = NULL,
+                  RC_fix = NULL,
+                  RCU = NULL,
+                  RCU_direct = NULL){
   #### 0. Initial Checks ####
   if(is.null(DMD)) DMD<-rep(1,NROW(RES_CONS_PAT))
   if(is.null(RC_fix)) RC_fix<-rep(0,length(RC_var))
   if(!is.null(RC_var) & !is.null(RCU)) stop("RC_var and RCU supplied. \nPlease insert either RC_var or RCU.")
   if(is.null(RC_var) & is.null(RCU)) stop("RC_var and RCU are not supplied. \nPlease insert either RC_var or RCU.")
+  # if(!is.null(RC_fix) & is.null(P_RD_fix)) stop("No P_RD_fix supplied. \nPlease insert either P_RD_fix or set RC_fix=NULL ")
 
   #### 1. Check if Demand is zero for some products ####
   RES_CONS_PAT[DMD==0,]<-0
-
+  # P_RD_fix[DMD==0,]<-0
 
   #### 2. Calculate TRC and RCU ####
   TRC<-colSums(RES_CONS_PAT * DMD)
   if(is.null(RCU) & !is.null(RC_var)) RCU <- RC_var/TRC
   RCU<-ifelse(is.nan(RCU) | is.infinite(RCU),0,RCU)
 
+  if(is.null(RC_direct)) RC_direct <- rep(0,NCOL(RES_CONS_PAT))
+  if(is.null(RCU_direct)) RCU_direct <- (RC_direct/TRC)
+  RCU_direct<-ifelse(is.nan(RCU_direct) | is.infinite(RCU),0,RCU_direct)
+  PC_direct <- as.numeric(RES_CONS_PAT %*% RCU_direct)
+
 
   #### 3. Calculate (true) Benchmark Costs ####
-  PC_B_var <- RES_CONS_PAT %*% RCU
-  PC_B_fixed <-RES_CONS_PAT %*% ifelse(is.infinite(RC_fix/TRC),0,(RC_fix/TRC))
-  PC_B <- PC_B_var + PC_B_fixed
+  PC_B_var <- as.numeric(RES_CONS_PAT %*% RCU)
 
-  return(list(PC_B=PC_B,
+  # TRC_fix<-colSums(P_RD_fix * DMD)
+  PC_B_fixed <- RES_CONS_PAT %*% ifelse(is.infinite(RC_fix/TRC),0,(RC_fix/TRC))
+  # PC_B_fixed <-ifelse(is.nan(PC_B_fixed),0,PC_B_fixed)
+
+
+  return(list(PC_B=PC_B_var + PC_B_fixed + PC_direct,
               RCU=RCU,
+              RCU_direct=RCU_direct,
               TRC = TRC,
+              PC_B_indirect = PC_B_var + PC_B_fixed,
               PC_B_fixed=PC_B_fixed,
               PC_B_var=PC_B_var))
 }

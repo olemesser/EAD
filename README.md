@@ -62,7 +62,7 @@ Third, define a design of experiment (DoE). For each
                    PARAM_FD = seq(0.1,1,0.1), # percentage of products included
                    method_FD = "random",
                    TOTAL_DEMAND = 10000, # total demand
-                   DMD_cv = list(c(0,3)), # demand skewness
+                   Q_VAR = list(c(0,3)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
@@ -76,6 +76,7 @@ Third, define a design of experiment (DoE). For each
                    DSM_method='modular',
                    ub_DSM = 1,
                    TC = 10^6, # total costs
+                   RES_COR = list(c(0,1)), # correlation of variable RES_CONS_PAT to fixed
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
                    cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
@@ -112,45 +113,41 @@ design.
 
 ``` r
 # variable indirect costs and the direct costs which are always variable are summed up
-RC_var <- EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct
+TC <- sum(EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct + EAD[[1]][[1]]$RC$fix)
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-               DMD = EAD[[1]][[1]]$DEMAND,
-               RC_var = RC_var,
-               RC_fix = EAD[[1]][[1]]$RC$fix)
+                P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
+                DMD = EAD[[1]][[1]]$DEMAND,
+                RC_direct = EAD[[1]][[1]]$RC$direct,
+                RC_var = EAD[[1]][[1]]$RC$var,
+                RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
-sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
+sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
 #> [1] FALSE
+```
 
-PC_B_full<-costs$PC_B
-PC_B_full
-#>           [,1]
-#> 7    52.095851
-#> 255 178.655879
-#> 104 152.624248
-#> 59  111.921369
-#> 196 151.288262
-#> 151  94.970152
-#> 234 172.499959
-#> 201  93.291248
-#> 153  79.037897
-#> 97   56.864679
-#> 197  69.403810
-#> 66   64.983404
-#> 249 133.233277
-#> 55   89.368580
-#> 58  117.100042
-#> 251 171.718321
-#> 226 141.674962
-#> 21   13.362545
-#> 118 109.193691
-#> 5     8.965509
-#> 247 151.834831
-#> 131  86.304858
-#> 192 203.669210
-#> 113  58.592415
-#> 17    4.397035
-#> 241  99.738980
+To access the total product costs use the following arguments:
+
+``` r
+## total product costs
+costs$PC_B
+#>  [1] 174.425668 128.725001 113.001390 114.859315 129.502918  83.561782
+#>  [7] 104.629559 111.752636 176.635927 150.088664  98.384999  56.253340
+#> [13]  77.423109 173.347397   4.839455 108.965386 145.067086  71.158649
+#> [19]  77.581787 152.328602 122.428655  50.654130  45.429204 118.855242
+#> [25] 167.825492 165.607291
+```
+
+For the indirect benchmark costs use:
+
+``` r
+## indirect benchmark product costs
+costs$PC_B_indirect
+#>  [1] 34.7503433 37.7001340 45.8907531 30.1685979 25.6003060 14.5731281
+#>  [7] 21.3515147 29.1387757 43.3430135 53.2293184 18.1480140 10.3550123
+#> [13] 23.8937734 54.8019241  0.9278887 29.7899606 36.1913478 26.6167045
+#> [19] 18.3969809 33.6785495 21.7700376  8.9621924 13.7633279 25.9074625
+#> [25] 47.0985822 41.9841122
 ```
 
 If the product mix (available products) or the demand varies, the costs
@@ -160,15 +157,24 @@ are calculated as:
 ## lets assume we drop the first ten products 
 DMD<-EAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
-costs<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-                DMD = DMD,
-                RC_fix = EAD[[1]][[1]]$RC$fix,
-                RCU=costs$RCU)
+costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
+               P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
+               DMD = DMD,
+               RC_direct = EAD[[1]][[1]]$RC$direct,
+               RC_fix = EAD[[1]][[1]]$RC$fix,
+               RCU=costs$RCU)
 
-PC_B_reduced<-costs$PC_B
+PC_B_reduced<-costs_reduced$PC_B
 
 ## compare the differences
-cbind(PC_B_full,PC_B_reduced)
+data.frame(DMD_full = EAD[[1]][[1]]$DEMAND,
+           DMD_reduced = DMD,
+           PC_B_full,
+           PC_B_reduced,
+           PC_var_full = costs$PC_B_var,
+           PC_var_reduced = costs_reduced$PC_B_var,
+           PC_fix_full = costs$PC_B_fixed,
+           PC_fix_reduced = costs_reduced$PC_B_fixed)
 ```
 
 # Full Documentation
@@ -182,6 +188,16 @@ utils::vignette(package = "EAD")
 ## open main documentation
 utils::vignette("documentation",package ="EAD")
 ```
+
+# Acknowledgement
+
+Special thanks to [Prof. Matthias
+Meyer](https://www.researchgate.net/profile/Matthias-Meyer-12 "Visit on Research Gate"),
+[Kai G.
+Mertens](https://www.researchgate.net/profile/Kai-G-Mertens "Visit on Research Gate")
+and [Mark
+Schmidt](https://www.researchgate.net/profile/Mark-Schmidt-19 "Visit on Research Gate")
+for detailed discussions during the development of this framework.
 
 # References
 

@@ -80,8 +80,8 @@ costingSystem_ABC<-function(RES_CONS_PAT,
   ACT_CONS_PAT<-stage_twoAllocation(CC,RES_CONS_PAT,AD)
   ACP <- ACT_CONS_PAT$ACP
   ACT_CONS_PAT <- ACT_CONS_PAT$ACT_CONS_PAT
-  TAC <- t(ACT_CONS_PAT) %*% DMD
-  PC_H<-ACT_CONS_PAT %*% (ACP/TAC)
+  TAC <- colSums(ACT_CONS_PAT * DMD)
+  PC_H<-as.numeric(ACT_CONS_PAT %*% (ACP/TAC))
 
   # sum(PC_H * DMD) == sum(RC_indirect)
   return(PC_H)
@@ -275,6 +275,6 @@ costingSystem_VD<-function(RES_CONS_PAT,
   }
 
   # sum(PC_H * DMD) == sum(RC_indirect)
-  return(PC_H)
+  return(as.numeric(PC_H))
 
 }

@@ -12,17 +12,21 @@ crt_EAD<-function(DOE,
   #                  PARAM_FD = seq(0.07,0.5,0.05), #density within the DSM_FD matrix. Creates product mixes where not all products are included
   #                  method_FD = "DNS",
   #                  TOTAL_DEMAND = 10000, # total demand
-  #                  DMD_cv = list(c(0,3)), # coefficient of variation for demand distribution
+  #                  Q_VAR = list(c(0,3)), # demand heterogeneity
   #                  DMM_PAR = expand_grid(FD_PD=list(c(0,0.08)),
   #                                        PD_PrD=list(c(0,0.1)),
   #                                        PrD_RD=list(c(0,0.1))), # desired system design complexity
   #                  DMM_method="SDC", # method for generating the DMM
+  #                  uB_DMM = 1,
+  #                  allowZero = F,
   #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
   #                  DSM_param=expand_grid(PD=list(c(0,0.05,0,1)),
   #                                        PrD=list(c(0,0.05,0,1)),
   #                                        RD=list(c(0,0.05,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
   #                  DSM_method='modular',
+  #                  ub_DSM = 1,
   #                  TC = 10^6, # total costs
+  #                  RES_COR = list(c(0,1)),
   #                  r_in = list(c(0,0.9)),
   #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
   #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
@@ -57,12 +61,13 @@ crt_EAD<-function(DOE,
 
 
       ### 1.2 Demand Generation ###
-      DMD<-crt_DEMAND(n_PROD=NROW(P[["FD"]]),
+      DMD<-crt_DEMAND(n_PROD = NROW(P[["FD"]]),
                  TOTAL_DEMAND = DOE$TOTAL_DEMAND[x],
-                 cv=DOE$DMD_cv[x][[1]])
+                 Q_VAR = DOE$Q_VAR[x][[1]])
       measures[['SYSTEM']]<-c(measures[['SYSTEM']],
-                              DMD_cv=DMD$CHECK$CV,
-                              DMD_T10=DMD$CHECK$DMD_T10)
+                              DMD_cv = DMD$CHECK$CV,
+                              DMD_T10 = DMD$CHECK$DMD_T10,
+                              Q_VAR = DMD$CHECK$Q_VAR)
       DMD<-DMD$DEMAND
 
     #### 2. Create Domains ####
@@ -77,6 +82,7 @@ crt_EAD<-function(DOE,
                        ut_DMM=F,
                        uB_DMM=uB_DMM,
                        ub_DSM=ub_DSM,
+                       RES_COR = DOE$RES_COR[x][[1]],
                        allowZero=allowZero)
 
       DOM$measures$SYSTEM[['D']]<-list(FD=measure_diversificationINDEX(DOM$P$FD,DMD=DMD),
@@ -96,7 +102,7 @@ crt_EAD<-function(DOE,
       DMM<-DOM$DMM
       P<-DOM$P
       message[['DOMAIN']]<-DOM$message
-      remove(DOM)
+
 
     #### 3. Create Costs ####
           RC<-crt_RC(N_RD = DOE$N_RD[x][[1]],
@@ -121,7 +127,8 @@ crt_EAD<-function(DOE,
                                              r_in = RC$r_in)
           RC<-list(direct = RC$RC_direct$RC,
                    var=RC$RC_var$RC,
-                   fix=RC$RC_fix$RC)
+                   fix=RC$RC_fix$RC,
+                   P_RD_fix = DOM$P_RD_fix)
 
     #### 4. Write Output object ####
     EAD<-list(P=P,
@@ -137,6 +144,7 @@ crt_EAD<-function(DOE,
 
     #### 5. Clean up Workspace ####
     remove(prodMIX)
+    remove(DOM)
     gc()
     return(EAD)
   })

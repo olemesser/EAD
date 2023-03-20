@@ -4,23 +4,24 @@
 \alias{crt_DEMAND}
 \title{Creates the demand of products}
 \usage{
-crt_DEMAND(n_PROD, TOTAL_DEMAND, cv)
+crt_DEMAND(n_PROD, TOTAL_DEMAND, Q_VAR)
 }
 \arguments{
 \item{n_PROD}{The number of products.}
 
 \item{TOTAL_DEMAND}{the total demand the products in the portfolio.}
 
-\item{cv}{Desired coefficient of variation as a vector representing the lower or upper bounds or as a double.}
+\item{Q_VAR}{A numeric vector of length one or two which specifies the logarithmic standard deviation.
+This values is passed as \code{sdlog} to \link[stats]{rlnorm}.}
 }
 \value{
 Returns the demand vector and statistics
 }
 \description{
-Creates a demand vector with a given level of heterogeneity which is specified by cv.
+Creates a demand vector using the \link[stats]{rlnorm} function.
 }
 \examples{
 # example
 TOTAL_DEMAND<-1000
-crt_DEMAND(n_PROD=120,TOTAL_DEMAND,cv=c(0.1,1))
+crt_DEMAND(n_PROD=120,TOTAL_DEMAND,Q_VAR=c(0.1,1))
 }

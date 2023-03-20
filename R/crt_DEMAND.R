@@ -1,52 +1,30 @@
 #' @name crt_DEMAND
 #' @title Creates the demand of products
-#' @description Creates a demand vector with a given level of heterogeneity which is specified by cv.
+#' @description Creates a demand vector using the \link[stats]{rlnorm} function.
 #' @param n_PROD The number of products.
 #' @param TOTAL_DEMAND the total demand the products in the portfolio.
-#' @param cv Desired coefficient of variation as a vector representing the lower or upper bounds or as a double.
+#' @param Q_VAR A numeric vector of length one or two which specifies the logarithmic standard deviation.
+#' This values is passed as \code{sdlog} to \link[stats]{rlnorm}.
 #' @return Returns the demand vector and statistics
 #' @examples
 #' # example
 #' TOTAL_DEMAND<-1000
-#' crt_DEMAND(n_PROD=120,TOTAL_DEMAND,cv=c(0.1,1))
+#' crt_DEMAND(n_PROD=120,TOTAL_DEMAND,Q_VAR=c(0.1,1))
 #' @rdname crt_DEMAND
-crt_DEMAND<-function(n_PROD,TOTAL_DEMAND,cv){
+crt_DEMAND<-function(n_PROD,TOTAL_DEMAND,Q_VAR){
   #### For Testing ####
-  # n_PROD<-30
+  # n_PROD<-100
   # TOTAL_DEMAND<-10000
-  # cv=c(3,3)
+  # Q_VAR<-0
   #### End Input Testing ####
 
-  if(length(cv)==1) cv<-rep(cv,2)
-  cv<-runif(1,min=cv[1],max=cv[2])
-  cv_temp<-cv
-  tries<-0
-  repeat{
-    tries<-tries+1
-    DEMAND<-with_timeout(rand_vect(n_PROD,TOTAL_DEMAND,sd=cv_temp*TOTAL_DEMAND/n_PROD),
-                 timeout =  5)
-    if(DEMAND$message=="error"){
-      cv_temp<-1
-      DEMAND<-rand_vect(n_PROD,TOTAL_DEMAND,sd=cv_temp*TOTAL_DEMAND/n_PROD)
-    }else{
-      DEMAND<-DEMAND$res
-    }
-    cv_is<-(sd(DEMAND)/mean(DEMAND))
-    err<-abs(cv_is-cv)/cv
-    err<-ifelse(is.nan(err),0,err)
-    err<-ifelse(is.infinite(err),0,err)
-    if(tries>15) break
-    if(err<=0.1 & all(DEMAND>0) & sum(DEMAND)==TOTAL_DEMAND){
-      break
-    }else if(cv_is<cv){
-      cv_temp<-cv_temp*(1+err/2)
-    }else if(cv_is>cv){
-      cv_temp<-cv_temp*(1+err/2)
-    }
-  }
+  if(length(Q_VAR)==1) Q_VAR <- rep(Q_VAR,2)
+  preDemand <- rlnorm(n_PROD,meanlog = 0, sdlog = runif(1,Q_VAR[1],Q_VAR[2]))
+  DEMAND <- ceiling((preDemand/sum(preDemand))*TOTAL_DEMAND)
 
-  CHECK<-list(CV=cv_is,
-              DMD_T10=measure_TOP10(DEMAND))
+  CHECK<-list(CV=sd(DEMAND)/mean(DEMAND),
+              DMD_T10=measure_TOP10(DEMAND),
+              Q_VAR = sd(log(DEMAND)))
   out<-list(DEMAND=DEMAND,CHECK=CHECK)
 
   return(out)

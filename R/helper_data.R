@@ -13,7 +13,7 @@ create_RES_CONS_PAT<-function(n_RES=50,
 
   DMD<-crt_DEMAND(n_PROD,
              TOTAL_DEMAND = 1000,
-             cv = runif(1,0,3))$DEMAND
+             Q_VAR = runif(1,0,3))$DEMAND
 
   ratio <- runif(4)
   ratio <- ratio/sum(ratio)

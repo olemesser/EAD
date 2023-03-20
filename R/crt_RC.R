@@ -64,7 +64,7 @@ crt_RC<-function(N_RD,
                         TC = TC_direct,
                         cv = cv,
                         max_run = max_tries)
-
+  RC_direct[sample(1:length(RC_direct))]<-RC_direct
   cv_direct_is <- sd(RC_direct)/mean(RC_direct)
 
   #### 3. Create Indirect cost vector ####

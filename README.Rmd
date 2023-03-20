@@ -76,7 +76,7 @@ Third, define a design of experiment (DoE). For each
                    PARAM_FD = seq(0.1,1,0.1), # percentage of products included
                    method_FD = "random",
                    TOTAL_DEMAND = 10000, # total demand
-                   DMD_cv = list(c(0,3)), # demand skewness
+                   Q_VAR = list(c(0,3)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
@@ -90,6 +90,7 @@ Third, define a design of experiment (DoE). For each
                    DSM_method='modular',
                    ub_DSM = 1,
                    TC = 10^6, # total costs
+                   RES_COR = list(c(0,1)), # correlation of variable RES_CONS_PAT to fixed
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
                    cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
@@ -128,17 +129,30 @@ The following chunk calculates the product benchmark costs for the given design.
 
 ```{r costs, eval=T, include=TRUE}
 # variable indirect costs and the direct costs which are always variable are summed up
-RC_var <- EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct
+TC <- sum(EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct + EAD[[1]][[1]]$RC$fix)
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-               DMD = EAD[[1]][[1]]$DEMAND,
-               RC_var = RC_var,
-               RC_fix = EAD[[1]][[1]]$RC$fix)
+                P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
+                DMD = EAD[[1]][[1]]$DEMAND,
+                RC_direct = EAD[[1]][[1]]$RC$direct,
+                RC_var = EAD[[1]][[1]]$RC$var,
+                RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
-sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==DOE$TC[1]
+sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
+```
 
-PC_B_full<-costs$PC_B
-PC_B_full
+To access the total product costs use the following arguments:
+
+```{r totalcosts, eval=T, include=TRUE}
+## total product costs
+costs$PC_B
+```
+
+For the indirect benchmark costs use:
+
+```{r indirectcosts, eval=T, include=TRUE}
+## indirect benchmark product costs
+costs$PC_B_indirect
 ```
 
 If the product mix (available products) or the demand varies, the costs are calculated as:
@@ -147,15 +161,24 @@ If the product mix (available products) or the demand varies, the costs are calc
 ## lets assume we drop the first ten products 
 DMD<-EAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
-costs<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-                DMD = DMD,
-                RC_fix = EAD[[1]][[1]]$RC$fix,
-                RCU=costs$RCU)
+costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
+               P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
+               DMD = DMD,
+               RC_direct = EAD[[1]][[1]]$RC$direct,
+               RC_fix = EAD[[1]][[1]]$RC$fix,
+               RCU=costs$RCU)
 
-PC_B_reduced<-costs$PC_B
+PC_B_reduced<-costs_reduced$PC_B
 
 ## compare the differences
-cbind(PC_B_full,PC_B_reduced)
+data.frame(DMD_full = EAD[[1]][[1]]$DEMAND,
+           DMD_reduced = DMD,
+           PC_B_full,
+           PC_B_reduced,
+           PC_var_full = costs$PC_B_var,
+           PC_var_reduced = costs_reduced$PC_B_var,
+           PC_fix_full = costs$PC_B_fixed,
+           PC_fix_reduced = costs_reduced$PC_B_fixed)
 ```
 
 # Full Documentation
@@ -169,6 +192,10 @@ utils::vignette(package = "EAD")
 ## open main documentation
 utils::vignette("documentation",package ="EAD")
 ```
+
+# Acknowledgement
+
+Special thanks to [Prof. Matthias Meyer](https://www.researchgate.net/profile/Matthias-Meyer-12 "Visit on Research Gate"), [Kai G. Mertens](https://www.researchgate.net/profile/Kai-G-Mertens "Visit on Research Gate") and [Mark Schmidt](https://www.researchgate.net/profile/Mark-Schmidt-19 "Visit on Research Gate") for detailed discussions during the development of this framework.
 
 # References
 
