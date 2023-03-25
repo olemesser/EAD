@@ -52,7 +52,7 @@ experiment_PCS<-function(DOE){
                              RC_fix =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep],
                              RCU_direct = costs$RCU_direct[resources_to_keep])
         PC_B <- benchmark$PC_B
-
+        PC_direct <- benchmark$PC_direct
         # # check fixed_costs
         # sum(ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep]) == sum(benchmark$PC_B_fixed *DMD_zero)
         # ##check variable costs
@@ -60,7 +60,7 @@ experiment_PCS<-function(DOE){
         # ## check direct costs
         # sum((benchmark$PC_B-benchmark$PC_B_indirect)*DMD_zero) == sum((EAD[[1]]$P$RD[,resources_to_keep] %*% costs$RCU_direct[resources_to_keep])*DMD_zero)
 
-        PC_direct <- benchmark$PC_B-benchmark$PC_B_indirect
+
 
         #### Create Measure Object ####
         measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
@@ -141,17 +141,17 @@ experiment_PCS<-function(DOE){
           ### select some ACPs
           product_level_data <- lapply(which(cs_DOE$ACP %in% c(4)),function(s){
             data.frame(id= EAD[[1]]$ID,
-                       LOF.RD =  EAD[[1]]$measures$PRODUCT$LOF$RD,
-                       INTER.RD = EAD[[1]]$measures$PRODUCT$INTER$RD,
-                       INTRA.RD = EAD[[1]]$measures$PRODUCT$INTRA$RD,
-                       DMD_perc = EAD[[1]]$DEMAND/sum(EAD[[1]]$DEMAND),
+                       LOF.RD =  EAD[[1]]$measures$PRODUCT$LOF$RD[products_in],
+                       INTER.RD = EAD[[1]]$measures$PRODUCT$INTER$RD[products_in],
+                       INTRA.RD = EAD[[1]]$measures$PRODUCT$INTRA$RD[products_in],
+                       DMD_perc = EAD[[1]]$DEMAND[products_in]/sum(EAD[[1]]$DEMAND[products_in]),
                        ACP = cs_DOE$ACP[s],
                        method = cs_DOE$method[s],
                        PC_B = reported[[s]]$PC_B,
                        PC_H = reported[[s]]$PC_H,
                        PC_direct = PC_direct[products_in],
-                       PC_B_var = benchmark$PC_B_var,
-                       PC_B_fix = benchmark$PC_B_fixed)
+                       PC_B_var = benchmark$PC_B_var[products_in],
+                       PC_B_fix = benchmark$PC_B_fixed[products_in])
           })
           product_level_data <- data.table::rbindlist(product_level_data)
           system_level_data <- data.table::rbindlist(system_level_data)

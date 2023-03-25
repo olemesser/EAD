@@ -76,13 +76,14 @@ clc_PCB<-function(RES_CONS_PAT,
   # PC_B_fixed <-ifelse(is.nan(PC_B_fixed),0,PC_B_fixed)
 
 
-  return(list(PC_B=PC_B_var + PC_B_fixed + PC_direct,
+  return(list(PC_B=as.numeric(PC_B_var + PC_B_fixed + PC_direct),
               RCU=RCU,
               RCU_direct=RCU_direct,
               TRC = TRC,
-              PC_B_indirect = PC_B_var + PC_B_fixed,
-              PC_B_fixed=PC_B_fixed,
-              PC_B_var=PC_B_var))
+              PC_direct = as.numeric(PC_direct),
+              PC_B_indirect = as.numeric(PC_B_var + PC_B_fixed),
+              PC_B_fixed=as.numeric(PC_B_fixed),
+              PC_B_var=as.numeric(PC_B_var)))
 }
 
 
