@@ -34,15 +34,14 @@ crt_RC<-function(N_RD,
                  cv,
                  max_tries=15){
   suppressMessages(suppressWarnings(require(faux)))
-  suppressMessages(suppressWarnings(require(fGarch)))
-  suppressMessages(suppressWarnings(require(GA)))
+
   #### Input for Testing ####
   # N_RD=50
   # TC=10^6
   # r_in=0.3
   # r_fix=0.5
-  # cor_var=0
-  # cor_fix=0
+  # cor_var=0.5
+  # cor_fix=-0.2
   # cv=2
   # max_tries=2000
   #### End Input for Testing ####
@@ -60,10 +59,9 @@ crt_RC<-function(N_RD,
   TC_var <- TC_indirect - TC_fix
 
   #### 2. Create Direct Cost Vector ####
-  RC_direct<- sample_RC(N_RD = N_RD,
-                        TC = TC_direct,
-                        cv = cv,
-                        max_run = max_tries)
+  RC_direct <- rlnorm(N_RD,meanlog = 0, sdlog = cv)
+  RC_direct <- (RC_direct/sum(RC_direct)*TC_direct)
+
   RC_direct[sample(1:length(RC_direct))]<-RC_direct
   cv_direct_is <- sd(RC_direct)/mean(RC_direct)
 
@@ -102,41 +100,6 @@ crt_RC<-function(N_RD,
 
   return(output)
 
-}
-
-sample_RC<-function(N_RD,TC,cv,max_run=1000){
-  x<-rep(0,N_RD)
-  x[-1]<-TC/length(x)*.001
-  x[1]<-TC-sum(x)
-  x<-x
-  run<-0
-  repeat{
-    rm_costs<-x[1]*runif(1,min=0.001,max=0.01)
-    if(x[1]-rm_costs<0) break
-    idx<-sample(2:length(x),1)
-    x[idx]<-x[idx]+rm_costs
-    x[1]<-x[1]-rm_costs
-    cv_is <- sd(x)/mean(x)
-    check_cv<-abs(cv_is-cv)/cv
-    run<-run+1
-    if((check_cv<=0.05 | run>max_run) & all(x>0)) break
-  }
-  x<-x[sample(1:length(x))]
-  return(x)
-}
-
-obj_DMD<-function(x,N_RD,TC,cv){
-  cv_is<-sapply(1:1,function(i){
-    set.seed(1)
-    RC<-fGarch::rsnorm(N_RD ,mean = x[1], sd = x[2], xi=x[3])
-    RC<-abs(RC)
-    RC<-RC/sum(RC)*TC
-    cv_is<-sd(RC)/mean(RC)
-    set.seed(NULL)
-    return(cv_is)
-  })
-  cv_is<-mean(cv_is)
-  return(abs(cv-cv_is)*-1)
 }
 
 

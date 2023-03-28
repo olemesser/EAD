@@ -6,7 +6,6 @@
 \usage{
 clc_PCB(
   RES_CONS_PAT,
-  P_RD_fix = NULL,
   DMD = NULL,
   RC_direct = NULL,
   RC_var = NULL,
@@ -46,7 +45,6 @@ There are two options to use this function:
 data("exampleEAD")
 TC =  sum(exampleEAD[[1]][[1]]$RC$fix + exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct)
 costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
-                P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
                 DMD = exampleEAD[[1]][[1]]$DEMAND,
                 RC_direct = exampleEAD[[1]][[1]]$RC$direct,
                 RC_var = exampleEAD[[1]][[1]]$RC$var,
@@ -60,7 +58,6 @@ costs$PC_B
 DMD<-exampleEAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
 costs<-clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
-               P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
                DMD = DMD,
                RC_direct = exampleEAD[[1]][[1]]$RC$direct,
                RC_fix = exampleEAD[[1]][[1]]$RC$fix,

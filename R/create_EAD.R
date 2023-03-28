@@ -26,7 +26,6 @@ crt_EAD<-function(DOE,
   #                  DSM_method='modular',
   #                  ub_DSM = 1,
   #                  TC = 10^6, # total costs
-  #                  RES_COR = list(c(0,1)),
   #                  r_in = list(c(0,0.9)),
   #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
   #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
@@ -82,7 +81,6 @@ crt_EAD<-function(DOE,
                        ut_DMM=F,
                        uB_DMM=uB_DMM,
                        ub_DSM=ub_DSM,
-                       RES_COR = DOE$RES_COR[x][[1]],
                        allowZero=allowZero)
 
       DOM$measures$SYSTEM[['D']]<-list(FD=measure_diversificationINDEX(DOM$P$FD,DMD=DMD),

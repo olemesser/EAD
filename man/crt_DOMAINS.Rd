@@ -16,7 +16,6 @@ crt_DOMAINS(
   ut_DMM = F,
   uB_DMM = 1,
   ub_DSM = 1,
-  RES_COR = 1,
   allowZero = F
 )
 }
@@ -52,9 +51,6 @@ In the current version this values is applied for all domains.}
 \item{uB_DMM}{The upper bound for integer sampling with the DMM matrices. Default \code{uB_DMM=1} which means that only binary DMMs are created.}
 
 \item{ub_DSM}{The upper bound for integer sampling with the DSM matrices. Default \code{uB_DSM=1} which means that only binary DSMs are created.}
-
-\item{RES_COR}{A numeric vector of length one or two which specifies the correlation between RES_CONS_PAT representing the resource consumption of variable costs and RES_CONS_PAT_fixed representing the fixed costs resource consumption.
-If a vector of length two is supplied the first entries is used as the lower bound and the second as the upper bound for a uniform distribution.}
 
 \item{allowZero}{Boolean. If \code{allowZero=TRUE} the DMM can contain empty columns. However, the procedure ensures that there are no unused domain elements. Therefore, specific DSM entries are forced to be none-zero.
 For further detail see the \code{forced} parameter in \link[EAD]{crt_DSM}.}

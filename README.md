@@ -76,7 +76,6 @@ Third, define a design of experiment (DoE). For each
                    DSM_method='modular',
                    ub_DSM = 1,
                    TC = 10^6, # total costs
-                   RES_COR = list(c(0,1)), # correlation of variable RES_CONS_PAT to fixed
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
                    cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
@@ -115,7 +114,6 @@ design.
 # variable indirect costs and the direct costs which are always variable are summed up
 TC <- sum(EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct + EAD[[1]][[1]]$RC$fix)
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-                P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
                 DMD = EAD[[1]][[1]]$DEMAND,
                 RC_direct = EAD[[1]][[1]]$RC$direct,
                 RC_var = EAD[[1]][[1]]$RC$var,
@@ -123,7 +121,7 @@ costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
-#> [1] FALSE
+#> [1] TRUE
 ```
 
 To access the total product costs use the following arguments:
@@ -131,11 +129,11 @@ To access the total product costs use the following arguments:
 ``` r
 ## total product costs
 costs$PC_B
-#>  [1] 174.425668 128.725001 113.001390 114.859315 129.502918  83.561782
-#>  [7] 104.629559 111.752636 176.635927 150.088664  98.384999  56.253340
-#> [13]  77.423109 173.347397   4.839455 108.965386 145.067086  71.158649
-#> [19]  77.581787 152.328602 122.428655  50.654130  45.429204 118.855242
-#> [25] 167.825492 165.607291
+#>  [1] 123.889788  96.831652 112.061762  80.198544 170.836831  85.188158
+#>  [7]   7.825247 160.962930 153.137683 141.166982 107.036370 161.163614
+#> [13]  36.286991  98.683232 115.316951  55.192673  81.829815  64.220844
+#> [19] 147.364701 139.315402 151.603942 121.934093  61.390391 137.580976
+#> [25] 113.122011  91.058670
 ```
 
 For the indirect benchmark costs use:
@@ -143,11 +141,11 @@ For the indirect benchmark costs use:
 ``` r
 ## indirect benchmark product costs
 costs$PC_B_indirect
-#>  [1] 34.7503433 37.7001340 45.8907531 30.1685979 25.6003060 14.5731281
-#>  [7] 21.3515147 29.1387757 43.3430135 53.2293184 18.1480140 10.3550123
-#> [13] 23.8937734 54.8019241  0.9278887 29.7899606 36.1913478 26.6167045
-#> [19] 18.3969809 33.6785495 21.7700376  8.9621924 13.7633279 25.9074625
-#> [25] 47.0985822 41.9841122
+#>  [1]  83.320185  64.822792  74.816084  54.344891 114.144469  57.418902
+#>  [7]   5.675056 107.480462 101.805406  94.680816  72.227211 108.319676
+#> [13]  24.754524  65.992242  76.567609  37.856161  54.899268  43.274078
+#> [19]  98.139012  93.511366 101.322132  81.858480  41.314357  92.188880
+#> [25]  75.938456  61.156399
 ```
 
 If the product mix (available products) or the demand varies, the costs
@@ -158,7 +156,6 @@ are calculated as:
 DMD<-EAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
 costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
-               P_RD_fix = EAD[[1]][[1]]$RC$P_RD_fix,
                DMD = DMD,
                RC_direct = EAD[[1]][[1]]$RC$direct,
                RC_fix = EAD[[1]][[1]]$RC$fix,
@@ -167,14 +164,16 @@ costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
 PC_B_reduced<-costs_reduced$PC_B
 
 ## compare the differences
-data.frame(DMD_full = EAD[[1]][[1]]$DEMAND,
-           DMD_reduced = DMD,
-           PC_B_full,
-           PC_B_reduced,
-           PC_var_full = costs$PC_B_var,
-           PC_var_reduced = costs_reduced$PC_B_var,
-           PC_fix_full = costs$PC_B_fixed,
-           PC_fix_reduced = costs_reduced$PC_B_fixed)
+costs<- data.frame(DMD_f = EAD[[1]][[1]]$DEMAND,
+                   DMD_r = DMD,
+                   PC_B_f = costs$PC_B,
+                   PC_B_r = costs_reduced$PC_B,
+                   PC_var_f = costs$PC_B_var,
+                   PC_var_r = costs_reduced$PC_B_var,
+                   PC_fix_f = costs$PC_B_fixed,
+                   PC_fix_r = costs_reduced$PC_B_fixed)
+
+head(costs)
 ```
 
 # Full Documentation

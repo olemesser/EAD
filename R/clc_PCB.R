@@ -19,7 +19,6 @@
 #' data("exampleEAD")
 #' TC =  sum(exampleEAD[[1]][[1]]$RC$fix + exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct)
 #' costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
-#'                 P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
 #'                 DMD = exampleEAD[[1]][[1]]$DEMAND,
 #'                 RC_direct = exampleEAD[[1]][[1]]$RC$direct,
 #'                 RC_var = exampleEAD[[1]][[1]]$RC$var,
@@ -33,13 +32,11 @@
 #' DMD<-exampleEAD[[1]][[1]]$DEMAND
 #' DMD[1:10]<-0
 #' costs<-clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
-#'                P_RD_fix = exampleEAD[[1]][[1]]$RC$P_RD_fix,
 #'                DMD = DMD,
 #'                RC_direct = exampleEAD[[1]][[1]]$RC$direct,
 #'                RC_fix = exampleEAD[[1]][[1]]$RC$fix,
 #'                RCU=costs$RCU)
 clc_PCB<-function(RES_CONS_PAT,
-                  P_RD_fix = NULL,
                   DMD = NULL,
                   RC_direct = NULL,
                   RC_var = NULL,
@@ -51,11 +48,9 @@ clc_PCB<-function(RES_CONS_PAT,
   if(is.null(RC_fix)) RC_fix<-rep(0,length(RC_var))
   if(!is.null(RC_var) & !is.null(RCU)) stop("RC_var and RCU supplied. \nPlease insert either RC_var or RCU.")
   if(is.null(RC_var) & is.null(RCU)) stop("RC_var and RCU are not supplied. \nPlease insert either RC_var or RCU.")
-  # if(!is.null(RC_fix) & is.null(P_RD_fix)) stop("No P_RD_fix supplied. \nPlease insert either P_RD_fix or set RC_fix=NULL ")
 
   #### 1. Check if Demand is zero for some products ####
   RES_CONS_PAT[DMD==0,]<-0
-  # P_RD_fix[DMD==0,]<-0
 
   #### 2. Calculate TRC and RCU ####
   TRC<-colSums(RES_CONS_PAT * DMD)
@@ -67,13 +62,9 @@ clc_PCB<-function(RES_CONS_PAT,
   RCU_direct<-ifelse(is.nan(RCU_direct) | is.infinite(RCU),0,RCU_direct)
   PC_direct <- as.numeric(RES_CONS_PAT %*% RCU_direct)
 
-
   #### 3. Calculate (true) Benchmark Costs ####
   PC_B_var <- as.numeric(RES_CONS_PAT %*% RCU)
-
-  # TRC_fix<-colSums(P_RD_fix * DMD)
   PC_B_fixed <- RES_CONS_PAT %*% ifelse(is.infinite(RC_fix/TRC),0,(RC_fix/TRC))
-  # PC_B_fixed <-ifelse(is.nan(PC_B_fixed),0,PC_B_fixed)
 
 
   return(list(PC_B=as.numeric(PC_B_var + PC_B_fixed + PC_direct),

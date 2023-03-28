@@ -46,7 +46,6 @@ experiment_PCS<-function(DOE){
         #### Calculate True Costs ####
         benchmark <- clc_PCB(
                              RES_CONS_PAT = EAD[[1]]$P$RD[,resources_to_keep],
-                             P_RD_fix = EAD[[1]]$RC$P_RD_fix[,resources_to_keep],
                              DMD = DMD_zero,
                              RCU = RCU[resources_to_keep],
                              RC_fix =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep],

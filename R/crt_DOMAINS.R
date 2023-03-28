@@ -22,8 +22,6 @@
 #' @param ut_DMM Boolean. If \code{ut_DMM=TRUE}, the upper triangle DMMs are created representing indirect inter domain dependencies.
 #' @param uB_DMM The upper bound for integer sampling with the DMM matrices. Default \code{uB_DMM=1} which means that only binary DMMs are created.
 #' @param ub_DSM The upper bound for integer sampling with the DSM matrices. Default \code{uB_DSM=1} which means that only binary DSMs are created.
-#' @param RES_COR A numeric vector of length one or two which specifies the correlation between RES_CONS_PAT representing the resource consumption of variable costs and RES_CONS_PAT_fixed representing the fixed costs resource consumption.
-#' If a vector of length two is supplied the first entries is used as the lower bound and the second as the upper bound for a uniform distribution.
 #' @param allowZero Boolean. If \code{allowZero=TRUE} the DMM can contain empty columns. However, the procedure ensures that there are no unused domain elements. Therefore, specific DSM entries are forced to be none-zero.
 #' For further detail see the \code{forced} parameter in \link[EAD]{crt_DSM}.
 #' @return Returns an EAD object containing
@@ -67,7 +65,6 @@ crt_DOMAINS<-function(P_FD,
                       ut_DMM=F,
                       uB_DMM=1,
                       ub_DSM=1,
-                      RES_COR=1,
                       allowZero=F){
 
 
@@ -375,14 +372,12 @@ crt_DOMAINS<-function(P_FD,
                               OV = list(FD=measure_OV(P$FD),
                                       PD=measure_OV(P$PD),
                                       PrD=measure_OV(P$PrD),
-                                      RD=measure_OV(P$RD)),
-                              RES_COR = mean(diag(cor(P$RD,P_RD_fix)))
+                                      RD=measure_OV(P$RD))
                               ))
 
 
 
   out<-list(P=P,
-            P_RD_fix = P_RD_fix,
             DSM=DSM,
             DMM=DMM,
             measures=measures,
