@@ -4,29 +4,14 @@
 \alias{crt_DMM}
 \title{Create a domain mapping matrix (DMM)}
 \usage{
-crt_DMM(
-  N_src,
-  N_tgt,
-  DMM_PAR,
-  method = c("SDC", "DNS"),
-  binary = F,
-  upper_Bound = 20,
-  allowZero = T
-)
+crt_DMM(N_src, N_tgt, DMM_PAR, binary = F, upper_Bound = 20, allowZero = T)
 }
 \arguments{
 \item{N_src}{Number of rows for the DMM.}
 
 \item{N_tgt}{Number of columns for the DMM.}
 
-\item{DMM_PAR}{Double within \code{0<=DMM_PAR<=1}. Specifies either the system design complexity which should be generated \code{method='SDC'}.
-If \code{method='DENS'} is selected, DMM_PAR percentage of entries are non-zero. If \code{DMM_PAR=0} a uncoupled design is created under both methods.}
-
-\item{method}{Character which specifies the method used for DMM generation. The options are:
-\describe{
-\item{SDC}{Uses a genetic algorithm to generate a DMM where \code{measure_designComplexity(DMM)=DMM_PAR}. For further details see \link[EAD]{measure_designComplexity}}
-\item{DENS}{Randomly samples DENS percentage of entries within the DMM.}
-}}
+\item{DMM_PAR}{Double within \code{0<=DMM_PAR<=1}. Specifies the desired system design complexity which should be generated.}
 
 \item{binary}{Boolean, default=F. If the output DMM should be an binary or non binary matrix. If \code{binary=TRUE} then the input \code{'upper_Bound'} will be ignored.}
 
@@ -51,7 +36,6 @@ set.seed(1234)
 
 crt_DMM(N_src=7,
         N_tgt=16,
-        method='SDC',
         DMM_PAR=0.4,
         upper_Bound=1)
 

@@ -69,7 +69,6 @@ DOE<-expand.grid(list(N_FR = N_FR,
                       TOTAL_DEMAND = TOTAL_DEMAND,
                       DMD_cv = DMD_cv,
                       DMM_PAR = DMM_PAR,
-                      DMM_method="SDC",
                       ut_DMM = ut_DMM,
                       SC_adj_n_in = SC_adj_n_in,
                       N_RUN = 1:N_RUN))

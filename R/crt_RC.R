@@ -29,8 +29,8 @@ crt_RC<-function(N_RD,
                  TC=10^6,
                  r_in,
                  r_fix,
-                 cor_var,
-                 cor_fix,
+                 cor_var=0,
+                 cor_fix=0,
                  cv,
                  max_tries=15){
   suppressMessages(suppressWarnings(require(faux)))
@@ -40,7 +40,7 @@ crt_RC<-function(N_RD,
   # TC=10^6
   # r_in=0.3
   # r_fix=0.5
-  # cor_var=0.5
+  # cor_var=-0.2
   # cor_fix=-0.2
   # cv=2
   # max_tries=2000
@@ -61,24 +61,30 @@ crt_RC<-function(N_RD,
   #### 2. Create Direct Cost Vector ####
   RC_direct <- rlnorm(N_RD,meanlog = 0, sdlog = cv)
   RC_direct <- (RC_direct/sum(RC_direct)*TC_direct)
-
-  RC_direct[sample(1:length(RC_direct))]<-RC_direct
   cv_direct_is <- sd(RC_direct)/mean(RC_direct)
 
   #### 3. Create Indirect cost vector ####
     ### 3.1 fixed costs ###
-    fix <- crt_corVEC(TC = TC_fix,
-                     RC_base = RC_direct,
-                     cv = cv,
-                     cor = cor_fix,
-                     max_tries = 50)
+    fix <- crt_RCid(l = N_RD,
+                    TC = TC_fix,
+                    sdlog = cv)
+    fix$cor<-cor(RC_direct,fix$RC)
+    # fix <- crt_corVEC(TC = TC_fix,
+    #                  RC_base = RC_direct,
+    #                  cv = cv,
+    #                  cor = cor_fix,
+    #                  max_tries = 50)
 
     ### 3.2 variable costs ###
-    var <- crt_corVEC(TC = TC_var,
-                      RC_base = RC_direct,
-                      cv = cv,
-                      cor = cor_var,
-                      max_tries = 50)
+    var <- crt_RCid(l = N_RD,
+                    TC = TC_var,
+                    sdlog = cv)
+    var$cor<-cor(RC_direct,var$RC)
+    # var <- crt_corVEC(TC = TC_var,
+    #                   RC_base = RC_direct,
+    #                   cv = cv,
+    #                   cor = cor_var,
+    #                   max_tries = 50)
 
   #### 4. Create Output Object ####
     output<-list(RC_var = list(RC = var$RC,
@@ -108,7 +114,6 @@ crt_corVEC<-function(TC,
                      cv,
                      cor,
                      max_tries=50){
-
   tries<-0
   add<-0
   N_RD<-length(RC_base)
@@ -135,4 +140,13 @@ crt_corVEC<-function(TC,
   return(list(RC=RC,
               cv=cv_is,
               cor=cor_is))
+}
+
+
+crt_RCid<-function(l,TC,sdlog){
+  RC <- rlnorm(l,meanlog = 0, sdlog = sdlog)
+  RC <- (RC/sum(RC)*TC)
+  cv_is<-sd(RC)/mean(RC)
+  return(list(RC=RC,
+              cv=cv_is))
 }

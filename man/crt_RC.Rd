@@ -4,7 +4,16 @@
 \alias{crt_RC}
 \title{Create a resource cost object}
 \usage{
-crt_RC(N_RD, TC = 10^6, r_in, r_fix, cor_var, cor_fix, cv, max_tries = 15)
+crt_RC(
+  N_RD,
+  TC = 10^6,
+  r_in,
+  r_fix,
+  cor_var = 0,
+  cor_fix = 0,
+  cv,
+  max_tries = 15
+)
 }
 \arguments{
 \item{N_RD}{Number of resources.}

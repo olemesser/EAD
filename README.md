@@ -66,7 +66,6 @@ Third, define a design of experiment (DoE). For each
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
-                   DMM_method="SDC", # method for generating the DMM
                    uB_DMM = 10,
                    allowZero = T,
                    ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
@@ -78,8 +77,6 @@ Third, define a design of experiment (DoE). For each
                    TC = 10^6, # total costs
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
-                   cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
-                   cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
                    RC_cv = list(c(0,1)), # skewness of resource costs
                    N_RUN = 1:100 # number of runs
                     )
@@ -121,7 +118,7 @@ costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
-#> [1] TRUE
+#> [1] FALSE
 ```
 
 To access the total product costs use the following arguments:
@@ -129,11 +126,11 @@ To access the total product costs use the following arguments:
 ``` r
 ## total product costs
 costs$PC_B
-#>  [1] 123.889788  96.831652 112.061762  80.198544 170.836831  85.188158
-#>  [7]   7.825247 160.962930 153.137683 141.166982 107.036370 161.163614
-#> [13]  36.286991  98.683232 115.316951  55.192673  81.829815  64.220844
-#> [19] 147.364701 139.315402 151.603942 121.934093  61.390391 137.580976
-#> [25] 113.122011  91.058670
+#>  [1] 128.0184129  99.2816412 112.1011646  97.9145624 140.3044684 105.0347309
+#>  [7]  64.1290873  42.0566083  73.8172688 103.7181556 110.8576033  63.8428015
+#> [13]  66.0476407  41.1084786  24.1630958  47.7477609 126.8069673   0.2862858
+#> [19] 111.9891809 155.2968663  54.8387297  99.7343438 101.0121226  14.1021883
+#> [25] 138.9410381  71.3646232
 ```
 
 For the indirect benchmark costs use:
@@ -141,11 +138,11 @@ For the indirect benchmark costs use:
 ``` r
 ## indirect benchmark product costs
 costs$PC_B_indirect
-#>  [1]  83.320185  64.822792  74.816084  54.344891 114.144469  57.418902
-#>  [7]   5.675056 107.480462 101.805406  94.680816  72.227211 108.319676
-#> [13]  24.754524  65.992242  76.567609  37.856161  54.899268  43.274078
-#> [19]  98.139012  93.511366 101.322132  81.858480  41.314357  92.188880
-#> [25]  75.938456  61.156399
+#>  [1] 55.7575013 42.6462743 48.8171769 42.8934035 60.7034604 45.5191794
+#>  [7] 27.5075311 17.9156250 31.8952400 44.9683762 47.8472352 27.3775420
+#> [13] 28.5906789 17.9854028 10.1536795 20.3905175 54.6535455  0.1299891
+#> [19] 48.6051015 67.2259080 24.1030760 43.2878490 43.9479775  6.1758790
+#> [25] 60.1151151 30.8899799
 ```
 
 If the product mix (available products) or the demand varies, the costs

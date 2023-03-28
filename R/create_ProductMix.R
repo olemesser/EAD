@@ -105,7 +105,7 @@ create_ProductMix<-function(N_FR=13,
       }
     }
   }else if(method=="PCI"){
-    suppressWarnings(require(GA))
+    suppressMessages(suppressWarnings(require(GA)))
     DSM_FD<-diag(0,nrow = NCOL(P_FD))
     x_init<-sample(c(0,1),NROW(P_FD),replace = T)
     x<-ga(type = "binary",
@@ -117,7 +117,7 @@ create_ProductMix<-function(N_FR=13,
           popSize = 150,
           run=100,
           maxiter = ifelse(PARAM<0.25,4000,2000),
-          monitor = F,
+          monitor = T,
           keepBest = T,
           pcrossover = 0.02,
           pmutation = 0.05,

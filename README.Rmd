@@ -80,7 +80,6 @@ Third, define a design of experiment (DoE). For each
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
-                   DMM_method="SDC", # method for generating the DMM
                    uB_DMM = 10,
                    allowZero = T,
                    ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
@@ -92,8 +91,6 @@ Third, define a design of experiment (DoE). For each
                    TC = 10^6, # total costs
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
-                   cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
-                   cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
                    RC_cv = list(c(0,1)), # skewness of resource costs
                    N_RUN = 1:100 # number of runs
                     )
