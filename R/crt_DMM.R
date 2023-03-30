@@ -44,7 +44,7 @@ crt_DMM<-function(N_src,
     if(allowZero==F){
       empty_col <- which(colSums(DMM)==0)
       if(length(empty_col)>0){
-        DMM[,empty_col] <- apply(DMM[,empty_col],2,function(x){
+        DMM[,empty_col] <- apply(DMM[,empty_col,drop=F],2,function(x){
           temp<-rep(0,NROW(DMM))
           temp[sample(1:NROW(DMM),1)]<-1
           return(temp)
