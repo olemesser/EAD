@@ -6,21 +6,26 @@
 \usage{
 create_ProductMix(
   N_FR = 13,
-  PARAM = 0.05,
-  method = c("combination", "random", "PCI", "DNS")
+  DNS = 0.1,
+  prop_PROD = 1,
+  N_PROD = 100,
+  method = c("combination", "random", "DNS")
 )
 }
 \arguments{
 \item{N_FR}{Number of functional requirements. It is recommend to keep the value between 3-15.
 Product mixes with much more than 15 functional requirements require much RAM as all combinations are generated. Therefore, the function is stopped if \code{N_FR>15}}
 
-\item{PARAM}{A numeric value between \code{0<PARAM<=1} where its meaning depend on the selected \code{'method'}.}
+\item{DNS}{A numeric value between \code{0<DNS<=1} specifying the desired density. This argument is only used if either \code{method='DNS'} or \code{method='combination'} are selected.}
+
+\item{prop_PROD}{The proportion of products to sample from the free product mix This argument is only used if \code{method='random'} is selected.}
+
+\item{N_PROD}{The number of desired products. Note that \code{N_FR<=N_PROD<=2^(N_FR)-1}. This argument is only used if \code{method='DNS'} is selected.}
 
 \item{method}{Character which specifies the method, used to generate the product mix. There are two options:
 \describe{
   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
-  \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
-  \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
+  \item{random}{Randomly choose \code{prop_PROD} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
   \item{DNS}{Creates a product matrix with a given density.}
 }}
 }
@@ -30,15 +35,21 @@ A list object containing the product mix. This list consists of:
   \item{P_FD}{The free product mix matrix}
   \item{P_FD_const}{The constraint product mix matrix}
   \item{DSM_FD}{The DSM_FD matrix containing the entries to constraint the variety.}
-  \item{measures}{A named list containing the following measures: number of product variants (N_P), uniform diversification index (D_u),
-    local outlier factor (LOF) and Product Variety (PV) }
+  \item{measures}{A named list containing the following measures: number of product variants \code{N_P}, uniform Diversification index \code{D_u},
+    local outlier factor \code{LOF}, the density \code{DENS_FD} and the product line commonality index \code{PCI_FD}.
+    For further information on the measures see \link[EAD]{measure_diversificationINDEX}, \link[EAD]{measure_LOF}, \link[EAD]{measure_DENS}, \link[EAD]{measure_PCI}.}
 }
 }
 \description{
-Creates a product mix based on a given number of functional requirements \code{N_FR} and a density \code{PARAM}.
+Creates a product mix based on a given number of functional requirements \code{N_FR} and optional input values which depend on the \code{method} argument.
 }
 \examples{
 set.seed(1234)
-prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2,method="random")
+prodMIX<-create_ProductMix(N_FR=7,prop_PROD=0.2,method="random")
+prodMIX$measures
+prodMIX$P_FD_const
+
+prodMIX<-create_ProductMix(N_FR=15,DNS=0.1,N_PROD=100,method="DNS")
+prodMIX$measures
 prodMIX$P_FD_const
 }

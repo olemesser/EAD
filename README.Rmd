@@ -73,7 +73,7 @@ Third, define a design of experiment (DoE). For each
                    N_DD = 14, # number of physical domain elements
                    N_PrD = 30, # number of process domain elements
                    N_RD = 60, # number of resource domain elements
-                   PARAM_FD = seq(0.1,1,0.1), # percentage of products included
+                   prop_PROD = seq(0.1,1,0.1), # percentage of products included
                    method_FD = "random",
                    TOTAL_DEMAND = 10000, # total demand
                    Q_VAR = list(c(0,3)), # demand heterogeneity
@@ -195,10 +195,10 @@ Special thanks to [Prof. Matthias Meyer](https://www.researchgate.net/profile/Ma
 
 # References
 
-Anand, V., Balakrishnan, R., & Labro, E. (2019). A Framework for Conducting Numerical Experiments on Cost System Design. *Journal of Management Accounting Research*, *31*(1), 41–61. <https://doi.org/10.2308/jmar-52057>
+Anand, V., Balakrishnan, R., & Labro, E. (2019). A Framework for Conducting Numerical Experiments on Cost System Design. *Journal of Management Accounting Research*, *31*(1), 41--61. <https://doi.org/10.2308/jmar-52057>
 
-Mertens, K. G. (2020). *Measure and manage your product costs right – development and use of an extended axiomatic design for cost modeling.* TUHH Universitätsbibliothek. <https://doi.org/10.15480/882.2888>
+Mertens, K. G. (2020). *Measure and manage your product costs right -- development and use of an extended axiomatic design for cost modeling.* TUHH Universitätsbibliothek. <https://doi.org/10.15480/882.2888>
 
-Meyer, M., Meßerschmidt, O., & Mertens, K. G. (2019). *How much does variety-induced complexity actually cost? Linking axiomatic design with cost modelling*. In M. Schröder & K. Wegner (Eds.), *Logistik im Wandel der Zeit – Von der Produktionssteuerung zu vernetzten Supply Chains* (pp. 813–827). Wiesbaden: Springer Fachmedien Wiesbaden. <https://doi.org/10.1007/978-3-658-25412-4_39>
+Meyer, M., Meßerschmidt, O., & Mertens, K. G. (2019). *How much does variety-induced complexity actually cost? Linking axiomatic design with cost modelling*. In M. Schröder & K. Wegner (Eds.), *Logistik im Wandel der Zeit -- Von der Produktionssteuerung zu vernetzten Supply Chains* (pp. 813--827). Wiesbaden: Springer Fachmedien Wiesbaden. <https://doi.org/10.1007/978-3-658-25412-4_39>
 
 Meßerschmidt, O. (forthcoming). *Variety and Costs - The Effects of Product Variety on Costs and Costing Systems.*

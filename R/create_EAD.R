@@ -4,12 +4,13 @@ crt_EAD<-function(DOE,
   suppressWarnings(require(tidyr))
 
   #### Input Testing ####
-  # x<-2
-  # DOE<-expand_grid(N_FR = list(c(9,13)), # number of functional requirements
+  # x<-1
+  # DOE<-expand_grid(N_FR = list(c(15)), # number of functional requirements
   #                  N_DD = list(c(18,26)), # number of physical domain elements
   #                  N_PrD = list(c(36,52)), # number of process domain elements
   #                  N_RD = list(c(72,104)), # number of resource domain elements
-  #                  PARAM_FD = seq(0.07,0.5,0.05), #density within the DSM_FD matrix. Creates product mixes where not all products are included
+  #                  DNS = seq(0.07,0.5,0.05), #density within the DSM_FD matrix. Creates product mixes where not all products are included
+  #                  N_PROD = 50,
   #                  method_FD = "DNS",
   #                  TOTAL_DEMAND = 10000, # total demand
   #                  Q_VAR = list(c(0,3)), # demand heterogeneity
@@ -53,7 +54,9 @@ crt_EAD<-function(DOE,
     #### 1. Create Product Mix & Demand ####
       ### 1.1 Product Mix Generation ###
       prodMIX<-create_ProductMix(N_FR = DOE$N_FR[x][[1]],
-                        PARAM = DOE$PARAM_FD[x],
+                        DNS = ifelse('DNS' %in% colnames(DOE),DOE$DNS[x],1),
+                        prop_PROD=ifelse('prop_PROD' %in% colnames(DOE),DOE$prop_PROD[x],NA),
+                        N_PROD = ifelse('N_PROD' %in% colnames(DOE),DOE$N_PROD[x],1),
                         method =DOE$method_FD[x])
       P[["FD"]]<-as.matrix(prodMIX$P_FD_const)
 

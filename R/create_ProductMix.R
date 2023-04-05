@@ -1,13 +1,14 @@
 #' @title Create product mix (P_FD)
-#' @description Creates a product mix based on a given number of functional requirements \code{N_FR} and a density \code{PARAM}.
+#' @description Creates a product mix based on a given number of functional requirements \code{N_FR} and optional input values which depend on the \code{method} argument.
 #' @param N_FR Number of functional requirements. It is recommend to keep the value between 3-15.
 #' Product mixes with much more than 15 functional requirements require much RAM as all combinations are generated. Therefore, the function is stopped if \code{N_FR>15}
-#' @param PARAM A numeric value between \code{0<PARAM<=1} where its meaning depend on the selected \code{'method'}.
+#' @param DNS A numeric value between \code{0<DNS<=1} specifying the desired density. This argument is only used if either \code{method='DNS'} or \code{method='combination'} are selected.
+#' @param N_PROD The number of desired products. Note that \code{N_FR<=N_PROD<=2^(N_FR)-1}. This argument is only used if \code{method='DNS'} is selected.
+#' @param prop_PROD The proportion of products to sample from the free product mix This argument is only used if \code{method='random'} is selected.
 #' @param method Character which specifies the method, used to generate the product mix. There are two options:
 #' \describe{
 #'   \item{combination}{The product mix is created by using the DSM_FD matrix which contains the configuration constraints in conjuntive normal form.}
-#'   \item{random}{Randomly choose \code{PARAM} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
-#'   \item{PCI}{Creates a product mix based on a pre defined product line commonality index (PCI). The density must be within the bounds of \code{0<PARAM<=0.5}.}
+#'   \item{random}{Randomly choose \code{prop_PROD} percentage of products from the product mix. Is is ensured, that each functional requirement is used at least ones.}
 #'   \item{DNS}{Creates a product matrix with a given density.}
 #' }
 #' @return A list object containing the product mix. This list consists of:
@@ -15,16 +16,24 @@
 #'   \item{P_FD}{The free product mix matrix}
 #'   \item{P_FD_const}{The constraint product mix matrix}
 #'   \item{DSM_FD}{The DSM_FD matrix containing the entries to constraint the variety.}
-#'   \item{measures}{A named list containing the following measures: number of product variants (N_P), uniform diversification index (D_u),
-#'     local outlier factor (LOF) and Product Variety (PV) }
+#'   \item{measures}{A named list containing the following measures: number of product variants \code{N_P}, uniform Diversification index \code{D_u},
+#'     local outlier factor \code{LOF}, the density \code{DENS_FD} and the product line commonality index \code{PCI_FD}.
+#'     For further information on the measures see \link[EAD]{measure_diversificationINDEX}, \link[EAD]{measure_LOF}, \link[EAD]{measure_DENS}, \link[EAD]{measure_PCI}.}
 #' }
 #' @examples
 #' set.seed(1234)
-#' prodMIX<-create_ProductMix(N_FR=7,PARAM=0.2,method="random")
+#' prodMIX<-create_ProductMix(N_FR=7,prop_PROD=0.2,method="random")
+#' prodMIX$measures
+#' prodMIX$P_FD_const
+#'
+#' prodMIX<-create_ProductMix(N_FR=15,DNS=0.1,N_PROD=100,method="DNS")
+#' prodMIX$measures
 #' prodMIX$P_FD_const
 create_ProductMix<-function(N_FR=13,
-                            PARAM=0.05,
-                            method=c("combination","random","PCI","DNS")){
+                            DNS=0.1,
+                            prop_PROD=1,
+                            N_PROD=100,
+                            method=c("combination","random","DNS")){
 
   suppressMessages(suppressWarnings(require(dplyr)))
   suppressMessages(suppressWarnings(require(tidyr)))
@@ -34,7 +43,8 @@ create_ProductMix<-function(N_FR=13,
   P_FD<-expand.grid(lapply(1:N_FR,function(x) c(0,1)))
   P_FD<-P_FD[rowSums(P_FD)!=0,]
   colnames(P_FD)<-paste0("FD_",1:N_FR)
-  if(length(PARAM)==2) PARAM<-runif(1,min=PARAM[1],max=PARAM[2])
+  if(length(DNS)==2) DNS<-runif(1,min=DNS[1],max=DNS[2])
+  if(length(prop_PROD)==2) prop_PROD<-runif(1,min=prop_PROD[1],max=prop_PROD[2])
 
   if(method=="combination"){
     require(rpicosat)
@@ -47,7 +57,7 @@ create_ProductMix<-function(N_FR=13,
           c(0,1),
           N_FR^2
           ,replace = T,
-          prob = c(1-PARAM,PARAM)
+          prob = c(1-DNS,DNS)
         ),
         nrow = N_FR
       )
@@ -92,85 +102,43 @@ create_ProductMix<-function(N_FR=13,
     }
   }else if(method=="random"){
     tries<-0
-    if(PARAM==0) PARAM<-0.01
+    if(prop_PROD==0) prop_PROD<-0.01
     repeat{
-      selection<-sample(1:NROW(P_FD),ceiling(NROW(P_FD)*PARAM))
+      selection<-sample(1:NROW(P_FD),ceiling(NROW(P_FD)*prop_PROD))
       P_FD_const<-P_FD[selection,]
       tries<-tries+1
       if(all(colSums(P_FD_const)>0) & NROW(P_FD_const)>2){
         DSM_FD<-diag(0,nrow = NCOL(P_FD))
         break
       }else if(tries>50){
-        PARAM<-PARAM*1.01
+        prop_PROD<-prop_PROD*1.01
       }
     }
-  }else if(method=="PCI"){
-    suppressMessages(suppressWarnings(require(GA)))
-    DSM_FD<-diag(0,nrow = NCOL(P_FD))
-    x_init<-sample(c(0,1),NROW(P_FD),replace = T)
-    x<-ga(type = "binary",
-          fitness =  objFct_productMix,
-          P = P_FD,
-          PARAM = PARAM,
-          nBits = length(x_init),
-          suggestions=x_init,
-          popSize = 150,
-          run=100,
-          maxiter = ifelse(PARAM<0.25,4000,2000),
-          monitor = T,
-          keepBest = T,
-          pcrossover = 0.02,
-          pmutation = 0.05,
-          maxFitness = -0.01)
-    P_FD_const<-P_FD[as.logical(x@solution[1,]),]
   }else if(method=="DNS"){
-    if(PARAM<=0.07) PARAM<-0.07
-    suppressMessages(suppressWarnings(require(GA)))
+    if(N_PROD<N_FR) N_PROD <- N_FR
     DSM_FD<-diag(0,nrow = NCOL(P_FD))
-    dns_temp<-as.numeric(rowSums(P_FD)/NCOL(P_FD))
-    range<-function(x){
-      y<-(x^2-(1)*x+0.39)
-      return(y*8)
+    repeat{
+      row_densities <- as.numeric(apply(P_FD, 1, function(row) sum(row != 0) / N_FR))
+      row_density_error <- abs(row_densities-DNS)
+      row_idx <- 1:NROW(P_FD)
+      selected_rows<-vector(mode = "numeric")
+      while (length(selected_rows)<N_PROD) {
+        rows_available <- setdiff(1:NROW(P_FD),selected_rows)
+        new_row <- which(row_density_error[rows_available]==min(row_density_error[rows_available]))
+        new_row <- sample(new_row,1)
+        selected_rows <- c(selected_rows,row_idx[rows_available][new_row])
+      }
+      P_FD_const <- P_FD[selected_rows,]
+      cond_1 <- NROW(unique(P_FD_const))==N_PROD
+      cond_2 <- all(colSums(P_FD_const)>0)
+      if(cond_1 & cond_2) break
     }
-    P_FD<-P_FD[dns_temp<=PARAM*range(PARAM) & dns_temp>=PARAM*1/range(PARAM),]
-    max_p <- 200
-    prob<-ifelse(max_p>NROW(P_FD),NROW(P_FD),max_p)/NROW(P_FD)
-    x_init<-sample(c(0,1),NROW(P_FD),replace = T,prob = c(1-prob,prob))
-    prod<-sum(x_init)
-    if(prod<=15) x_init[sample(which(x_init==0),15-prod)]<-1
-    if(prod>=200) x_init[sample(which(x_init==1),prod-max_p)]<-0
-    x<-ga(type = "binary",
-          fitness =  function(x,P_FD,PARAM,min_p,max_p){
-            prod<-sum(x)
-            temp<-P_FD[as.logical(x),,drop = FALSE]
-            temp<-measure_DENS(temp)*ifelse(all(colSums(temp)>0),1,2)
-            obj<-abs(mean(temp)-PARAM)*-1
-            pen<-max(c(prod-max_p,min_p-prod))
-            pen<-ifelse(pen>0,pen*1.1,1)
-            obj<-ifelse(prod<min_p | prod>max_p,obj*pen,obj)
-            return(obj)
-          },
-          P = P_FD,
-          PARAM = PARAM,
-          min_p = N_FR,
-          max_p = max_p,
-          nBits = length(x_init),
-          suggestions=x_init,
-          popSize = 40,
-          run=300,
-          maxiter = 2000,
-          monitor = F,
-          keepBest = T,
-          pcrossover = 0.02,
-          pmutation = 0.05,
-          maxFitness = -0.02)
-    P_FD_const<-P_FD[as.logical(x@solution[1,]),]
   }
 
   measures<-list(N_P=NROW(P_FD_const), # number of product variants
                  D_u=measure_diversificationINDEX(P_FD_const), # Diversification Index
                  LOF_10=measure_LOF(P_FD_const), # Local Outlier Factor
-                 DENS_FD=sum(P_FD_const>0)/prod(dim(P_FD_const)),# density of DSM_FD
+                 DENS_FD=measure_DENS(P_FD_const),# density of DSM_FD
                  PCI_FD = measure_PCI(P_FD_const)) # product mix commonality
 
   productMIX<-list(
@@ -184,11 +152,3 @@ create_ProductMix<-function(N_FR=13,
 }
 
 
-
-objFct_productMix<-function(x,P,PARAM){
-  prod<-sum(x)
-  if(prod<2) x[sample(which(x==0),3-prod)]<-1
-  temp<-P[as.logical(x),,drop = FALSE]
-  temp<-ifelse(all(colSums(temp)>0),measure_PCI(temp),measure_PCI(temp)*10)
-  return(abs(temp-PARAM)*-1)
-}
