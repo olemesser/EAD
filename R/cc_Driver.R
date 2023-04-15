@@ -1,3 +1,250 @@
+#' @title Substitutes two components by an overdesigned one
+#' @description This function randomly chooses two component and replace those by one overdesigned one.
+#' The first component is chosen randomly. The second component is selected by finding the nearest neighbor of component one.
+#' Since components are substituted this function changes the following matrices \eqn{DMM_{FD,PD}}, \eqn{DSM_{PD}} and \eqn{DMM_{PD,PrD}}.
+#' @param EAD An EAD object created via \link[EAD]{crt_EAD_MC}.
+#' @return Returns the manipulated EAD.
+#' @details For further details see the corresponding vignette by running \code{utils::vignette(package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' EAD <- smallEAD
+#' overdesign_EAD(EAD)
+overdesign_EAD<-function(EAD){
+  require(EAD)
+  #### Testing ####
+  # EAD <- smallEAD
+  # EAD$measures$SYSTEM$SDC_n$FD_PD
+  # EAD$measures$SYSTEM$SDC$FD_PD
+  # el_substitute<-4
+  # el_replaced_by<-2
+  #### End Testing ####
+
+    available_components <- which(colSums(EAD$DMM$FD_PD)>0)
+    if(length(available_components)<2) stop("Not enough elements for overdesign available.")
+    el_substitute <- sample(available_components,1)
+    replacement_candidates <- setdiff(available_components,el_substitute)
+    neighbors <- as.matrix(dist(t(EAD$DMM$FD_PD)))
+    neighbors <- neighbors[el_substitute,replacement_candidates,drop=F]
+    el_replaced_by <- replacement_candidates[which.min(neighbors)]
+
+
+    #### Manipulate DMM ####
+    EAD$DMM$FD_PD[,el_replaced_by] <- pmax(EAD$DMM$FD_PD[,el_replaced_by],EAD$DMM$FD_PD[,el_substitute])
+    EAD$DMM$FD_PD[,el_substitute] <- 0
+
+    #### Adjust DSM ####
+      ## since el_substitute is replaced the dependencies are moved to the el_replaced_by element
+      EAD$DSM$PD[,el_replaced_by] <- pmax(EAD$DSM$PD[,el_substitute], EAD$DSM$PD[,el_replaced_by])
+      EAD$DSM$PD[,el_substitute] <- 0
+
+      ## since the el_substitute can may require additional elements in DSM_PD we have to remap their dependencies as well
+      EAD$DSM$PD[el_replaced_by,] <- pmax(EAD$DSM$PD[el_substitute,],EAD$DSM$PD[el_replaced_by,])
+      EAD$DSM$PD[el_substitute,] <- 0
+
+      ## an exception is made when el_substitute is required by el_replaced_by
+      ## in such cases the the resulting DSM_PD would contain diagonal entries which is not allowed
+      diag(EAD$DSM$PD)<-0
+
+      if(EAD$DSM$PD[el_replaced_by,el_substitute]>0){
+        EAD$DSM$PD[el_replaced_by,el_substitute]<-0
+      }else{
+        EAD$DSM$PD[el_replaced_by,] <- pmax(EAD$DSM$PD[el_substitute,],EAD$DSM$PD[el_replaced_by,])
+        EAD$DSM$PD[el_substitute,] <- 0
+      }
+
+    #### Adjust Process domain ####
+    EAD$DMM$PD_PrD[el_replaced_by,] <- EAD$DMM$PD_PrD[el_replaced_by,] + EAD$DMM$PD_PrD[el_substitute,]
+    EAD$DMM$PD_PrD[el_substitute,] <- 0
+
+  EAD <- suppressWarnings(update_EAD(EAD))
+  return(EAD)
+}
+
+#' @title Calculates Components' Development and Part Administration Costs
+#' @description This function calculates components' development and part administration costs.
+#' @param P_PD The product mix in the physical domain containing products in rows and components in columns.
+#' @param DEMAND A numeric demand vector. If products are excluded from the product mix, the entries are zero.
+#' @param PDC_fix A numeric vector holding the fixed costs for a component. These costs are calculated by tracing resource costs back into the physical domain.
+#' @param R_dvl Proportion of development costs on \code{PDC_fix}.
+#' @param R_PA Proportion of part administration costs on \code{PDC_fix}.
+#' @return Returns the summed development costs and part administration costs
+#' @details For further details see \insertCite{Meerschmidt.2024;textual}{EAD}
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' require(EAD)
+#' EAD <- smallEAD
+#' P_PD <- EAD$P$PD
+#' DEMAND<-c(10,50,100,30)
+#' PDC_fix<-c(700,1819,4589,1367)
+#' R_dvl<-0.3
+#' R_PA<-0.2
+#'
+#' development_costs(P_PD,
+#'                   DEMAND,
+#'                   PDC_fix,
+#'                   R_dvl,
+#'                   R_PA)
+development_costs<-function(P_PD,DEMAND,PDC_fix,R_dvl,R_PA){
+  require(EAD)
+  #### Testing ####
+  # EAD <- smallEAD
+  # P_PD <- EAD$P$PD
+  # DEMAND<-c(0,50,100,30)
+  # PDC_fix<-c(700,1819,4589,1367)
+  # R_dvl<-0.3
+  # R_PA<-0.2
+  #### End Testing ####
+
+  total_consumption <- as.numeric(DEMAND %*% P_PD)
+
+  non_zero <- as.numeric(total_consumption > 0)
+  TC_dvl <- PDC_fix * R_dvl * non_zero
+  TC_PA <- PDC_fix * R_PA * non_zero
+
+  return(list(TC_dvl = sum(TC_dvl),
+              TC_PA = sum(TC_PA)))
+}
+
+
+
+clc_domainCosts<-function(EAD){
+  #### Testing ####
+  # EAD <- smallEAD
+  #### End Testing ####
+
+  TRC <- colSums(EAD$P$RD * EAD$DEMAND)
+  RCU_fix <- EAD$RC$fix / TRC
+  RCU_var <- (EAD$RC$direct + EAD$RC$var) / TRC
+
+  #### Trace costs ####
+    ### in PrD ###
+      RCU_PrD_fix <- as.numeric(EAD$DMM$PrD_RD %*% RCU_fix + (EAD$DMM$PrD_RD %*% EAD$DSM$RD) %*% RCU_fix)
+      PrDC_fix <- RCU_PrD_fix * colSums(EAD$P$PrD * EAD$DEMAND)
+      RCU_PrD_var <- as.numeric(EAD$DMM$PrD_RD %*% RCU_var + (EAD$DMM$PrD_RD %*% EAD$DSM$RD) %*% RCU_var)
+
+    ### in PD ###
+      RCU_PD_fix <- as.numeric(EAD$DMM$PD_PrD %*% RCU_PrD_fix + (EAD$DMM$PD_PrD %*% EAD$DSM$PrD) %*% RCU_PrD_fix)
+      PDC_fix <- RCU_PD_fix * colSums(EAD$P$PD * EAD$DEMAND)
+      RCU_PD_var <- as.numeric(EAD$DMM$PD_PrD %*% RCU_PrD_var + (EAD$DMM$PD_PrD %*% EAD$DSM$PrD) %*% RCU_PrD_var)
+
+  return(list(fix = list(FD = NA,
+                               PD = PDC_fix,
+                               PrD = PrDC_fix,
+                               RD = EAD$RC$fix),
+              var = list(FD = NA,
+                               PD = RCU_PD_var,
+                               PrD = RCU_PrD_var,
+                               RD = RCU_var)))
+}
+
+
+#' @title Calculates the setup costs
+#' @description This function calculates the setup costs for a specific EAD design. The exact procedure is described in \insertCite{Meerschmidt.2024;textual}{EAD}.
+#' See details for more information.
+#' @param EAD An EAD object created by \link[EAD]{crt_EAD}.
+#' @param R_hold the ratio of component's holding costs on total component costs.
+#' @param R_order the ratio of component's order costs on total costs.
+#' @param R_setup the proportion of setup costs on process manufacturing costs for a given lot.
+#' @param PrCU_var The variable process unit costs.
+#' @return Returns the summed setup costs as well as the lot sizes for the individual components
+#' @details For further details see \insertCite{Meerschmidt.2024;textual}{EAD} as well as the sub models of \insertCite{Thonemann.2000;textual}{EAD} and \insertCite{Zhang.2020;textual}{EAD}.
+#' A vignette is available by running \code{utils::vignette('setupCosts',package='EAD')}.
+#' @references
+#' \insertAllCited{}
+#' @examples
+#'
+#' require(EAD)
+#' EAD <- smallEAD
+#' EAD$DEMAND <- c(10,50,100,30)
+#' R_hold <- rep(0.05,4)
+#' R_order <- rep(0.15,4)
+#' R_setup <- rep(0.2,4)
+#' PrCU_var <- c(100,26.9,2.19,35.7)
+#'
+#' clc_setupCosts(EAD,
+#'                R_hold,
+#'                R_order,
+#'                R_setup,
+#'                PrCU_var)
+setupCosts<-function(EAD,C_hold,C_order,R_setup,PrCU_var){
+  require(EAD)
+  #### Input for testing ####
+  # EAD <- smallEAD
+  # EAD$DEMAND <- c(10,50,100,30)
+  # C_hold <- rep(5,4)
+  # C_order <- rep(15,4)
+  # C_setup <- rep(0.2,4)
+  # PrCU_var <- c(100,26.9,2.19,35.7)
+  #### END Input for Testing ####
+
+  #### 1. Calculate Component Demand ####
+  DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
+
+  #### 2. Calculate the consumption of processes in total ####
+  DMD_PD <- EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD
+  DMD_PD[DMD_PD>0] <- 1
+  DMD_PD <- DMD_PD * DMD_component
+
+  #### 3. Calculate Lot Sizes ####
+  C_order <- sapply(1:NROW(DMD_PD),function(x) C_order)
+  C_hold <- sapply(1:NROW(DMD_PD),function(x) C_hold)
+  LZM <- sqrt(2*DMD_PD * C_order / C_hold)
+
+  #### 4. Calculate the Tasks ####
+  TM <- ceiling(DMD_PD / LZM)
+  TM[is.nan(TM)] <- 0
+
+  #### 5. Sample execution order ####
+  execution <- apply(TM,2,function(x){
+    idx <- which(x!=0)
+    execution <- unlist(sapply(idx,function(y) rep(y,x[y])))
+    execution <- execution[sample(1:length(execution))]
+    return(execution)
+  })
+
+  ## plus one is added since there is a initial setup
+  n_setups <-sapply(execution,function(x) sum(diff(x) != 0)+1)
+
+
+  #### 6. Calculate Lot Process Consumption ####
+  LPC <- LZM * (EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD)
+
+    ## Average Process Consumption per Lot (APCONS)
+        APCONS <- apply(LPC,2,function(x) mean(x[x!=0]))
+
+    ## Average lot process costs (ALPC)
+        ALPC <- APCONS * PrCU_var
+
+    return(list(TC_setup = sum(ALPC * R_setup * n_setups),
+                lotSize = ceiling(apply(LZM, 1, max)),
+                DMD_component = DMD_component))
+
+}
+
+
+orderCosts<-function(DMD_PD,
+                     N_lot,
+                     C_order){
+  TC_order <- ceiling(DMD_PD/N_lot) * C_order
+  return(sum(TC_order))
+}
+
+supplyCosts <- function(P_PD,
+                          C_supply){
+  return(sum(apply(P_PD,2,function(x) sum(x)>0)) * C_supply)
+}
+
+
+
+
+
+
+
+
 processVariety<-function(PrD,
                          PrC,
                          DMD,
@@ -71,7 +318,7 @@ processVariety<-function(PrD,
   return(out)
 }
 
-clc_setupCosts<-function(EAD,
+clc_setupCosts_old<-function(EAD,
                          RCU_var,
                          includedProd = NULL,
                          prop_setupChange=c(0.5,0.5),

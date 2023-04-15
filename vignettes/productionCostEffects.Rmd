@@ -1,0 +1,105 @@
+---
+title: "Complexity Driver Setup Costs and Purchasing Order"
+author: "Ole Jan Meßerschmidt"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: '`r system.file("REFERENCES.bib", package="EAD")`'
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
+This vignette provides an example for the calculation of setup costs and order purchasing costs as introduced in @Meerschmidt.2024. The model unifies the model of @Thonemann.2000 as well as the model of @Zhang.2020. Starting point for this example is the following EAD design. The functional and resource domain are not shown as they are not relevant.
+
+![The EAD used in this example](images/setupCostsEAD.jpg){width="500"}
+
+The EAD design can be created by calling
+
+```{r initialize}
+require(EAD)
+set.seed(1234)
+
+EAD <- smallEAD
+EAD$DEMAND <- c(10,50,100,30)
+C_hold <- rep(5,4)
+C_order <- rep(15,4)
+R_setup <- rep(0.2,4)
+PrCU_var <- c(100,26.9,2.19,35.7)
+```
+
+# Setup Costs
+
+In a first step the component demand is calculated.
+
+```{r}
+DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
+```
+
+Second, the process consumption for each component is calculated
+
+```{r}
+DMD_PD <- EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD
+DMD_PD[DMD_PD>0] <- 1
+DMD_PD <- DMD_PD * DMD_component
+DMD_PD
+```
+
+We then calculate the lot sizes by using the Economic Order Quantity model (e.g., @Nahmias.2011). `LZM` hold the lot sizes for each component (rows) and processes (columns).
+
+```{r}
+C_order <- sapply(1:NROW(DMD_PD),function(x) C_order)
+C_hold <- sapply(1:NROW(DMD_PD),function(x) C_hold)
+
+LZM <- sqrt(2*DMD_PD * C_order / C_hold)
+
+LZM
+```
+
+In a fourth step, the tasks are calculated. The tasks describe how many lots need to be produced in order to fulfill the requested deamnd.
+
+```{r}
+TM <- ceiling(DMD_PD / LZM)
+TM[is.nan(TM)] <- 0
+TM
+```
+
+These tasks are executed in a certain order. There are several scheduling methods. However, the model assumes a random processing order. The execution `execution` list hold these information. According to the model of @Zhang.2020, setup occur if and only if the current setup differs from the predecessors' setup.
+
+```{r}
+execution <- apply(TM,2,function(x){
+  idx <- which(x!=0)
+  execution <- unlist(sapply(idx,function(y) rep(y,x[y])))
+  execution <- execution[sample(1:length(execution))]
+  return(execution)
+})
+
+## plus one is added since there is a initial setup
+n_setups <-sapply(execution,function(x) sum(diff(x) != 0)+1)
+```
+
+Finally, the setup costs are calculated. In doing so, the costs for a single setup differ across processes. This is modeled by taking `R_setup` percentage of the average lot process costs `ALPC`.
+
+```{r}
+LPC <- LZM * (EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD)
+  ## Average Process Consumption per Lot (APCONS)
+    APCONS <- apply(LPC,2,function(x) mean(x[x!=0]))
+  ## Average lot process costs (ALPC)
+    ALPC <- APCONS * PrCU_var
+
+sum(ALPC * R_setup * n_setups)
+```
+
+The entire procedure is included in the function `clc_setupCosts`.
+
+# Tooling Costs
+
+# References

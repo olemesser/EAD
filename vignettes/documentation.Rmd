@@ -5,7 +5,7 @@ vignette: >
   %\VignetteIndexEntry{test}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: references.bib
+bibliography: '`r system.file("REFERENCES.bib", package="EAD")`'
 ---
 
 ```{r, include = FALSE}
@@ -200,3 +200,4 @@ RC
 ```
 
 ## References
+

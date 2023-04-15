@@ -4,31 +4,119 @@ simulate_costEffects<-function(DOE){
   suppressWarnings(require(tidyr))
 
   #### Input for Testing ####
-  # DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
-  #                  N_DD = list(c(20)), # number of physical domain elements
-  #                  N_PrD = list(c(40)), # number of process domain elements
-  #                  N_RD = list(c(80)), # number of resource domain elements
-  #                  PARAM_FD =1, # generate free combination
-  #                  method_FD = "random",
-  #                  TOTAL_DEMAND = 10000, # total demand
-  #                  DMD_cv = list(c(0,3)), # coefficient of variation for demand distribution
-  #                  DMM_PAR = list(c(0,0.115)), # desired design complexity
-  #                  DMM_method="SDC", # method for generating the DMM
-  #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                  DSM_param=list(c(0,0.14,0,1)), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
-  #                  DSM_method='modular',
-  #                  TC = 10^6, # total costs
-  #                  ratio_fixedC = list(c(0.5,0.8)), # proportion of fixed costs on total costs
-  #                  RC_cor = list(c(0,1)), # correlation between variable cost vector and fixed cost vector
-  #                  RC_cv = list(c(0,1.5)), # coefficient of variation for resource cost distribution
-  #                  N_RUN = 1:2 # number of runs
-  # )
-  # x<-1
+  set.seed(1243)
+  DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
+                   N_DD = list(c(15,30)), # number of physical domain elements
+                   N_PrD = list(c(30,60)), # number of process domain elements
+                   N_RD = list(c(60)), # number of resource domain elements
+                   prop_PROD  = 1,
+                   method_FD = "random",
+                   TOTAL_DEMAND = 10000, # total demand
+                   Q_VAR = list(c(0,2)), # coefficient of variation for demand distribution
+                   DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
+                                         PD_PrD=list(c(0,0.0)),
+                                         PrD_RD=list(c(0,0.0))), # desired system design complexity
+                   uB_DMM = 5,
+                   allowZero = F,
+                   ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+                   DSM_param=expand_grid(PD=list(c(0,0.1,0,1)),
+                                         PrD=list(c(0,0,0,1)),
+                                         RD=list(c(0,0,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+                   DSM_method='modular',
+                   ub_DSM = 5,
+                   TC = 10^6, # total costs
+                   r_in = list(c(0.1,0.3)),
+                   r_fix = list(c(1,1)), # proportion of fixed costs on total indirect costs
+                   RC_cv = list(c(0,3)), # coefficient of variation for resource cost distribution
+                   R_dvl = list(c(0.1,0.6)),
+                   R_PA = list(c(0.1,0.6)),
+                   C_order = list(c(50,100)), # order costs
+                   C_hold = list(c(500,1000)), # holding costs
+                   C_setup = list(c(10^6*0.05,10^6*0.5)), # 5%-40%
+                   C_supply = list(c(100,1000)),
+                   N_RUN = 1:1 # number of runs
+  )
+  x<-1
   #### END Input for Testing ####
 
   #### For each DOE ####
   res<-lapply(1:NROW(DOE),function(x){
-    EAD<-crt_EAD(DOE[x,])
+    #### 1. Initialize ####
+      ### 1.1 Generate the EAD ###
+      EAD<-crt_EAD(DOE[x,])[[1]]
+
+
+
+    #### 2. Create Scenarios for Overdesign ####
+      ### for each overdesign scenario the product variety is increased starting with one product until all products are introduced
+      DMD_sort <- sort(EAD$DEMAND,decreasing = T,index.return=TRUE)
+      while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
+        ### 2.2 Calculate Initial Costs ###
+          costs <- clc_domainCosts(EAD)
+
+        #### 3. Product Variety ####
+        p<-10
+        R_dvl <- runif(1,min = DOE$R_dvl[x][[1]][1],max = DOE$R_dvl[x][[1]][2])
+        R_PA <- runif(1,min = DOE$R_PA[x][[1]][1],max = DOE$R_PA[x][[1]][2])
+        C_hold <- runif(1,DOE$C_hold[x][[1]][1],DOE$C_hold[x][[1]][2])
+        C_order <- runif(1,DOE$C_order[x][[1]][1],DOE$C_order[x][[1]][2])
+        C_setup <- runif(1,DOE$C_setup[x][[1]][1],DOE$C_setup[x][[1]][2])
+        C_supply <- runif(1,DOE$C_supply[x][[1]][1],DOE$C_supply[x][[1]][2])
+
+
+          lapply(1:length(DMD_sort$x),function(p){
+                    out<-list()
+                    ### 3.1 Exclude Products ###
+                    products_in <- DMD_sort$ix[1:p]
+                    products_out <- setdiff(DMD_sort$ix,products_in)
+                    DEMAND_temp <- rep(0,length(EAD$DEMAND))
+                    DEMAND_temp[products_in] <- EAD$DEMAND[products_in]
+
+                    ### 3.2 Calculate Cost by going through the individual cost driver ###
+                    ccDriver_develPA <- development_costs(P_PD = EAD$P$PD,
+                                                          DEMAND = DEMAND_temp,
+                                                          PDC_fix = costs$fix$PD,
+                                                          R_dvl = R_dvl,
+                                                          R_PA = R_PA)
+                    out['dvl_developmentCosts'] <- ccDriver_develPA$TC_dvl
+                    out['dvl_partadminCosts'] <-  ccDriver_develPA$TC_PA
+
+                    ### 3.3 Calculate the Setup Costs ###
+                    setup<- setupCosts(EAD,
+                                   C_hold = C_hold,
+                                   C_order = C_order,
+                                   C_setup = C_setup,
+                                   PrCU_var = costs$var$PrD)
+                    out['man_setupCosts'] <- setup$TC_setup
+
+                    ### 3.4. Tooling Costs ###
+
+
+                    ### 3.5 Purchasing Orders ###
+                    out['pur_orderCosts'] <- orderCosts(DMD_PD = setup$DMD_component,
+                                                    N_lot = setup$lotSize,
+                                                    C_order = C_order)
+
+                    ### 3.6 Supplier Management Costs ###
+                    out['pur_supplyCosts'] <- supplyCosts(P_PD = EAD$P$PD,
+                                                C_supply = C_supply)
+
+
+
+                    return(out)
+          })
+
+
+
+        EAD<-overdesign_EAD(EAD)
+
+      }
+
+
+
+
+
+
 
     ## order product quantity in decreasing order
     order_prod_quantity<-order(EAD[[1]]$DEMAND,decreasing = T)

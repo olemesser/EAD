@@ -94,20 +94,3 @@ crt_DMM<-function(N_src,
   gc()
   return(output)
 }
-
-dmm_objFCT<-function(x,N_src,N_tgt,DMM_PAR,allowZero){
-  require(Matrix)
-  A<-matrix(x,nrow = N_src,ncol = N_tgt)
-  err<-abs(measure_designComplexity(A)-DMM_PAR)
-  cond_1<-all(rowSums(A)>0)
-  if(allowZero){
-    cond_2<-T
-  }else{
-    cond_2<-all(colSums(A)>0)
-  }
-  # cond_3<-rankMatrix(A)==min(dim(A))
-  cond_3<-T
-  if(cond_1==F | cond_2==F | cond_3==F) err<-(err+1)*10^3
-  return(err*(-1))
-}
-

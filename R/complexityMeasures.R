@@ -33,17 +33,21 @@
 #' measure_designComplexity(DMM_b,norm=F) # should be 33.3
 #'
 measure_designComplexity<-function(A,norm=T){
-  A[A>1] <- 1
-  DC <- sum(apply(A,2,function(x){
-    z<-sum(x[x>0])*log(sum(x[x>0]))
-    if(sum(x)==0) z<-0
-    return(z)
-  }))
+  if(dim(A)[1]==0 & dim(A)[2]==0){
+    DC<-0
+  }else{
+    A[A>1] <- 1
+    DC <- sum(apply(A,2,function(x){
+      z<-sum(x[x>0])*log(sum(x[x>0]))
+      if(sum(x)==0) z<-0
+      return(z)
+    }))
 
-  if(norm){
-    rM<-apply(A,1,max)
-    A_max<-matrix(rep(rM, dim(A)[2]),nrow = dim(A)[1],ncol = dim(A)[2])
-    DC <- DC/sum(apply(A_max,2,function(x) sum(x[x>0])*log(sum(x[x>0]))))
+    if(norm){
+      rM<-apply(A,1,max)
+      A_max<-matrix(rep(rM, dim(A)[2]),nrow = dim(A)[1],ncol = dim(A)[2])
+      DC <- DC/sum(apply(A_max,2,function(x) sum(x[x>0])*log(sum(x[x>0]))))
+    }
   }
   return(DC)
 }
@@ -125,15 +129,12 @@ measure_semiangularity<-function(A){
 #'
 #' data('RDU2')
 #' measure_JSDC(RDU2) # must be 466.1
-measure_JSDC<-function(DMM,norm=F){
-  energy<-sum(svd(DMM)$d)
-  JSDC <- sum(DMM) * energy/min(dim(DMM))
-
-  if(norm){
-    JSDC<-JSDC
-    # DMM_max<-matrix(1,nrow=dim(DMM)[1],ncol=dim(DMM)[2])
-    # JSDC_max<-measure_JSDC(DMM_max,norm=F)
-    # JSDC<-JSDC/JSDC_max
+measure_JSDC<-function(DMM){
+  if(dim(DMM)[1]==0 & dim(DMM)[2]==0){
+    JSDC<-0
+  }else{
+    energy<-sum(svd(DMM)$d)
+    JSDC <- sum(DMM) * energy/min(dim(DMM))
   }
   return(JSDC)
 }
@@ -489,13 +490,13 @@ measure_PCI<-function(P,DMD=NULL){
   P[P>1]<-1
   if(is.null(DMD)){
     n_i<-colSums(P)
-    P<-P[,n_i>0]
+    P<-P[,n_i>0,drop=F]
     n_i<-colSums(P)
     MinCCI<-sum(1/n_i^2)
     PCI<-(sum(n_i)-MinCCI)/(NROW(P)*NCOL(P)-MinCCI)
   }else{
     n_i<-colSums(P)
-    P<-P[,n_i>0]
+    P<-P[,n_i>0,drop=F]
     n_i<-colSums(P*DMD)
     MinCCI<-sum(1/n_i^2)
     PCI<-(sum(n_i)-MinCCI)/(sum(DMD)*NCOL(P)-MinCCI)
@@ -522,7 +523,6 @@ measure_PCI<-function(P,DMD=NULL){
 measure_LOF<-function(P,perc=0.1){
   require(DescTools)
   LOF<-LOF(P,k = ceiling(NROW(P)*perc))
-  # LOF<-LOF(P,k = 2)
   return(LOF)
 }
 

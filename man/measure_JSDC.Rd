@@ -4,7 +4,7 @@
 \alias{measure_JSDC}
 \title{Calculates Jung's system design complexity}
 \usage{
-measure_JSDC(DMM, norm = F)
+measure_JSDC(DMM)
 }
 \arguments{
 \item{DMM}{A domain mapping matrix, reflecting the transition between two domains.}
