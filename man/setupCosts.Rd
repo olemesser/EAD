@@ -4,18 +4,16 @@
 \alias{setupCosts}
 \title{Calculates the setup costs}
 \usage{
-setupCosts(EAD, C_hold, C_order, R_setup, PrCU_var)
+setupCosts(P_PD, DMM_PD_PrD, DSM_PrD, DEMAND, C_hold, C_order, C_setup)
 }
 \arguments{
+\item{C_hold}{Component's holding costs.}
+
+\item{C_order}{Component's order costs.}
+
+\item{C_setup}{The average setup costs.}
+
 \item{EAD}{An EAD object created by \link[EAD]{crt_EAD}.}
-
-\item{R_setup}{the proportion of setup costs on process manufacturing costs for a given lot.}
-
-\item{PrCU_var}{The variable process unit costs.}
-
-\item{R_hold}{the ratio of component's holding costs on total component costs.}
-
-\item{R_order}{the ratio of component's order costs on total costs.}
 }
 \value{
 Returns the summed setup costs as well as the lot sizes for the individual components
@@ -31,18 +29,17 @@ A vignette is available by running \code{utils::vignette('setupCosts',package='E
 \examples{
 
 require(EAD)
+set.seed(1234)
 EAD <- smallEAD
 EAD$DEMAND <- c(10,50,100,30)
-R_hold <- rep(0.05,4)
-R_order <- rep(0.15,4)
-R_setup <- rep(0.2,4)
-PrCU_var <- c(100,26.9,2.19,35.7)
+C_hold <- rep(0.05,4)
+C_order <- rep(0.15,4)
+C_setup <- 444.4
 
 clc_setupCosts(EAD,
-               R_hold,
-               R_order,
-               R_setup,
-               PrCU_var)
+               C_hold,
+               C_order,
+               C_setup)
 }
 \references{
 \insertAllCited{}

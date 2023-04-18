@@ -32,8 +32,7 @@ EAD <- smallEAD
 EAD$DEMAND <- c(10,50,100,30)
 C_hold <- rep(5,4)
 C_order <- rep(15,4)
-R_setup <- rep(0.2,4)
-PrCU_var <- c(100,26.9,2.19,35.7)
+C_setup <- 444.4
 ```
 
 # Setup Costs
@@ -64,7 +63,7 @@ LZM <- sqrt(2*DMD_PD * C_order / C_hold)
 LZM
 ```
 
-In a fourth step, the tasks are calculated. The tasks describe how many lots need to be produced in order to fulfill the requested deamnd.
+In a fourth step, the tasks are calculated. The tasks describe how many lots need to be produced in order to fulfill the requested demand.
 
 ```{r}
 TM <- ceiling(DMD_PD / LZM)
@@ -82,24 +81,59 @@ execution <- apply(TM,2,function(x){
   return(execution)
 })
 
-## plus one is added since there is a initial setup
+## print the execution order
+execution
+## plus one is added since there is an initial setup
 n_setups <-sapply(execution,function(x) sum(diff(x) != 0)+1)
+n_setups
 ```
 
-Finally, the setup costs are calculated. In doing so, the costs for a single setup differ across processes. This is modeled by taking `R_setup` percentage of the average lot process costs `ALPC`.
+Finally, the setup costs are calculated. In doing so, the average costs for a single setup `C_setup` are multiplied with the number of setups
 
 ```{r}
-LPC <- LZM * (EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD)
-  ## Average Process Consumption per Lot (APCONS)
-    APCONS <- apply(LPC,2,function(x) mean(x[x!=0]))
-  ## Average lot process costs (ALPC)
-    ALPC <- APCONS * PrCU_var
-
-sum(ALPC * R_setup * n_setups)
+sum(n_setups * C_setup)
 ```
 
 The entire procedure is included in the function `clc_setupCosts`.
 
 # Tooling Costs
+
+A second manufacturing cost driver are the tooling costs. Authors note an decrease of tooling costs with increasing commonality @Kota2000; @Johnson.2010; @Khajavirad.2007; @Perera.1999 or @Thomas.1992 . According to the model of @Meerschmidt.2024, tooling costs are calculated as follows:
+
+First, the example EAD is loaded and the tooling costs `C_tooling` for each process variant are defined.
+
+```{r}
+EAD <- smallEAD
+EAD$DEMAND <- c(0,50,100,30)
+DMM_PD_PrD<-EAD$DMM$PD_PrD
+DSM_PrD<-EAD$DSM$PrD
+DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
+remove(EAD)
+C_tooling<-matrix(c(5,0,0,0,
+                    0,12,14,0,
+                    0,10,0,0,
+                    0,0,0,7),nrow=4,byrow=T)
+```
+
+It is assumed that tools are required for each combination of component and process so-called process variants. The process variants are calculated as follow where `PVM` holds information which components (rows) go into which processes (columns).
+
+```{r}
+PVM <- DMM_PD_PrD + DMM_PD_PrD %*% DSM_PrD
+PVM
+```
+
+Each non-zero entry in `PVM` represents a process variant for which tooling is required. By dropping unused process variants which are not needed under the currentproduct mix are set to zero.
+
+```{r}
+PVM[DMD_component==0,] <- 0
+C_tooling[PVM==0] <- 0
+C_tooling
+```
+
+The total tooling costs are than given as:
+
+```{r}
+sum(C_tooling)
+```
 
 # References

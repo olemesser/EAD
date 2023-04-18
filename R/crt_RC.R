@@ -68,7 +68,7 @@ crt_RC<-function(N_RD,
     fix <- crt_RCid(l = N_RD,
                     TC = TC_fix,
                     sdlog = cv)
-    fix$cor<-cor(RC_direct,fix$RC)
+    #fix$cor<-cor(RC_direct,fix$RC)
     # fix <- crt_corVEC(TC = TC_fix,
     #                  RC_base = RC_direct,
     #                  cv = cv,
@@ -79,7 +79,7 @@ crt_RC<-function(N_RD,
     var <- crt_RCid(l = N_RD,
                     TC = TC_var,
                     sdlog = cv)
-    var$cor<-cor(RC_direct,var$RC)
+    # var$cor<-cor(RC_direct,var$RC)
     # var <- crt_corVEC(TC = TC_var,
     #                   RC_base = RC_direct,
     #                   cv = cv,

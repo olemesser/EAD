@@ -175,7 +175,7 @@ measure_JSDC<-function(DMM){
 #'   res # should be 0.74
 #'
 measure_modularity<-function(A,preMember=NULL,plot_op=F){
-   require(igraph)
+   suppressWarnings(suppressMessages(require(igraph)))
 
   if(dim(A)[1]==dim(A)[2]){
       ## binarize matrix ##
@@ -521,7 +521,7 @@ measure_PCI<-function(P,DMD=NULL){
 #'
 #' measure_LOF(P,n=2)
 measure_LOF<-function(P,perc=0.1){
-  require(DescTools)
+  suppressWarnings(suppressMessages(require(DescTools)))
   LOF<-LOF(P,k = ceiling(NROW(P)*perc))
   return(LOF)
 }

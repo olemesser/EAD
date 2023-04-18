@@ -85,7 +85,7 @@ crt_EAD<-function(DOE,
                        allowZero=allowZero)
 
       DOM$measures$SYSTEM[['D']]<-list(FD=measure_diversificationINDEX(DOM$P$FD,DMD=DMD),
-                                       DD=measure_diversificationINDEX(DOM$P$PD,DMD=DMD),
+                                       PD=measure_diversificationINDEX(DOM$P$PD,DMD=DMD),
                                        PrD=measure_diversificationINDEX(DOM$P$PrD,DMD=DMD),
                                        RD=measure_diversificationINDEX(DOM$P$RD,DMD=DMD))
 
