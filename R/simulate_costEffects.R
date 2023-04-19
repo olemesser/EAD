@@ -101,7 +101,7 @@ simulate_costEffects<-function(DOE){
         out <- list()
       repeat{
         #### 3. Product Variety ####
-          p<-31
+          # p<-10
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.1 Exclude Products ###
@@ -165,7 +165,7 @@ simulate_costEffects<-function(DOE){
                                 out['TC_NC'] <- nonCC_scenario$TC
                                 out['TC_NC_var'] <- nonCC_scenario$TC_var
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
-                                out['N_PROD'] <- sum(DEMAND_temp>0)
+                                out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['mean_lotSize'] <- mean(setup$lotSize)
                                 out['N_setups'] <- sum(setup$n_setups)
@@ -234,7 +234,7 @@ simulate_costEffects_MC<-function(DOE,
                                    gc()
                                    return(res)
                                  }, packages = c("EAD","odegoparallel",
-                                                 "dplyr", "rpicosat", "tidyr", "GA",
+                                                 "dplyr", "rpicosat", "tidyr",
                                                  "Matrix", "digest", "faux","data.table",
                                                  "plyr", "DescTools", "igraph", "R.utils","fGarch"),
                                  errorhandlingNodes = ehNodes)
