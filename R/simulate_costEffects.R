@@ -8,7 +8,7 @@ simulate_costEffects<-function(DOE){
   #### Input for Testing ####
   # set.seed(1243)
   # DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
-  #                  N_DD = list(c(15)), # number of physical domain elements
+  #                  N_DD = list(c(10)), # number of physical domain elements
   #                  N_PrD = list(c(30)), # number of process domain elements
   #                  N_RD = list(c(60)), # number of resource domain elements
   #                  prop_PROD  = 1,
@@ -104,11 +104,18 @@ simulate_costEffects<-function(DOE){
           # p<-10
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
-                                ### 3.1 Exclude Products ###
+                                ### 3.0 Exclude Products ###
                                 products_in <-order_introduction[1:p]
                                 products_out <- setdiff(order_introduction,products_in)
                                 DEMAND_temp <- rep(0,length(EAD$DEMAND))
                                 DEMAND_temp[products_in] <- EAD$DEMAND[products_in]
+
+                                ### 3.1 Increased Material Costs ###
+                                TC_var_S0 <- sum((nonCC$PC_direct + nonCC$PC_B_var) * DEMAND_temp)
+                                out['dvl_materialCosts'] <- materialCosts(TC_var_S0 = TC_var_S0,
+                                                                          P_RD = EAD$P$RD,
+                                                                          DMD = DEMAND_temp,
+                                                                          RCU = nonCC$RCU + nonCC$RCU_direct)
 
                                 ### 3.2 Calculate Cost by going through the individual cost driver ###
                                 ### starting with development costs ###
@@ -132,15 +139,17 @@ simulate_costEffects<-function(DOE){
                                 out['man_setupCosts'] <- setup$TC_setup
 
                                 ### 3.4. Tooling Costs ###
-                                out['man_toolingCosts'] <- toolingCosts(DMM_PD_PrD = EAD$DMM$PD_PrD,
+                                tooling <- toolingCosts(DMM_PD_PrD = EAD$DMM$PD_PrD,
                                                                         DSM_PrD = EAD$DSM$PrD,
                                                                         DMD_component = setup$DMD_component,
                                                                         C_tooling = costDriver_inital$C_tooling)
+                                out['man_toolingCosts'] <- tooling$C_tooling
 
                                 ### 3.5 Purchasing Order Costs ###
-                                out['pur_orderCosts'] <- orderCosts(DMD_PD = setup$DMD_component,
+                                order <- orderCosts(DMD_PD = setup$DMD_component,
                                                                 N_lot = setup$lotSize,
                                                                 C_order = costDriver_inital$C_order)
+                                out['pur_orderCosts'] <- order$TC_order
 
                                 ### 3.6 Supplier Management Costs ###
                                 out['pur_supplyCosts'] <- supplyCosts(P_PD = EAD$P$PD,
@@ -153,7 +162,7 @@ simulate_costEffects<-function(DOE){
 
                                 ### 3.8 Calculate total complexity costs ###
                                 out['TC_CC'] <- sum(unlist(out))
-                                out['TC_CC_var'] <- sum(out$man_setupCosts,out$pur_orderCosts,out$pur_stockCosts)
+                                out['TC_CC_var'] <- sum(out$man_setupCosts,out$pur_orderCosts,out$pur_stockCosts,out$dvl_materialCosts)
                                 out['TC_CC_fix'] <- sum(out$dvl_developmentCosts,out$dvl_partadminCosts,out$man_toolingCosts,out$pur_supplyCosts)
 
                                 ### 3.9 Calculate non complexity costs ###
@@ -167,8 +176,10 @@ simulate_costEffects<-function(DOE){
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
-                                out['mean_lotSize'] <- mean(setup$lotSize)
+                                out['LZM'] <- mean(setup$lotSize)
                                 out['N_setups'] <- sum(setup$n_setups)
+                                out['N_proVar'] <- tooling$N_processVariety
+                                out['N_order'] <- order$N_order
 
                                 return(as.data.frame(out))
                       }) # end product variety loop

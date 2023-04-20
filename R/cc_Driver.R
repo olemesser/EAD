@@ -62,6 +62,15 @@ overdesign_EAD<-function(EAD){
   return(EAD)
 }
 
+materialCosts <- function(TC_var_S0,
+                          P_RD,
+                          DMD,
+                          RCU){
+  TC_var_S1 <- sum(as.numeric(P_RD %*% RCU) * DMD)
+  return(TC_var_S1 - TC_var_S0)
+}
+
+
 #' @title Calculates Components' Development  Costs
 #' @description This function calculates components' development costs as defined by \insertCite{Meerschmidt.2024;textual}{EAD}.
 #' @param P_PD The product mix in the physical domain containing products in rows and components in columns.
@@ -247,7 +256,8 @@ orderCosts<-function(DMD_PD,
                      C_order){
   N_order <- ceiling(DMD_PD/N_lot)
   TC_order <- ifelse(is.nan(N_order),0,N_order) * C_order
-  return(sum(TC_order))
+  return(list(TC_order = sum(TC_order),
+              N_order = N_order))
 }
 
 supplyCosts <- function(P_PD,
@@ -271,17 +281,9 @@ toolingCosts <- function(DMM_PD_PrD,
   PVM <- DMM_PD_PrD + DMM_PD_PrD %*% DSM_PrD
   PVM[DMD_component==0,] <- 0
   C_tooling[PVM==0] <- 0
-  # PVM[DMD_component==0,] <- 0
-  # C_tooling <- ifelse(colSums(PVM)>0,C_tooling,0)
-  #
-  # PVM <- DMM_PD_PrD + DMM_PD_PrD %*% DSM_PrD
-  # PVM[DMD_component==0,] <- 0
-  # colSums(PVM)
-  # N_proVar <- sum(PVM>0)
-  # C_tooling <- runif(N_proVar,
-  #                    min = C_tooling[1],
-  #                    max = C_tooling[2])
-  return(sum(C_tooling))
+  N_processVariety <- sum(PVM>0)
+  return(list(C_tooling = sum(C_tooling),
+              N_processVariety = N_processVariety))
 }
 
 
