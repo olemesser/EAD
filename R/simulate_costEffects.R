@@ -7,8 +7,8 @@ simulate_costEffects<-function(DOE){
 
   #### Input for Testing ####
   # set.seed(1243)
-  # DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
-  #                  N_DD = list(c(10)), # number of physical domain elements
+  # DOE<-expand_grid(N_FR = list(c(5)), # number of functional requirements
+  #                  N_DD = list(c(7)), # number of physical domain elements
   #                  N_PrD = list(c(30)), # number of process domain elements
   #                  N_RD = list(c(60)), # number of resource domain elements
   #                  prop_PROD  = 1,
@@ -171,15 +171,24 @@ simulate_costEffects<-function(DOE){
                                                           RCU = nonCC$RCU,
                                                           RCU_direct = nonCC$RCU_direct,
                                                           RC_fix = EAD$RC$fix)
-                                out['TC_NC'] <- nonCC_scenario$TC
-                                out['TC_NC_var'] <- nonCC_scenario$TC_var
+
+                                out['TC_NC'] <- nonCC_scenario$TC - out$dvl_materialCosts
+                                out['TC_NC_var'] <- nonCC_scenario$TC_var - out$dvl_materialCosts
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['LZM'] <- mean(setup$lotSize)
                                 out['N_setups'] <- sum(setup$n_setups)
                                 out['N_proVar'] <- tooling$N_processVariety
-                                out['N_order'] <- order$N_order
+                                out['N_order'] <- sum(order$N_order)
+                                out['driver_dvl'] <- mean(costDriver_inital$C_dvl)
+                                out['driver_pa'] <- mean(costDriver_inital$C_pa)
+                                out['driver_setups'] <- costDriver_inital$C_setup
+                                out['driver_tooling'] <- mean(costDriver_inital$C_tooling[costDriver_inital$C_tooling>0])
+                                out['driver_order'] <- costDriver_inital$C_order
+                                out['driver_supply'] <- costDriver_inital$C_supply
+                                out['driver_stock'] <- costDriver_inital$C_hold
+                                out['ADC'] <-   as.numeric(out['dvl_developmentCosts']) / sum(DEMAND_temp)
 
                                 return(as.data.frame(out))
                       }) # end product variety loop
