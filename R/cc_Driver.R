@@ -230,8 +230,9 @@ setupCosts<-function(P_PD,
   TM <- ceiling(DMD_PD / LZM)
   TM[is.nan(TM)] <- 0
 
+
   #### 5. Sample execution order  and calculate the number of setups ####
-  n_setups <- t(sapply(1:100,function(y){
+  n_setups <- t(sapply(1:1000,function(y){
     n_setups <- apply(TM,2,function(x){
       idx <- which(x!=0)
       execution <- unlist(sapply(idx,function(y) rep(y,x[y])))
@@ -243,10 +244,16 @@ setupCosts<-function(P_PD,
     return(n_setups)
   }))
   n_setups <- ceiling(colMeans(n_setups))
+
+  TM_bin <- TM
+  TM_bin[TM_bin>0] <- 1
+
+
      return(list(TC_setup = sum(n_setups * C_setup),
                 lotSize = ceiling(apply(LZM, 1, max)),
                 DMD_component = DMD_component,
-                n_setups = n_setups))
+                n_setups = n_setups,
+                rm_TM = mean(rowMeans(TM_bin)[rowMeans(TM_bin)>0])))
 
 }
 

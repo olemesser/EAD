@@ -7,8 +7,8 @@ simulate_costEffects<-function(DOE){
 
   #### Input for Testing ####
   # set.seed(1243)
-  # DOE<-expand_grid(N_FR = list(c(5)), # number of functional requirements
-  #                  N_DD = list(c(7)), # number of physical domain elements
+  # DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
+  #                  N_DD = list(c(10)), # number of physical domain elements
   #                  N_PrD = list(c(30)), # number of process domain elements
   #                  N_RD = list(c(60)), # number of resource domain elements
   #                  prop_PROD  = 1,
@@ -101,7 +101,7 @@ simulate_costEffects<-function(DOE){
         out <- list()
       repeat{
         #### 3. Product Variety ####
-          # p<-10
+          # p<-100
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.0 Exclude Products ###
@@ -177,7 +177,7 @@ simulate_costEffects<-function(DOE){
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
-                                out['LZM'] <- mean(setup$lotSize)
+                                out['LZM'] <- mean(setup$lotSize[setup$lotSize>0])
                                 out['N_setups'] <- sum(setup$n_setups)
                                 out['N_proVar'] <- tooling$N_processVariety
                                 out['N_order'] <- sum(order$N_order)
