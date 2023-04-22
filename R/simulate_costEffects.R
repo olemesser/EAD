@@ -175,7 +175,7 @@ simulate_costEffects<-function(DOE){
                                 out['TC_NC'] <- nonCC_scenario$TC - out$dvl_materialCosts
                                 out['TC_NC_var'] <- nonCC_scenario$TC_var - out$dvl_materialCosts
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
-                                out['TC'] <- out['TC_NC'] +  out['TC_CC']
+                                out['TC'] <- out$TC_NC +  out$TC_CC
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['LZM'] <- mean(setup$lotSize[setup$lotSize>0])
