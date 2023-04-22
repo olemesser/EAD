@@ -1,7 +1,7 @@
 crt_EAD<-function(DOE,
                   file_output=F){
-  suppressWarnings(require(digest))
-  suppressWarnings(require(tidyr))
+  suppressMessages(suppressWarnings(require(digest)))
+  suppressMessages(suppressWarnings(require(tidyr)))
 
   #### Input Testing ####
   # x<-1
@@ -53,11 +53,16 @@ crt_EAD<-function(DOE,
     DOE$N_RD[x]<-ifelse(length(DOE$N_RD[x][[1]])>1,sample(DOE$N_RD[[x]][1]:DOE$N_RD[[x]][2],1),DOE$N_RD[[x]][1])
     #### 1. Create Product Mix & Demand ####
       ### 1.1 Product Mix Generation ###
+      if('DNS' %in% colnames(DOE)){
+        DNS_set <- runif(1,DOE$DNS[x][[1]][1],DOE$DNS[x][[1]][2])
+      }else{
+        DNS_set <- 1
+      }
       prodMIX<-create_ProductMix(N_FR = DOE$N_FR[x][[1]],
-                        DNS = ifelse('DNS' %in% colnames(DOE),DOE$DNS[x],1),
-                        prop_PROD=ifelse('prop_PROD' %in% colnames(DOE),DOE$prop_PROD[x],NA),
+                        DNS = DNS_set,
+                        prop_PROD =ifelse('prop_PROD' %in% colnames(DOE),DOE$prop_PROD[x],NA),
                         N_PROD = ifelse('N_PROD' %in% colnames(DOE),DOE$N_PROD[x],1),
-                        method =DOE$method_FD[x])
+                        method = DOE$method_FD[x])
       P[["FD"]]<-as.matrix(prodMIX$P_FD_const)
 
 

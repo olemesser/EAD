@@ -1,9 +1,9 @@
 simulate_costEffects<-function(DOE){
-  suppressWarnings(require(EAD))
-  suppressWarnings(require(digest))
-  suppressWarnings(require(tidyr))
-  suppressWarnings(require(data.table))
-  suppressWarnings(require(dplyr))
+  suppressMessages(suppressWarnings(require(EAD)))
+  suppressMessages(suppressWarnings(require(digest)))
+  suppressMessages(suppressWarnings(require(tidyr)))
+  suppressMessages(suppressWarnings(require(data.table)))
+  suppressMessages(suppressWarnings(require(dplyr)))
 
   #### Input for Testing ####
   # set.seed(1243)
@@ -175,6 +175,7 @@ simulate_costEffects<-function(DOE){
                                 out['TC_NC'] <- nonCC_scenario$TC - out$dvl_materialCosts
                                 out['TC_NC_var'] <- nonCC_scenario$TC_var - out$dvl_materialCosts
                                 out['TC_NC_fix'] <- nonCC_scenario$TC_fix
+                                out['TC'] <- out['TC_NC'] +  out['TC_CC']
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['LZM'] <- mean(setup$lotSize[setup$lotSize>0])
@@ -196,7 +197,8 @@ simulate_costEffects<-function(DOE){
             conceptCosts <- data.table::rbindlist(conceptCosts)
             systemMeasures <- t(data.frame(unlist(EAD$measures$SYSTEM)))
             rownames(systemMeasures) <- NULL
-            out[[i]]<-data.frame(step=i-1,
+            out[[i]]<-data.frame(ID=EAD$ID,
+                                 step=i-1,
                                  systemMeasures,
                                  conceptCosts)
 

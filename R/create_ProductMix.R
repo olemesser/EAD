@@ -38,7 +38,7 @@ create_ProductMix<-function(N_FR=13,
   suppressMessages(suppressWarnings(require(dplyr)))
   suppressMessages(suppressWarnings(require(tidyr)))
 
-  if(N_FR>15) stop("The maximum N_FR values is hardcoded to 15. Please reduce N_FR!")
+  if(N_FR>20) stop("The maximum N_FR values is hardcoded to 20. Please reduce N_FR!")
   #### 1.1 Create Free Product Mix ####
   P_FD<-expand.grid(lapply(1:N_FR,function(x) c(0,1)))
   P_FD<-P_FD[rowSums(P_FD)!=0,]

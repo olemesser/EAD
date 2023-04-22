@@ -232,14 +232,13 @@ setupCosts<-function(P_PD,
 
 
   #### 5. Sample execution order  and calculate the number of setups ####
-  n_setups <- t(sapply(1:1000,function(y){
+  n_setups <- t(sapply(1:500,function(y){
     n_setups <- apply(TM,2,function(x){
-      idx <- which(x!=0)
-      execution <- unlist(sapply(idx,function(y) rep(y,x[y])))
+      execution <- rep(which(x != 0), x[x != 0])
+      # execution <- unlist(sapply(which(x!=0),function(y) rep(y,x[y])))
       execution <- execution[sample(1:length(execution))]
       ## plus one is added since there is a initial setup
-      n_setups <- sum(diff(execution) != 0)+1
-      return(n_setups)
+      return(sum(diff(execution) != 0)+1)
     })
     return(n_setups)
   }))
