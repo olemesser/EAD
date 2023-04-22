@@ -198,7 +198,7 @@ experiment_PCS_MC<-function(DOE=NULL,
                                    gc()
                                    return(res)
                                  }, packages = c("EAD","odegoparallel",
-                                                 "dplyr", "rpicosat", "tidyr", "GA",
+                                                 "dplyr", "tidyr", "GA",
                                                  "Matrix", "digest", "faux","data.table",
                                                  "plyr", "DescTools", "igraph", "R.utils","fGarch"),
                                  errorhandlingNodes = ehNodes)
