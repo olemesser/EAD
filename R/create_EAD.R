@@ -246,7 +246,7 @@ crt_EAD_MC<-function(DOE,
                                       gc()
                                       return(res)
                                     }, packages = c("EAD","odegoparallel",
-                                                    "dplyr", "rpicosat", "tidyr", "GA",
+                                                    "dplyr", "tidyr", "GA",
                                                     "Matrix", "digest", "faux",
                                                     "plyr", "DescTools", "igraph", "R.utils","fGarch"),
                                  errorhandlingNodes = ehNodes)

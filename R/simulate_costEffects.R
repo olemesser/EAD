@@ -269,6 +269,6 @@ simulate_costEffects_MC<-function(DOE,
     snow::clusterExport(cl,"time_limit")
     res<-par_apply(cl,X=DOE_list,FUN=simulate_costEffects)
   }
-  res<-res[sapply(res,length)>0]
+  # res<-res[sapply(res,length)>0]
   return(res)
 }
