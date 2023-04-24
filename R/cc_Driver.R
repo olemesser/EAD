@@ -260,7 +260,7 @@ setupCosts<-function(P_PD,
 orderCosts<-function(DMD_PD,
                      N_lot,
                      C_order){
-  N_order <- ceiling(DMD_PD/N_lot)
+  N_order <- ifelse(!is.nan(ceiling(DMD_PD/N_lot)),ceiling(DMD_PD/N_lot),0)
   TC_order <- ifelse(is.nan(N_order),0,N_order) * C_order
   return(list(TC_order = sum(TC_order),
               N_order = N_order))

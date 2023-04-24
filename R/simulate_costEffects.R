@@ -182,8 +182,8 @@ simulate_costEffects<-function(DOE){
                                 out['N_setups'] <- sum(setup$n_setups)
                                 out['N_proVar'] <- tooling$N_processVariety
                                 out['N_order'] <- sum(order$N_order)
-                                out['driver_dvl'] <- mean(costDriver_inital$C_dvl)
-                                out['driver_pa'] <- mean(costDriver_inital$C_pa)
+                                out['driver_dvl'] <- mean(costDriver_inital$C_dvl[!is.nan(costDriver_inital$C_dvl)])
+                                out['driver_pa'] <- mean(costDriver_inital$C_pa[!is.nan(costDriver_inital$C_pa)])
                                 out['driver_setups'] <- costDriver_inital$C_setup
                                 out['driver_tooling'] <- mean(costDriver_inital$C_tooling[costDriver_inital$C_tooling>0])
                                 out['driver_order'] <- costDriver_inital$C_order
