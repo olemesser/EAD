@@ -20,7 +20,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Component Overdesign
 
-This vignette visulazies implemation of complexity cost drivers in product development as reported in @Meerschmidt.2024 . The following chunk loads the example EAD and represents the initial domain mapping matrix $DMM_{FD,PD}$.
+This vignette visulazes implementation of complexity cost drivers in product development as reported in @Meerschmidt.2024 . The following chunk loads the example EAD and represents the initial domain mapping matrix $DMM_{FD,PD}$.
 
 ```{r}
 library(EAD)
@@ -68,6 +68,39 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
 See the results:
 
 ```{r}
+print(res)
+```
+
+However, @Eynan.1996 note that for two components $PD_{1}$ and $PD_{2}$ replaced by an overdesigned one$PD_{*}$ the following equation is true
+
+$$C(PD_*)\geq max(C(PD_1);C(PD_2))$$ where $C(PD)$ are the variable costs of a component. In order to reflect this fact costs are calculated using the following equation:$$C(PD_*) = max(C(PD_1);C(PD_2)) + 
+min(C(PD_1);C(PD_2)) * U[lb;ub]
+$$
+
+with $U[lb;ub]$ being a uniform distribution within the bounds of $lb$ and $ub$. To use these bounds within the the simulation an additional argument is added to `overdesign_EAD()`.
+
+```{r}
+set.seed(123)
+EAD <- smallEAD
+
+i<-2
+while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
+  EAD<-overdesign_EAD(EAD,bounds = c(0.6,1))
+  message(paste0("\nDMM_PD_PrD at step S",i-1))
+  print(EAD$DMM$PD_PrD)
+  res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
+           sum(clc_PCB(EAD$P$RD,
+                   DMD = EAD$DEMAND,
+                   RCU_direct = costs_inital$RCU_direct,
+                   RC_var = rep(0,NCOL(EAD$P$RD)))$PC_B * EAD$DEMAND),
+           EAD$measures$SYSTEM$N_PD)
+  i <- i+1
+}
+```
+
+The new results are now:
+
+```{r}
 res
 ```
 
@@ -104,7 +137,7 @@ sum(TC_dvl)
 
 # Part Management
 
-Modelling of part management costs follow the same logic as the development costs. Again, the commonality caused sub-effect is neglected by using the same argumentation such as for the development costs. Alt-hough, commonality reduces the material numbers, overdesigned components fulfill more requirements at ones and are more likely to be affected by external or internal changes. Instead, this model focus on the product variety effect which is modelled analog to the development cost effect.
+Modelling of part management costs follow the same logic as the development costs. Again, the commonality caused sub-effect is neglected by using the same argumentation such as for the development costs. Although, commonality reduces the material numbers, overdesigned components fulfill more requirements at ones and are more likely to be affected by external or internal changes. Instead, this model focus on the product variety effect which is modeled analog to the development cost effect.
 
 ```{r}
 TCC <- as.numeric(DEMAND %*% P_PD)

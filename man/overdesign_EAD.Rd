@@ -4,10 +4,12 @@
 \alias{overdesign_EAD}
 \title{Substitutes two components by an overdesigned one}
 \usage{
-overdesign_EAD(EAD)
+overdesign_EAD(EAD, bounds = c(1, 1))
 }
 \arguments{
 \item{EAD}{An EAD object created via \link[EAD]{crt_EAD_MC}.}
+
+\item{bounds}{A numerical vector specifying the lower an upper bound for an increased in material costs due to overdesign. Default \code{bounds=c(1,1)}}
 }
 \value{
 Returns the manipulated EAD.
@@ -23,7 +25,7 @@ For further details see the corresponding vignette by running \code{utils::vigne
 \examples{
 
 EAD <- smallEAD
-overdesign_EAD(EAD)
+overdesign_EAD(EAD,bounds=c(1,1))
 }
 \references{
 \insertAllCited{}

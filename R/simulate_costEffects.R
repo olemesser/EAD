@@ -27,6 +27,7 @@ simulate_costEffects<-function(DOE){
   #                  DSM_method='modular',
   #                  ub_DSM = 5,
   #                  TC = 10^6, # total costs
+  #                  bounds = list(c(0,1)),
   #                  r_in = list(c(0.1,0.3)),
   #                  r_fix = list(c(1,1)), # proportion of fixed costs on total indirect costs
   #                  RC_cv = list(c(0,3)), # coefficient of variation for resource cost distribution
@@ -205,7 +206,7 @@ simulate_costEffects<-function(DOE){
           if(sum(colSums(EAD$DMM$FD_PD)>0)==1){
             break
           }else{
-            EAD<-overdesign_EAD(EAD)
+            EAD<-overdesign_EAD(EAD,bounds=DOE$bounds[x][[1]])
             i <- i + 1
             # print(i)
           } # end break condition

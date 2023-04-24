@@ -3,6 +3,7 @@
 #' The first component is chosen randomly. The second component is selected by finding the nearest neighbor of component one.
 #' Since components are substituted this function changes the following matrices \eqn{DMM_{FD,PD}}, \eqn{DSM_{PD}} and \eqn{DMM_{PD,PrD}}.
 #' @param EAD An EAD object created via \link[EAD]{crt_EAD_MC}.
+#' @param bounds A numerical vector specifying the lower an upper bound for an increased in material costs due to overdesign. Default \code{bounds=c(1,1)}
 #' @return Returns the manipulated EAD.
 #' @details For further details see the corresponding vignette by running \code{utils::vignette(package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
 #' @references
@@ -10,16 +11,20 @@
 #' @examples
 #'
 #' EAD <- smallEAD
-#' overdesign_EAD(EAD)
-overdesign_EAD<-function(EAD){
+#' overdesign_EAD(EAD,bounds=c(1,1))
+overdesign_EAD<-function(EAD,bounds=c(1,1)){
   require(EAD)
   #### Testing ####
   # EAD <- smallEAD
   # EAD$measures$SYSTEM$SDC_n$FD_PD
   # EAD$measures$SYSTEM$SDC$FD_PD
-  # el_substitute<-4
+  # el_substitute<-3
   # el_replaced_by<-2
+  # bounds=c(0.5,0.5)
+  # bounds=c(1,1)
   #### End Testing ####
+
+    costs <- clc_domainCosts(EAD)
 
     available_components <- which(colSums(EAD$DMM$FD_PD)>0)
     if(length(available_components)<2) stop("Not enough elements for overdesign available.")
@@ -55,11 +60,37 @@ overdesign_EAD<-function(EAD){
       }
 
     #### Adjust Process domain ####
-    EAD$DMM$PD_PrD[el_replaced_by,] <- EAD$DMM$PD_PrD[el_replaced_by,] + EAD$DMM$PD_PrD[el_substitute,]
+      max_costsEL <-  apply(EAD$DMM$PD_PrD[c(el_substitute,el_replaced_by),],2,function(x) x[which.max(x)])
+      min_costsEL <-apply(EAD$DMM$PD_PrD[c(el_substitute,el_replaced_by),],2,function(x) x[which.min(x)])
+
+      min_bound <- bounds[1]
+      repeat{
+        EAD_temp <- EAD
+        EAD_temp$DMM$PD_PrD[el_replaced_by,] <-max_costsEL + min_costsEL * min_bound
+        EAD_temp$DMM$PD_PrD[el_substitute,] <- 0
+        #### Update EAD (Design & Costs) ####
+        EAD_temp <- suppressWarnings(update_EAD(EAD_temp))
+        costs_new <- clc_domainCosts(EAD_temp)
+        EAD_temp$RC$direct <-costs$var$RD * colSums(EAD_temp$P$RD * EAD_temp$DEMAND)
+
+        if(sum(EAD_temp$RC$direct)<=sum(EAD$RC$direct )){
+          min_bound <- min_bound+0.05
+        }else{
+          break
+        }
+      }
+
+    EAD$DMM$PD_PrD[el_replaced_by,] <-max_costsEL + min_costsEL * runif(length(min_costsEL),
+                                                                         min = min_bound,
+                                                                         max = ifelse(min_bound>bounds[2],min_bound,bounds[2]))
     EAD$DMM$PD_PrD[el_substitute,] <- 0
 
-  EAD <- suppressWarnings(update_EAD(EAD))
-  return(EAD)
+    #### Update EAD (Design & Costs) ####
+    EAD <- suppressWarnings(update_EAD(EAD))
+    costs_new <- clc_domainCosts(EAD)
+    EAD$RC$direct <-costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
+
+    return(EAD)
 }
 
 materialCosts <- function(TC_var_S0,

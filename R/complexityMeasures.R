@@ -521,6 +521,7 @@ measure_PCI<-function(P,DMD=NULL){
 #'
 #' measure_LOF(P,n=2)
 measure_LOF<-function(P,perc=0.1){
+  require(DescTools)
   suppressWarnings(suppressMessages(require(DescTools)))
   LOF<-LOF(P,k = ceiling(NROW(P)*perc))
   return(LOF)
