@@ -47,6 +47,7 @@ measure_designComplexity<-function(A,norm=T){
       rM<-apply(A,1,max)
       A_max<-matrix(rep(rM, dim(A)[2]),nrow = dim(A)[1],ncol = dim(A)[2])
       DC <- DC/sum(apply(A_max,2,function(x) sum(x[x>0])*log(sum(x[x>0]))))
+      DC <- ifelse(is.nan(DC),0,DC)
     }
   }
   return(DC)

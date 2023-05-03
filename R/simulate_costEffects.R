@@ -191,11 +191,12 @@ simulate_costEffects<-function(DOE){
                                 out['driver_supply'] <- costDriver_inital$C_supply
                                 out['driver_stock'] <- costDriver_inital$C_hold
                                 out['ADC'] <-   as.numeric(out['dvl_developmentCosts']) / sum(DEMAND_temp)
+                                out['order_to_hold'] <- R_order / R_hold
 
                                 return(as.data.frame(out))
                       }) # end product variety loop
           #### 4. Measure Output ####
-            conceptCosts <- data.table::rbindlist(conceptCosts)
+            conceptCosts <- data.table::rbindlist(conceptCosts,use.names = T)
             systemMeasures <- t(data.frame(unlist(EAD$measures$SYSTEM)))
             rownames(systemMeasures) <- NULL
             out[[i]]<-data.frame(ID=EAD$ID,
