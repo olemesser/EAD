@@ -52,7 +52,7 @@ The increase of material costs due to overdesign modeled as follows. Starting wi
 ```{r}
 i<-2
 while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
-  EAD<-overdesign_EAD(EAD)
+  EAD<-overdesign_EAD(EAD)$EAD
   message(paste0("\nDMM_FD_PD at step S",i-1))
   print(EAD$DMM$FD_PD)
   res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
@@ -85,7 +85,7 @@ EAD <- smallEAD
 
 i<-2
 while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
-  EAD<-overdesign_EAD(EAD,bounds = c(0.6,1))
+  EAD<-overdesign_EAD(EAD,bounds = c(0.6,1))$EAD
   message(paste0("\nDMM_PD_PrD at step S",i-1))
   print(EAD$DMM$PD_PrD)
   res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,

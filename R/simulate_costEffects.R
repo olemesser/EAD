@@ -69,13 +69,17 @@ simulate_costEffects<-function(DOE){
                                             R_supply = R_supply)
 
       ### 1.4 Calculate costs for non complexity driven costs ###
-      nonCC <- clc_PCB(EAD$P$RD,
-                       DMD=EAD$DEMAND,
-                       RC_direct = EAD$RC$direct,
-                       RC_var = EAD$RC$var,
-                       RC_fix = EAD$RC$fix)
-
-
+        ## product costs and resource unit costs ##
+        nonCC <- clc_PCB(EAD$P$RD,
+                         DMD=EAD$DEMAND,
+                         RC_direct = EAD$RC$direct,
+                         RC_var = EAD$RC$var,
+                         RC_fix = EAD$RC$fix)
+        ## component costs ##
+        PDUC_noOD <- clc_variableComponentCosts(EAD = EAD,
+                                           RCU = nonCC$RCU_direct)
+        PDUC <- PDUC_noOD
+        EAD_PD_noOD <- EAD$P$PD
 
 
     #### 2. Create Scenarios for Overdesign ####
@@ -97,26 +101,38 @@ simulate_costEffects<-function(DOE){
           }
         }
 
+        order_introduction_index <- 1:length(order_introduction)
+        variety_step <- split(order_introduction_index, ceiling(seq_along(order_introduction_index) / DOE$prod_step_width[x]))
+        order_introduction <- lapply(variety_step,function(x){
+          order_introduction[x]
+        })
       #### 2.1 Overdesign components step by step until only one component is left ####
         i <- 1
         out <- list()
+        overdesign_Change <- NULL
       repeat{
         #### 3. Product Variety ####
-          # p<-100
+          ### increase product variety within each step ###
+          # p<-1
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.0 Exclude Products ###
-                                products_in <-order_introduction[1:p]
-                                products_out <- setdiff(order_introduction,products_in)
+                                products_in <- as.numeric(unlist(order_introduction[1:p]))
+                                products_out <- setdiff(as.numeric(unlist(order_introduction)),
+                                                        products_in)
                                 DEMAND_temp <- rep(0,length(EAD$DEMAND))
                                 DEMAND_temp[products_in] <- EAD$DEMAND[products_in]
 
+                                  ## calculate component demand rate for the scenario of no overdesign
+                                    DMD_component_noOD <- as.numeric(DEMAND_temp %*% EAD_PD_noOD)
+                                  ## calculate component demand rate for the current scenario
+                                    DMD_component <- as.numeric(DEMAND_temp %*% EAD$P$PD)
+
                                 ### 3.1 Increased Material Costs ###
-                                TC_var_S0 <- sum((nonCC$PC_direct + nonCC$PC_B_var) * DEMAND_temp)
-                                out['dvl_materialCosts'] <- materialCosts(TC_var_S0 = TC_var_S0,
-                                                                          P_RD = EAD$P$RD,
-                                                                          DMD = DEMAND_temp,
-                                                                          RCU = nonCC$RCU + nonCC$RCU_direct)
+                                    variableComponenCosts_noOD <- sum(PDUC_noOD$var * DMD_component_noOD)
+                                  ## calculate costs of overdesign
+                                  out['dvl_materialCosts'] <- sum(PDUC$var * DMD_component) - variableComponenCosts_noOD
+
 
                                 ### 3.2 Calculate Cost by going through the individual cost driver ###
                                 ### starting with development costs ###
@@ -141,9 +157,9 @@ simulate_costEffects<-function(DOE){
 
                                 ### 3.4. Tooling Costs ###
                                 tooling <- toolingCosts(DMM_PD_PrD = EAD$DMM$PD_PrD,
-                                                                        DSM_PrD = EAD$DSM$PrD,
-                                                                        DMD_component = setup$DMD_component,
-                                                                        C_tooling = costDriver_inital$C_tooling)
+                                                        DSM_PrD = EAD$DSM$PrD,
+                                                        DMD_component = setup$DMD_component,
+                                                        C_tooling = costDriver_inital$C_tooling)
                                 out['man_toolingCosts'] <- tooling$C_tooling
 
                                 ### 3.5 Purchasing Order Costs ###
@@ -208,6 +224,11 @@ simulate_costEffects<-function(DOE){
             break
           }else{
             EAD<-overdesign_EAD(EAD,bounds=DOE$bounds[x][[1]])
+            overdesign_Change <- c(EAD$overdesign$substitute,EAD$overdesign$replaced_by)
+            EAD <- EAD$EAD
+            PDUC <- overdesign_costs(PDUC_var = PDUC$var,
+                                     design = overdesign_Change,
+                                     bounds = c(0,1))$PDUC
             i <- i + 1
             # print(i)
           } # end break condition

@@ -90,7 +90,9 @@ overdesign_EAD<-function(EAD,bounds=c(1,1)){
     costs_new <- clc_domainCosts(EAD)
     EAD$RC$direct <-costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
 
-    return(EAD)
+    return(list(EAD = EAD,
+                overdesign = list(substitute = el_substitute,
+                                  replaced_by = el_replaced_by)))
 }
 
 materialCosts <- function(TC_var_S0,
@@ -99,6 +101,28 @@ materialCosts <- function(TC_var_S0,
                           RCU){
   TC_var_S1 <- sum(as.numeric(P_RD %*% RCU) * DMD)
   return(TC_var_S1 - TC_var_S0)
+}
+
+overdesign_costs <- function(PDUC_var,
+                             design,
+                             bounds = c(0,1)){
+
+  #### Input for Testing ####
+  # PDUC_var <- c(1,30,4,5,6)
+  # design <- c(2,1)
+  # bounds <- c(1,1)
+  #### End Input for testing ####
+
+  PDUC_var_new <- PDUC_var
+  if(!is.null(design)){
+    PDUC_var_new[design[2]] <- max(PDUC_var[design]) + min(PDUC_var[design]) * runif(1,
+                                                                                     min = bounds[1],
+                                                                                     max = bounds[2])
+    PDUC_var_new[design[1]] <- 0
+  }
+
+  return(list(PDUC = list(var = PDUC_var_new,
+                          fix = NA)))
 }
 
 
@@ -388,4 +412,29 @@ clc_initialCosts <- function(EAD,
 
 
   return(out)
+}
+
+
+clc_variableComponentCosts <- function(EAD,RCU){
+  require(EAD)
+  #### Input For Testing ####
+  # EAD <- smallEAD
+  # costs <- clc_PCB(EAD$P$RD,
+  #                  DMD = EAD$DEMAND,
+  #                  RC_direct = EAD$RC$direct + EAD$RC$var,
+  #                  RC_var = rep(0,length(EAD$RC$var)),
+  #                  RC_fix = EAD$RC$fix)
+  # RCU <- costs$RCU_direct
+  #### End Input for Testing ####
+
+  P_PrD <- diag(1,nrow = NROW(EAD$DMM$PD_PrD)) %*% ((EAD$DMM$PD_PrD %*% EAD$DSM$PrD) + EAD$DMM$PD_PrD)
+  P_RD <- P_PrD %*% ((EAD$DMM$PrD_RD %*% EAD$DSM$RD) + EAD$DMM$PrD_RD)
+  costs <- clc_PCB(RES_CONS_PAT = P_RD,
+                  RCU_direct = RCU,
+                  RCU = rep(0,length(RCU)),
+                  RC_fix = rep(0,length(RCU)))
+
+  PDUC_var <- costs$PC_direct
+  return(list(var = PDUC_var,
+              fix = NA))
 }
