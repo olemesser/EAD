@@ -220,7 +220,7 @@ simulate_costEffects<-function(DOE){
                                  systemMeasures,
                                  conceptCosts)
 
-          if(sum(colSums(EAD$DMM$FD_PD)>0)==1){
+          if(sum(colSums(EAD$DMM$FD_PD)>0)<=ceiling(NROW(EAD$DMM$FD_PD)/2)){
             break
           }else{
             EAD<-overdesign_EAD(EAD,bounds=DOE$bounds[x][[1]])
