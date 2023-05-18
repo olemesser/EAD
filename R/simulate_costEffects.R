@@ -50,7 +50,7 @@ simulate_costEffects<-function(DOE){
       ### for each overdesign scenario the product variety is increased starting with one product until all products are introduced
         ## method, starting with the high-volume and than going into niches
         # order_introduction <- sort(EAD$DEMAND,decreasing = T,index.return=TRUE)$ix
-        ## method: high volume products higher chance but not neceassry introduced first
+        ## method: high volume products higher chance but not necessary introduced first
         ix <- 1:length(EAD$DEMAND)
         products_out <- ix
         order_introduction <- vector(mode="numeric")
@@ -79,7 +79,6 @@ simulate_costEffects<-function(DOE){
         #### 3. Product Variety ####
           ### increase product variety within each step ###
           # p<-1
-
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.0 Exclude Products ###
@@ -140,8 +139,9 @@ simulate_costEffects<-function(DOE){
                                                                       C_supply = costDriver_inital$C_supply)
 
                                 ### 3.7. Stock costs ###
-                                out['pur_stockCosts'] <- stockCosts(C_hold = costDriver_inital$C_hold,
+                                stock <- stockCosts(C_hold = costDriver_inital$C_hold,
                                                                      lotSize = setup$lotSize)
+                                out['pur_stockCosts'] <- stock$TC_stock
 
                                 ### 3.8 Calculate total complexity costs ###
                                 out['TC_CC'] <- sum(unlist(out))
@@ -162,6 +162,7 @@ simulate_costEffects<-function(DOE){
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['LZM'] <- mean(setup$lotSize[setup$lotSize>0])
+                                out['Units_stock'] <- stock$Units_stock
                                 out['N_setups'] <- sum(setup$n_setups)
                                 out['N_proVar'] <- tooling$N_processVariety
                                 out['N_order'] <- sum(order$N_order)

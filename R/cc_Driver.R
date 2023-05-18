@@ -348,7 +348,9 @@ supplyCosts <- function(P_PD,
 
 stockCosts <-function(C_hold,
                       lotSize){
-  return( C_hold * sum(3/2 *lotSize))
+  Units_stock <- sum(ceiling(3/2 *lotSize))
+  return( list(TC_stock = C_hold * Units_stock,
+               Units_stock = Units_stock))
 }
 
 
