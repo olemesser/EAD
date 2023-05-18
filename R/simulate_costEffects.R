@@ -5,43 +5,6 @@ simulate_costEffects<-function(DOE){
   suppressMessages(suppressWarnings(require(data.table)))
   suppressMessages(suppressWarnings(require(dplyr)))
 
-  #### Input for Testing ####
-  # set.seed(1243)
-  # DOE<-expand_grid(N_FR = list(c(7)), # number of functional requirements
-  #                  N_DD = list(c(10)), # number of physical domain elements
-  #                  N_PrD = list(c(30)), # number of process domain elements
-  #                  N_RD = list(c(60)), # number of resource domain elements
-  #                  prop_PROD  = 1,
-  #                  method_FD = "random",
-  #                  TOTAL_DEMAND = 10000, # total demand
-  #                  Q_VAR = list(c(0,2)), # coefficient of variation for demand distribution
-  #                  DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
-  #                                        PD_PrD=list(c(0,0.1)),
-  #                                        PrD_RD=list(c(0,0.1))), # desired system design complexity
-  #                  uB_DMM = 5,
-  #                  allowZero = F,
-  #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-  #                  DSM_param=expand_grid(PD=list(c(0,0.1,0,1)),
-  #                                        PrD=list(c(0,0,0,1)),
-  #                                        RD=list(c(0,0,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
-  #                  DSM_method='modular',
-  #                  ub_DSM = 5,
-  #                  TC = 10^6, # total costs
-  #                  bounds = list(c(0,1)),
-  #                  r_in = list(c(0.1,0.3)),
-  #                  r_fix = list(c(1,1)), # proportion of fixed costs on total indirect costs
-  #                  RC_cv = list(c(0,3)), # coefficient of variation for resource cost distribution
-  #                  R_dvl = list(c(0.1,0.4)),
-  #                  R_PA = list(c(0.1,0.3)),
-  #                  R_order = list(c(0.01,0.1)), # total order costs
-  #                  R_hold = list(c(0.1,0.2)), # total holding costs
-  #                  R_setup = list(c(0.05,0.4)), # total setup costs 5%-40%
-  #                  R_tooling = list(c(0.05,0.2)),
-  #                  R_supply = list(c(0.05,0.2)),
-  #                  N_RUN = 1:1 # number of runs
-  # )
-  # x<-1
-  #### END Input for Testing ####
 
   #### For each DOE ####
   res<-lapply(1:NROW(DOE),function(x){
@@ -57,6 +20,7 @@ simulate_costEffects<-function(DOE){
       R_order <- runif(1,DOE$R_order[x][[1]][1],DOE$R_order[x][[1]][2])
       R_setup <- runif(1,DOE$R_setup[x][[1]][1],DOE$R_setup[x][[1]][2])
       R_supply <- runif(1,DOE$R_supply[x][[1]][1],DOE$R_supply[x][[1]][2])
+      bounds <- DOE$bounds[x][[1]]
 
       ### 1.3 Calculate initial values for complexity cost drivers (CCD) ###
       costDriver_inital <- clc_initialCosts(EAD,
@@ -110,10 +74,12 @@ simulate_costEffects<-function(DOE){
         i <- 1
         out <- list()
         overdesign_Change <- NULL
+        C_dvl <- costDriver_inital$C_dvl
       repeat{
         #### 3. Product Variety ####
           ### increase product variety within each step ###
           # p<-1
+
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.0 Exclude Products ###
@@ -136,9 +102,9 @@ simulate_costEffects<-function(DOE){
 
                                 ### 3.2 Calculate Cost by going through the individual cost driver ###
                                 ### starting with development costs ###
-                                out['dvl_developmentCosts'] <- development_costs(P_PD = EAD$P$PD,
+                                  out['dvl_developmentCosts'] <- development_costs(P_PD = EAD$P$PD,
                                                                       DEMAND = DEMAND_temp,
-                                                                      C_dvl = costDriver_inital$C_dvl)
+                                                                      C_dvl = C_dvl)$TC_dvl
 
                                 ### 3.3 Part Management Costs ###
                                 out['dvl_partadminCosts'] <- partmgmtCosts(P_PD = EAD$P$PD,
@@ -228,7 +194,14 @@ simulate_costEffects<-function(DOE){
             EAD <- EAD$EAD
             PDUC <- overdesign_costs(PDUC_var = PDUC$var,
                                      design = overdesign_Change,
-                                     bounds = c(0,1))$PDUC
+                                     bounds = bounds)$PDUC
+
+            C_dvl <- development_costs(P_PD = EAD$P$PD,
+                                       DEMAND = EAD$DEMAND,
+                                       C_dvl = C_dvl,
+                                       overdesign_Change=overdesign_Change,
+                                       bounds = bounds)$C_dvl
+
             i <- i + 1
             # print(i)
           } # end break condition

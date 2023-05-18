@@ -4,7 +4,13 @@
 \alias{development_costs}
 \title{Calculates Components' Development  Costs}
 \usage{
-development_costs(P_PD, DEMAND, C_dvl)
+development_costs(
+  P_PD,
+  DEMAND,
+  C_dvl,
+  overdesign_Change = NULL,
+  bounds = c(1, 1)
+)
 }
 \arguments{
 \item{P_PD}{The product mix in the physical domain containing products in rows and components in columns.}
@@ -12,6 +18,10 @@ development_costs(P_PD, DEMAND, C_dvl)
 \item{DEMAND}{A numeric demand vector. If products are excluded from the product mix, the entries are zero.}
 
 \item{C_dvl}{The development costs for each component.}
+
+\item{overdesign_Change}{A vector of length two, specifying the overdesign. The first entry indicates the index of the component which is substituted by the second indexed component.}
+
+\item{bounds}{A vector specifying the bounds for a uniform distribution.}
 }
 \value{
 Returns the summed development costs.

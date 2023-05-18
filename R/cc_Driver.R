@@ -131,6 +131,8 @@ overdesign_costs <- function(PDUC_var,
 #' @param P_PD The product mix in the physical domain containing products in rows and components in columns.
 #' @param DEMAND A numeric demand vector. If products are excluded from the product mix, the entries are zero.
 #' @param C_dvl The development costs for each component.
+#' @param overdesign_Change A vector of length two, specifying the overdesign. The first entry indicates the index of the component which is substituted by the second indexed component.
+#' @param bounds A vector specifying the bounds for a uniform distribution.
 #' @return Returns the summed development costs.
 #' @details For further details see \insertCite{Meerschmidt.2024;textual}{EAD}.
 #' @references
@@ -147,18 +149,33 @@ overdesign_costs <- function(PDUC_var,
 #'                   DEMAND,
 #'                   PDC_fix,
 #'                   R_dvl)
-development_costs<-function(P_PD,DEMAND,C_dvl){
+development_costs<-function(P_PD,
+                            DEMAND,
+                            C_dvl,
+                            overdesign_Change=NULL,
+                            bounds = c(1,1)){
   require(EAD)
   #### Testing ####
   # EAD <- smallEAD
   # P_PD <- EAD$P$PD
   # DEMAND<-c(0,50,100,30)
+  # C_dvl <- c(10,7,12,14)
+  # overdesign_Change <- c(3,2)
+  # bounds = c(1,1)
   #### End Testing ####
 
   TCC <- as.numeric(DEMAND %*% P_PD)
   non_zero <- as.numeric(TCC > 0)
+  if(!is.null(overdesign_Change)){
+    C_dvl[overdesign_Change[2]] <-  max(C_dvl[overdesign_Change]) +  min(C_dvl[overdesign_Change]) * runif(1,
+                                                                                                       min = bounds[1],
+                                                                                                       max = bounds[2])
+    C_dvl[overdesign_Change[1]] <- 0
+  }
   TC_dvl <- C_dvl * non_zero
-  return(sum(TC_dvl))
+
+  return(list(TC_dvl = sum(TC_dvl),
+              C_dvl = C_dvl))
 }
 
 #' @title Calculates Components' Part Administration Costs
