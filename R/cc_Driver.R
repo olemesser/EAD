@@ -1,9 +1,19 @@
 #' @title Substitutes two components by an overdesigned one
 #' @description This function randomly chooses two component and replace those by one overdesigned one.
-#' The first component is chosen randomly. The second component is selected by finding the nearest neighbor of component one.
+#' There are two methods available for manipulating the degree of overdesign (see \code{method}).
 #' Since components are substituted this function changes the following matrices \eqn{DMM_{FD,PD}}, \eqn{DSM_{PD}} and \eqn{DMM_{PD,PrD}}.
 #' @param EAD An EAD object created via \link[EAD]{crt_EAD_MC}.
 #' @param bounds A numerical vector specifying the lower an upper bound for an increased in material costs due to overdesign. Default \code{bounds=c(1,1)}
+#' @param method The method which is used to overdesign the \eqn{DMM_{FD,PD}} matrix.
+#' \describe{
+#'   \item{random}{The first component is chosen randomly.
+#'   The second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.}
+#'    \item{optimized}{As a first component, the one with the smallest demand rate is chosen.
+#'    The second component, is selected based on two criteria.
+#'    First, the procedures searches if there is a component available which overfills the requirements.
+#'    If this is the case, there are no additional costs since the component already exists.
+#'    If there is no component which overfill the requirements of component one, the second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.}
+#'    }
 #' @return Returns the manipulated EAD.
 #' @details For further details see the corresponding vignette by running \code{utils::vignette(package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
 #' @references
@@ -11,28 +21,52 @@
 #' @examples
 #'
 #' EAD <- smallEAD
-#' overdesign_EAD(EAD,bounds=c(1,1))
-overdesign_EAD<-function(EAD,bounds=c(1,1)){
+#' overdesign_EAD(EAD,bounds=c(1,1),method='random')
+overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
   require(EAD)
   #### Testing ####
   # EAD <- smallEAD
   # EAD$measures$SYSTEM$SDC_n$FD_PD
   # EAD$measures$SYSTEM$SDC$FD_PD
-  # el_substitute<-3
-  # el_replaced_by<-2
+  # el_substitute<-2
+  # el_replaced_by<-3
   # bounds=c(0.5,0.5)
   # bounds=c(1,1)
+  # method <- "optimized"
   #### End Testing ####
+
+  if(length(method)>1) method <- method[1]
 
     costs <- clc_domainCosts(EAD)
 
     available_components <- which(colSums(EAD$DMM$FD_PD)>0)
     if(length(available_components)<2) stop("Not enough elements for overdesign available.")
-    el_substitute <- sample(available_components,1)
-    replacement_candidates <- setdiff(available_components,el_substitute)
-    neighbors <- as.matrix(dist(t(EAD$DMM$FD_PD)))
-    neighbors <- neighbors[el_substitute,replacement_candidates,drop=F]
-    el_replaced_by <- replacement_candidates[which.min(neighbors)]
+
+    if(method == "random"){
+       el_substitute <- sample(available_components,1)
+       replacement_candidates <- setdiff(available_components,el_substitute)
+       neighbors <- as.matrix(dist(t(EAD$DMM$FD_PD)))
+       neighbors <- neighbors[el_substitute,replacement_candidates,drop=F]
+       el_replaced_by <- replacement_candidates[which.min(neighbors)]
+    }else if(method == "optimized"){
+      DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
+      el_substitute <- which.min(ifelse(DMD_component==0,NA,DMD_component))
+      replacement_candidates <- setdiff(available_components,el_substitute)
+      ## check if there is a component which overfills the requirements
+      overfill <- EAD$DMM$FD_PD[,el_substitute] %*% EAD$DMM$FD_PD[,replacement_candidates,drop=F]
+      overfill <- as.numeric(overfill[1,])
+      el_replaced_by <- replacement_candidates[which(overfill>=sum(EAD$DMM$FD_PD[,el_substitute]))]
+      if(length(el_replaced_by)>0){
+        el_replaced_by <-  el_replaced_by[which.min(costs$var$PD[el_replaced_by])]
+      }else{
+        neighbors <- as.matrix(dist(t(EAD$DMM$FD_PD)))
+        neighbors <- neighbors[el_substitute,replacement_candidates,drop=F]
+        el_replaced_by <- replacement_candidates[which.min(neighbors)]
+      }
+    }else{
+      stop("You selected an incorrect method for the overdesign! Options are: 'random', 'optmized'. ")
+    }
+
 
 
     #### Manipulate DMM ####
@@ -73,7 +107,7 @@ overdesign_EAD<-function(EAD,bounds=c(1,1)){
         costs_new <- clc_domainCosts(EAD_temp)
         EAD_temp$RC$direct <-costs$var$RD * colSums(EAD_temp$P$RD * EAD_temp$DEMAND)
 
-        if(sum(EAD_temp$RC$direct)<=sum(EAD$RC$direct )){
+        if(sum(EAD_temp$RC$direct)<sum(EAD$RC$direct)){
           min_bound <- min_bound+0.05
         }else{
           break
@@ -304,17 +338,37 @@ setupCosts<-function(P_PD,
 
 
   #### 5. Sample execution order  and calculate the number of setups ####
-  n_setups <- t(sapply(1:500,function(y){
-    n_setups <- apply(TM,2,function(x){
+  runs<-500
+  n_setups <- matrix(NA,nrow = runs,ncol = NCOL(TM))
+  for(i in 1:runs){
+    for (j in 1:NCOL(TM)) {
+      x <- TM[,j]
       execution <- rep(which(x != 0), x[x != 0])
-      # execution <- unlist(sapply(which(x!=0),function(y) rep(y,x[y])))
-      execution <- execution[sample(1:length(execution))]
-      ## plus one is added since there is a initial setup
-      return(sum(diff(execution) != 0)+1)
-    })
-    return(n_setups)
-  }))
+      execution <- sample(execution)
+      n_setups[i,j] <- sum(diff(execution) != 0) + 1
+    }
+  }
   n_setups <- ceiling(colMeans(n_setups))
+  # n_setups <- t(replicate(500, {
+  #   n_setups <- apply(TM, 2, function(x) {
+  #     execution <- rep(which(x != 0), x[x != 0])
+  #     execution <- execution[sample(1:length(execution))]
+  #     sum(diff(execution) != 0) + 1
+  #   })
+  #   return(n_setups)
+  # }))
+  # n_setups <- ceiling(colMeans(n_setups))
+  # n_setups <- t(sapply(1:500,function(y){
+  #   n_setups <- apply(TM,2,function(x){
+  #     execution <- rep(which(x != 0), x[x != 0])
+  #     # execution <- unlist(sapply(which(x!=0),function(y) rep(y,x[y])))
+  #     execution <- execution[sample(1:length(execution))]
+  #     ## plus one is added since there is a initial setup
+  #     return(sum(diff(execution) != 0)+1)
+  #   })
+  #   return(n_setups)
+  # }))
+  # n_setups <- ceiling(colMeans(n_setups))
 
   TM_bin <- TM
   TM_bin[TM_bin>0] <- 1
@@ -326,6 +380,20 @@ setupCosts<-function(P_PD,
                 n_setups = n_setups,
                 rm_TM = mean(rowMeans(TM_bin)[rowMeans(TM_bin)>0])))
 
+}
+
+
+clc_numbSetups<-function(TM,rep = 500){
+  n_setups <- t(sapply(1:rep,function(y){
+    n_setups <- apply(TM,2,function(x){
+      execution <- rep(which(x != 0), x[x != 0])
+      execution <- execution[sample(1:length(execution))]
+      ## plus one is added since there is a initial setup
+      return(sum(diff(execution) != 0)+1)
+    })
+    return(n_setups)
+  }))
+ return(n_setups)
 }
 
 

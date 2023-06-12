@@ -190,7 +190,7 @@ simulate_costEffects<-function(DOE){
           if(sum(colSums(EAD$DMM$FD_PD)>0)<=ceiling(NROW(EAD$DMM$FD_PD)/2)){
             break
           }else{
-            EAD<-overdesign_EAD(EAD,bounds=DOE$bounds[x][[1]])
+            EAD<-overdesign_EAD(EAD,bounds=DOE$bounds[x][[1]],method = DOE$method_overdesign[x])
             overdesign_Change <- c(EAD$overdesign$substitute,EAD$overdesign$replaced_by)
             EAD <- EAD$EAD
             PDUC <- overdesign_costs(PDUC_var = PDUC$var,

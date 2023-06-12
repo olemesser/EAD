@@ -91,3 +91,39 @@ cor_table<-function(res,filename,group=NULL){
               CI=CI))
 
 }
+
+
+sem_effects <- function(fit){
+  require(lavaan)
+
+  beta <- lavInspect(fit, "est")$beta
+  y <- matrix(0,nrow = NROW(beta),ncol = NCOL(beta))
+  n <- 1
+  repeat{
+    effect <- eval(parse(text = paste(rep("beta",n),collapse = " %*% ")))
+    y <- y + effect
+    if(sum(effect)==0){
+      message(paste0("Effects of order ",n-1," were calculated."))
+      break
+    }else{
+      n <- n + 1
+    }
+  }
+  return(y)
+}
+
+
+cor.mtest <- function(mat, ...) {
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat<- matrix(NA, n, n)
+  diag(p.mat) <- 0
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      tmp <- cor.test(mat[, i], mat[, j], ...)
+      p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+    }
+  }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}

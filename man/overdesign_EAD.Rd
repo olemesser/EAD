@@ -4,19 +4,30 @@
 \alias{overdesign_EAD}
 \title{Substitutes two components by an overdesigned one}
 \usage{
-overdesign_EAD(EAD, bounds = c(1, 1))
+overdesign_EAD(EAD, bounds = c(1, 1), method = c("random", "optimized"))
 }
 \arguments{
 \item{EAD}{An EAD object created via \link[EAD]{crt_EAD_MC}.}
 
 \item{bounds}{A numerical vector specifying the lower an upper bound for an increased in material costs due to overdesign. Default \code{bounds=c(1,1)}}
+
+\item{method}{The method which is used to overdesign the \eqn{DMM_{FD,PD}} matrix.
+\describe{
+  \item{random}{The first component is chosen randomly.
+  The second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.}
+   \item{optimized}{As a first component, the one with the smallest demand rate is chosen.
+   The second component, is selected based on two criteria.
+   First, the procedures searches if there is a component available which overfills the requirements.
+   If this is the case, there are no additional costs since the component already exists.
+   If there is no component which overfill the requirements of component one, the second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.}
+   }}
 }
 \value{
 Returns the manipulated EAD.
 }
 \description{
 This function randomly chooses two component and replace those by one overdesigned one.
-The first component is chosen randomly. The second component is selected by finding the nearest neighbor of component one.
+There are two methods available for manipulating the degree of overdesign (see \code{method}).
 Since components are substituted this function changes the following matrices \eqn{DMM_{FD,PD}}, \eqn{DSM_{PD}} and \eqn{DMM_{PD,PrD}}.
 }
 \details{
@@ -25,7 +36,7 @@ For further details see the corresponding vignette by running \code{utils::vigne
 \examples{
 
 EAD <- smallEAD
-overdesign_EAD(EAD,bounds=c(1,1))
+overdesign_EAD(EAD,bounds=c(1,1),method='random')
 }
 \references{
 \insertAllCited{}

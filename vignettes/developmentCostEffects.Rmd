@@ -47,6 +47,8 @@ res[1,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
            EAD$measures$SYSTEM$N_PD)
 ```
 
+## Random Overdesign
+
 The increase of material costs due to overdesign modeled as follows. Starting with a given $DMM_{FD,PD}$ matrix, two components are substituted by one oversized one. The replacement works as follows. First a component is randomly selected, its nearest neighbor component is calculated and selected as a component to be substituted. It is possible to select the second component also by random chance, however, the nearest neighbor search ensures that these two components share some similarities. This reflects more practical settings since it is more likely that engineering, for example, standardizes a small and large beam instead of a small beam and a cabinet. The procedure is repeated as long as there is only one component left. The following chunk visualizes the procedure.
 
 ```{r}
@@ -68,8 +70,45 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
 See the results:
 
 ```{r}
-print(res)
+res
 ```
+
+## Optimized Overdesign
+
+The second method for overdesign is more optimized as it preferes to overdesign a low demand component in order to minimize the increase in total material costs. As a first component, the one with the smallest demand rate is chosen. The second component, is selected based on two criteria.
+
+-   First, the procedures searches if there is a component available which overfills the requirements. If this is the case, there are no additional costs since the component already exists.
+
+-   If there is no component which overfill the requirements of component one, the second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.
+
+The following code shows the second method:
+
+```{r}
+set.seed(123)
+EAD <- smallEAD
+
+i<-2
+while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
+  EAD<-overdesign_EAD(EAD,bounds = c(1,1),method="optimized")$EAD
+  message(paste0("\nDMM_PD_PrD at step S",i-1))
+  print(EAD$DMM$FD_PD)
+  res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
+           sum(clc_PCB(EAD$P$RD,
+                   DMD = EAD$DEMAND,
+                   RCU_direct = costs_inital$RCU_direct,
+                   RC_var = rep(0,NCOL(EAD$P$RD)))$PC_B * EAD$DEMAND),
+           EAD$measures$SYSTEM$N_PD)
+  i <- i+1
+}
+```
+
+Print the results
+
+```{r}
+res
+```
+
+## Material Costs of Overdesigned COmponents
 
 However, @Eynan.1996 note that for two components $PD_{1}$ and $PD_{2}$ replaced by an overdesigned one$PD_{*}$ the following equation is true
 
@@ -85,7 +124,7 @@ EAD <- smallEAD
 
 i<-2
 while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
-  EAD<-overdesign_EAD(EAD,bounds = c(0.6,1))$EAD
+  EAD<-overdesign_EAD(EAD,bounds = c(0.6,1),method = "optimized")$EAD
   message(paste0("\nDMM_PD_PrD at step S",i-1))
   print(EAD$DMM$PD_PrD)
   res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
