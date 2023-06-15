@@ -38,11 +38,15 @@ create_ProductMix<-function(N_FR=13,
   suppressMessages(suppressWarnings(require(dplyr)))
   suppressMessages(suppressWarnings(require(tidyr)))
 
-  if(N_FR>20) stop("The maximum N_FR values is hardcoded to 20. Please reduce N_FR!")
+
   #### 1.1 Create Free Product Mix ####
-  P_FD<-expand.grid(lapply(1:N_FR,function(x) c(0,1)))
-  P_FD<-P_FD[rowSums(P_FD)!=0,]
-  colnames(P_FD)<-paste0("FD_",1:N_FR)
+  if(method %in% c("random","combination")){
+    if(N_FR>20) stop("The maximum N_FR values is hardcoded to 20. Please reduce N_FR!")
+    P_FD<-expand.grid(lapply(1:N_FR,function(x) c(0,1)))
+    P_FD<-P_FD[rowSums(P_FD)!=0,]
+  }
+
+
   if(length(DNS)==2) DNS<-runif(1,min=DNS[1],max=DNS[2])
   if(length(prop_PROD)==2) prop_PROD<-runif(1,min=prop_PROD[1],max=prop_PROD[2])
 
@@ -116,33 +120,49 @@ create_ProductMix<-function(N_FR=13,
     }
   }else if(method=="DNS"){
     if(N_PROD<N_FR) N_PROD <- N_FR
-    DSM_FD<-diag(0,nrow = NCOL(P_FD))
-    repeat{
-      row_densities <- as.numeric(apply(P_FD, 1, function(row) sum(row != 0) / N_FR))
-      row_density_error <- abs(row_densities-DNS)
-      row_idx <- 1:NROW(P_FD)
-      selected_rows<-vector(mode = "numeric")
-      while (length(selected_rows)<N_PROD) {
-        rows_available <- setdiff(1:NROW(P_FD),selected_rows)
-        new_row <- which(row_density_error[rows_available]==min(row_density_error[rows_available]))
-        new_row <- sample(new_row,1)
-        selected_rows <- c(selected_rows,row_idx[rows_available][new_row])
+    DSM_FD<-diag(0,nrow = N_PROD)
+    product_mix <- list()
+    prod <- 1
+    while(prod<(N_PROD+1)){
+      repeat{
+        candidate <- sample(c(0,1),N_FR,replace = T,prob = c(1-DNS,DNS))
+        existing_prod <- list(candidate) %in% product_mix
+        if(!sum(candidate)==0 & existing_prod == FALSE){
+          product_mix[[prod]] <- candidate
+          prod <- prod + 1
+          break
+        }
       }
-      P_FD_const <- P_FD[selected_rows,]
-      cond_1 <- NROW(unique(P_FD_const))==N_PROD
-      cond_2 <- all(colSums(P_FD_const)>0)
-      if(cond_1 & cond_2) break
     }
+    P_FD_const <- do.call(rbind,product_mix)
+    # repeat{
+    #   row_densities <- as.numeric(apply(P_FD, 1, function(row) sum(row != 0) / N_FR))
+    #   row_density_error <- abs(row_densities-DNS)
+    #   row_idx <- 1:NROW(P_FD)
+    #   selected_rows<-vector(mode = "numeric")
+    #   while (length(selected_rows)<N_PROD) {
+    #     rows_available <- setdiff(1:NROW(P_FD),selected_rows)
+    #     new_row <- which(row_density_error[rows_available]==min(row_density_error[rows_available]))
+    #     new_row <- sample(new_row,1)
+    #     selected_rows <- c(selected_rows,row_idx[rows_available][new_row])
+    #   }
+    #   P_FD_const <- P_FD[selected_rows,]
+    #   cond_1 <- NROW(unique(P_FD_const))==N_PROD
+    #   cond_2 <- all(colSums(P_FD_const)>0)
+    #   if(cond_1 & cond_2) break
+    # }
   }
 
+  colnames(P_FD_const)<-paste0("FD_",1:N_FR)
   measures<-list(N_P=NROW(P_FD_const), # number of product variants
                  D_u=measure_diversificationINDEX(P_FD_const), # Diversification Index
                  LOF_10=measure_LOF(P_FD_const), # Local Outlier Factor
                  DENS_FD=measure_DENS(P_FD_const),# density of DSM_FD
                  PCI_FD = measure_PCI(P_FD_const)) # product mix commonality
 
+
   productMIX<-list(
-                    P_FD = P_FD,
+                    P_FD = NA,
                     P_FD_const = P_FD_const,
                     DSM_FD = DSM_FD,
                     measures = measures)

@@ -73,8 +73,9 @@ Third, define a design of experiment (DoE). For each
                    N_DD = 14, # number of physical domain elements
                    N_PrD = 30, # number of process domain elements
                    N_RD = 60, # number of resource domain elements
-                   prop_PROD = seq(0.1,1,0.1), # percentage of products included
-                   method_FD = "random",
+                   DNS = list(c(0.05,0.5)), # density of the functional product mix
+                   method_FD = "DNS", # method to create the product mix
+                   N_PROD=20, # number of products
                    TOTAL_DEMAND = 10000, # total demand
                    Q_VAR = list(c(0,3)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
