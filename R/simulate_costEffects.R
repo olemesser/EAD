@@ -162,6 +162,7 @@ simulate_costEffects<-function(DOE){
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
                                 out['LZM'] <- mean(setup$lotSize[setup$lotSize>0])
+                                out['DMD_PD'] <- mean(DMD_component)
                                 out['Units_stock'] <- stock$Units_stock
                                 out['N_setups'] <- sum(setup$n_setups)
                                 out['N_proVar'] <- tooling$N_processVariety
@@ -204,7 +205,6 @@ simulate_costEffects<-function(DOE){
                                        bounds = bounds)$C_dvl
 
             i <- i + 1
-            # print(i)
           } # end break condition
       } # end overdesign loop
       res<-data.table::rbindlist(out,use.names = T)
