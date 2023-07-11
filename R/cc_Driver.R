@@ -349,35 +349,16 @@ setupCosts<-function(P_PD,
     }
   }
   n_setups <- ceiling(colMeans(n_setups))
-  # n_setups <- t(replicate(500, {
-  #   n_setups <- apply(TM, 2, function(x) {
-  #     execution <- rep(which(x != 0), x[x != 0])
-  #     execution <- execution[sample(1:length(execution))]
-  #     sum(diff(execution) != 0) + 1
-  #   })
-  #   return(n_setups)
-  # }))
-  # n_setups <- ceiling(colMeans(n_setups))
-  # n_setups <- t(sapply(1:500,function(y){
-  #   n_setups <- apply(TM,2,function(x){
-  #     execution <- rep(which(x != 0), x[x != 0])
-  #     # execution <- unlist(sapply(which(x!=0),function(y) rep(y,x[y])))
-  #     execution <- execution[sample(1:length(execution))]
-  #     ## plus one is added since there is a initial setup
-  #     return(sum(diff(execution) != 0)+1)
-  #   })
-  #   return(n_setups)
-  # }))
-  # n_setups <- ceiling(colMeans(n_setups))
 
   TM_bin <- TM
   TM_bin[TM_bin>0] <- 1
-
 
      return(list(TC_setup = sum(n_setups * C_setup),
                 lotSize = ceiling(apply(LZM, 1, max)),
                 DMD_component = DMD_component,
                 n_setups = n_setups,
+                n_tasks = sum(TM),
+                n_taks_distinct = sum(TM_bin),
                 rm_TM = mean(rowMeans(TM_bin)[rowMeans(TM_bin)>0])))
 
 }
