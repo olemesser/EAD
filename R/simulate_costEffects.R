@@ -164,6 +164,7 @@ simulate_costEffects<-function(DOE){
                                 out['LZM'] <- mean(setup$lotSize[DMD_component>0])
                                 out['N_task'] <- setup$n_tasks
                                 out['N_task_distinct'] <- setup$n_taks_distinct
+                                out['DNS_TM'] <- setup$DNS_TM
                                 out['DMD_PD_mean'] <- mean(DMD_component[DMD_component>0])
                                 out['DMD_PD_sum'] <- sum(DMD_component)
                                 out['Units_stock'] <- stock$Units_stock
