@@ -20,20 +20,36 @@ experiment_PCS<-function(DOE){
 
     #### 2. Create Variety Scenario ####
       ### start with 30% of variety and increase 2% in each step
-      DMD_sort <- sort(EAD[[1]]$DEMAND,decreasing = T,index.return=TRUE)
-      step_width<-ceiling(length(DMD_sort$ix)*0.02)
-      products_in <- DMD_sort$ix[1:ceiling(length(DMD_sort$ix)*0.3)]
-      products_out <- setdiff(DMD_sort$ix,products_in)
-      ### for each scenario calculate product costs
-      ### update product level measures (PCI, DNS)
+      ix <- 1:length(EAD[[1]]$DEMAND)
+      products_out <- ix
+      order_introduction <- vector(mode="numeric")
+      repeat{
+        order_introduction <- c(order_introduction,sample(ix[products_out],
+                                                          size = 1,
+                                                          prob = EAD[[1]]$DEMAND[products_out]))
+        products_out <- setdiff(ix,order_introduction)
+        if(length(order_introduction)==(length(ix)-1)){
+          order_introduction <- c(order_introduction,ix[products_out])
+          break
+        }
+      }
+
+      order_introduction_index <- 1:length(order_introduction)
+      variety_step <- split(order_introduction_index, ceiling(seq_along(order_introduction_index) / DOE$prod_step_width[i]))
+      order_introduction <- lapply(variety_step,function(x){
+        order_introduction[x]
+      })
+
+
       system_level_data<-list()
       l<-1
+      p <- 0
       repeat{
-        if(l>1){
-          step_width_max <- ifelse(length(products_out)>step_width,step_width,length(products_out))
-          products_in <- c(products_in,products_out[1:step_width_max])
-          products_out <- products_out[-c(1:step_width_max)]
-        }
+        p <- p +1
+        products_in <- as.numeric(unlist(order_introduction[1:p]))
+        products_out <- setdiff(as.numeric(unlist(order_introduction)),
+                                products_in)
+
 
         P_FD <- EAD[[1]]$P$FD[products_in,,drop=F]
         P_PD <- EAD[[1]]$P$PD[products_in,,drop=F]

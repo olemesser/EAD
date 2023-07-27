@@ -78,7 +78,7 @@ simulate_costEffects<-function(DOE){
       repeat{
         #### 3. Product Variety ####
           ### increase product variety within each step ###
-          # p<-10
+          # p<-9
           conceptCosts <- lapply(1:length(order_introduction),function(p){
                                 out<-list()
                                 ### 3.0 Exclude Products ###
