@@ -127,3 +127,23 @@ cor.mtest <- function(mat, ...) {
   colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
   p.mat
 }
+
+
+
+matrix_plot_pre <- function(A){
+  require(dplyr)
+  require(data.table)
+  colnames(A)<-1:NCOL(A)
+  A<-A %>%
+    as_tibble() %>%
+    mutate(X=1:n()) %>%
+    as.data.table() %>%
+    melt.data.table(id.vars = "X",variable.name = "Y") %>%
+    mutate_all(as.numeric) %>%
+    mutate(color = case_when(
+      value == 0 ~ 'white',
+      value >0 ~ 'black'
+    )) %>%
+    mutate(color = ifelse(X == Y,'grey50',color))
+  return(A)
+}

@@ -6,14 +6,22 @@
 \title{A DSM containing the process to process dependencies of gearbox used by \insertCite{Bonjour.2010;textual}{EAD}.}
 \format{
 A DSM with 21 by 21 elements.
+
+A DSM with 21 by 21 elements.
 }
 \usage{
+data(gearbox_DSM_PrD)
+
 data(gearbox_DSM_PrD)
 }
 \description{
 A DSM containing the process to process dependencies of gearbox used by \insertCite{Bonjour.2010;textual}{EAD}.
+
+A DSM containing the mechanical links for a diesel engine used by \insertCite{Jarratt.2004;textual}{EAD} and \insertCite{Brahma.2023;textual}{EAD}.
 }
 \references{
+\insertAllCited{}
+
 \insertAllCited{}
 }
 \keyword{datasets}

@@ -140,3 +140,15 @@ NULL
 #' @references
 #' \insertAllCited{}
 NULL
+
+
+#' A DSM containing the mechanical links for a diesel engine used by \insertCite{Jarratt.2004;textual}{EAD} and \insertCite{Brahma.2023;textual}{EAD}.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name gearbox_DSM_PrD
+#' @usage data(gearbox_DSM_PrD)
+#' @format A DSM with 21 by 21 elements.
+#' @references
+#' \insertAllCited{}
+NULL

@@ -652,7 +652,7 @@ measure_CI<-function(P){
 #'
 #' measure_HVM(DSM)
 measure_HVM<-function(DSM,norm=T){
-  DSM<-makeMatrixsymmetric(DSM)
+  # DSM<-makeMatrixsymmetric(DSM)
   diag(DSM)<-1
   E<-sum(DSM)
   N<-NROW(DSM)
@@ -684,7 +684,7 @@ measure_HVM<-function(DSM,norm=T){
 #'
 #' measure_HIC(DSM)
 measure_HIC<-function(DSM,norm=T){
-  DSM<-makeMatrixsymmetric(DSM)
+  # DSM<-makeMatrixsymmetric(DSM)
   HIC<-sum(DSM)
   if(norm){
     N <- NROW(DSM)
