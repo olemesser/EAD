@@ -62,7 +62,7 @@ crt_DSM<-function(N_el,
   # set.seed(12)
   # N_el<-30
   # upper_Bound<-1
-  # PARAM=list(DNS=0.1,
+  # PARAM=list(DNS=0.3,
   #            modular=0,
   #            power = 0,
   #            bus_weight = 0)
@@ -131,13 +131,8 @@ crt_DSM<-function(N_el,
         DSM_final[i,j] <- sample(c(DSM_bus[i,j],DSM[i,j]),1,prob = c(PARAM$bus_weight,1 - PARAM$bus_weight))
       }
     }
-    DSM <- DSM_final
-    # measure_DENS(DSM)
-    # g <- graph_from_adjacency_matrix(DSM,mode = 'undirected')
-    # DSM_new <- adjust_graph_dens(g = g,
-    #                              DSM = DSM,
-    #                              DNS = PARAM$DNS)
-    # measure_DENS(DSM_new)
+    DSM <- adjust_graph_dens(DSM = DSM_final,
+                                 DNS = PARAM$DNS)
   }
 
   DSM_bin<-DSM
@@ -192,25 +187,29 @@ crt_DSM_bus <- function(N_el,DNS,power){
                  power = power,
                  directed = F)
   DSM <- as.matrix(as_adjacency_matrix(g))
-  DSM <- adjust_graph_dens(g,DSM,DNS)
+  DSM <- adjust_graph_dens(DSM,DNS)
   return(DSM)
 }
 
 
-adjust_graph_dens <- function(g,DSM,DNS){
+adjust_graph_dens <- function(DSM,DNS){
   run <- F
   while(measure_DENS(DSM) > DNS){
-    g <- delete_edges(g,sample(E(g),1))
-    DSM<-as.matrix(as_adjacency_matrix(g))
+    # g <- delete_edges(g,sample(E(g),1))
+    # DSM<-as.matrix(as_adjacency_matrix(g))
+    ind_repl <- sample(which(DSM > 0),1)
+    DSM[ind_repl] <- 0
     run <- T
   }
 
   while(measure_DENS(DSM) < DNS & run == F){
-    empty_edges <- which(makeMatrixsymmetric(DSM) == 0,arr.ind = T)
-    empty_edges <- empty_edges[empty_edges[,1] != empty_edges[,2],]
-    empty_edges <- empty_edges[sample(1:NROW(empty_edges),1),]
-    g <- g %>% add_edges(as.vector(empty_edges))
-    DSM<-as.matrix(as_adjacency_matrix(g))
+    # empty_edges <- which(makeMatrixsymmetric(DSM) == 0,arr.ind = T)
+    # empty_edges <- empty_edges[empty_edges[,1] != empty_edges[,2],]
+    # empty_edges <- empty_edges[sample(1:NROW(empty_edges),1),]
+    # g <- g %>% add_edges(as.vector(empty_edges))
+    # DSM<-as.matrix(as_adjacency_matrix(g))
+    ind_repl <- sample(which(DSM == 0),1)
+    DSM[ind_repl] <- 1
     run <- T
   }
   return(DSM)
