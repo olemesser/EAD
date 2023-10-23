@@ -227,7 +227,7 @@ DOE_dsm<-expand.grid(DNS = c(0.2,0.3,0.4),
 
 Create the DSM matrices and plot the result.
 
-```{r fig.height=5, fig.width=5}
+```{r fig.height=5, fig.width=5, eval=FALSE}
 library(data.table)
 library(dplyr)
 library(ggplot2)
