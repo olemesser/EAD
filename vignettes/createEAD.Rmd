@@ -35,17 +35,17 @@ set.seed(1234)
 
 ### Input
 
-+----------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| Variable | Description                                                                                  | low values                                                                                    | high values                                                                              |
-+==========+==============================================================================================+===============================================================================================+==========================================================================================+
-| PARAM    | Parameter which is used differently across individual method~PM~.\                           | `method="random"`: small product mix.                                                         | `method="random"`: product mix is larger as many products are selected.\                 |
-|          | `method="random"`: defines the proportion of products within the product mix.\               |                                                                                               | `method="DNS"`: majority of products have many features selected (dense product matrix). |
-|          | DSM~FD~. `method="DNS"`: defines the density of the later P~FD~ matrix.                      | `method="DNS"`: majority of products have only some features selected (sparse product matrix) |                                                                                          |
-+----------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| method   | Method for generating the product mix. Depending on the method PARAM has different meanings. |                                                                                               |                                                                                          |
-+----------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
-| N_FR     | Number of elements in the functional domain                                                  | Only a few functional requirements necessary to realize the product mix.                      | Many functional requirements necessary to realize the product mix.                       |
-+----------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
++-------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
+| Variable    | Description                                                                                  | low values                                                                                    | high values                                                                              |
++=============+==============================================================================================+===============================================================================================+==========================================================================================+
+| PARAM       | Parameter which is used differently across individual method~PM~.\                           | `method="random"`: small product mix.                                                         | `method="random"`: product mix is larger as many products are selected.\                 |
+|             | `method="random"`: defines the proportion of products within the product mix.\               |                                                                                               | `method="DNS"`: majority of products have many features selected (dense product matrix). |
+|             | DSM~FD~. `method="DNS"`: defines the density of the later P~FD~ matrix.                      | `method="DNS"`: majority of products have only some features selected (sparse product matrix) |                                                                                          |
++-------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
+| method      | Method for generating the product mix. Depending on the method PARAM has different meanings. |                                                                                               |                                                                                          |
++-------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
+| N_FR        | Number of elements in the functional domain                                                  | Only a few functional requirements necessary to realize the product mix.                      | Many functional requirements necessary to realize the product mix.                       |
++-------------+----------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------+
 
 ### Generation Process
 
@@ -89,10 +89,13 @@ P_FD$measures # returns the measures
 
 ### Input
 
-| Variable | Description                                        | low values                                     | high values                                                                   |
-|----------|----------------------------------------------------|------------------------------------------------|-------------------------------------------------------------------------------|
-| DMD_cv   | Coefficient of variation for the demand vector.    | Sales are equally distributed across products. | Some products with a high share on sales and many products with low quantity. |
-| TD       | Total number of sales for the created product mix. | Product mix with low number of total sales.    | Product mix with high number of total sales.                                  |
++-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
+| Variable    | Description                                        | low values                                     | high values                                                                   |
++=============+====================================================+================================================+===============================================================================+
+| DMD_cv      | Coefficient of variation for the demand vector.    | Sales are equally distributed across products. | Some products with a high share on sales and many products with low quantity. |
++-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
+| TD          | Total number of sales for the created product mix. | Product mix with low number of total sales.    | Product mix with high number of total sales.                                  |
++-------------+----------------------------------------------------+------------------------------------------------+-------------------------------------------------------------------------------+
 
 ### Generation Process
 
@@ -151,13 +154,19 @@ $$
 
 The following table shows the main input variables for the domain mapping matrix generation. `upper_Bound` and `binary` are not shown here. For a detailed describes see documentation of `?crt_DMM()`
 
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | Variable    | Description                                                                                                                                  | low values                                   | high values                         |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|-------------------------------------|
++=============+==============================================================================================================================================+==============================================+=====================================+
 | N_src       | Number of source elements, rows of the later DMM matrix.                                                                                     | Small number of source elements.             | Large number of source elements.    |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | N_tgt       | Number of target elements, columns of the later DMM matrix.                                                                                  | Small number of target elements.             | Large number of target elements.    |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | DMM_PAR     | Specifies either the system design complexity which should be generated `method="SDC"` or the percentage of non-zero entries `method="DENS"` | An uncoupled design matrix (diagonal matrix) | A (strongly) coupled design matrix. |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | method      | Method for pattern generation.                                                                                                               |                                              |                                     |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 | upper_Bound | Upper bound of an integer uniform distribution for integer sampling.                                                                         | Small heterogeneity in design.               | Large heterogeneity in design.      |
++-------------+----------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+-------------------------------------+
 
 #### Generation Process
 
@@ -180,13 +189,19 @@ DMM$SDC # returns the actual SDC value
 
 The intra-domain mapping matrices (DSM) are created using the following input parameters
 
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 | Variable    | Description                                                         | low values                       | high values                            |
-|-------------|---------------------------------------------------------------------|----------------------------------|----------------------------------------|
++=============+=====================================================================+==================================+========================================+
 | N_tgt       | Number of target elements, columns of the later DMM matrix.         | Small number of target elements. | Large number of target elements.       |
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 | DNS         | Percentage of none zero values                                      | less intra-domain coupling       | strong intra-domain coupling           |
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 | modular     | Weight on modular structure                                         | Random distribution of entries   | Entries are arranged in block matrices |
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 | power       | The power law distribution coefficient.                             | Values are randomly distributed  | Strong bus design                      |
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 | upper_Bound | upper bound of an integer uniform distribution for integer sampling | small heterogeneity in design    | large heterogeneity in design          |
++-------------+---------------------------------------------------------------------+----------------------------------+----------------------------------------+
 
 The additional argument `forced` allows to force the algorithm that certain elements have at least one entry. This is necessary during the generation process in order to avoid invalid designs. In this vignette, this parameter is ignored.
 
@@ -271,19 +286,19 @@ crt_DSM(N_el = 10,
 Again, `DNS` defines the proportion of non-zero entries in the final DSM. The second argument `0 <= power < Inf`, however, defines the power law distribution coefficient. Higher values result in stronger bus-designs, while small values to integral (random) designs. The example below shows nine different patterns for different combinations of input values.
 
 ```{r}
-DOE_dsm<-expand.grid(DNS=c(0.1,0.2,0.7),
+DOE_bus<-expand.grid(DNS=c(0.1,0.2,0.7),
                      power = c(0,2,5))
 ```
 
 ```{r fig.height=5, fig.width=5}
 library(ggh4x)
 library(data.table)
-DSM_list<-lapply(1:NROW(DOE_dsm),function(i){
+DSM_list<-lapply(1:NROW(DOE_bus),function(i){
   set.seed(1234)
   t<-crt_DSM(N_el=10,
           method = "bus",
-          PARAM=list(DNS = DOE_dsm$DNS[i],
-                     power = DOE_dsm$power[i]),
+          PARAM=list(DNS = DOE_bus$DNS[i],
+                     power = DOE_bus$power[i]),
           upper_Bound = 1)$DSM
   colnames(t)<-1:NCOL(t)
   t<-t %>%
@@ -292,8 +307,8 @@ DSM_list<-lapply(1:NROW(DOE_dsm),function(i){
     as.data.table() %>%
     melt.data.table(id.vars = "X",variable.name = "Y") %>%
     mutate_all(as.numeric) %>%
-    mutate(DNS=DOE_dsm$DNS[i],
-           power=DOE_dsm$power[i])
+    mutate(DNS=DOE_bus$DNS[i],
+           power=DOE_bus$power[i])
 })
 d<-rbindlist(DSM_list) %>%
   mutate(value=ifelse(X==Y,2,value),
