@@ -1,0 +1,159 @@
+---
+title: "Product Costing System Experiment"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Product Costing System Experiment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: '`r system.file("REFERENCES.bib", package="EAD")`'
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette show how to conduct product costing system experiments using the numerical EAD framework. The procedure follows the general concept described by @Anand2019 as well as their numerical model which is available under <https://github.com/vanand74/CostSystemSim> and written in C#.
+
+## Define Design of Experiments
+
+In a first step the design of experiments is defined. In doing
+
+```{r setup}
+library(EAD)
+library(tidyr)
+set.seed(1243)
+
+DOE<-expand_grid(N_FR = list(c(15)), # number of functional requirements
+                 N_DD = list(c(50)), # number of physical domain elements
+                 N_PrD = list(c(50)), # number of process domain elements
+                 N_RD = list(c(50)), # number of resource domain elements
+                 DNS = list(c(0.05,0.4)),
+                 method_FD = "DNS",
+                 N_PROD=30, # number of products
+                 prod_step_width = 10,  # introduce prod_step_width new products in each step
+                 TOTAL_DEMAND = 500, # total demand (average reuse ratio of 18)
+                 Q_VAR = list(c(0,1.7)), # coefficient of variation for demand distribution
+                 DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
+                                       PD_PrD=list(c(0,0.1)),
+                                       PrD_RD=list(c(0,0))), # desired system design complexity
+                 uB_DMM = 5,
+                 allowZero = F,
+                 ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+                 DSM_param=expand_grid(PD=list(c(0,0.1,0,1)),
+                                       PrD=list(c(0,0,0,1)),
+                                       RD=list(c(0,0,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+                 DSM_method='modular',
+                 ub_DSM = 5,
+                 TC = 10^6, # total costs
+                 r_in = list(c(0.2,0.8)),
+                 r_fix = list(c(0.1,0.5)), # proportion of fixed costs on total indirect costs
+                 RC_cv = list(c(0,3)), # coefficient of variation for resource cost distribution
+                 N_RUN = 1:4 # number of runs
+)
+```
+
+## Run the Simulation
+
+The simulation goes through the following steps:
+
+1.  For each row in `DOE` create an EAD
+
+2.  Create a scenario of product variety. Starting with `prod_step_width` products included in the product mix at the beginning, each step introduces another `prod_step_width` products. The procedure follows the assumption that products with a higher demand are more likely to be introduced first compared to low-demand products. The following chunk represents the sampling procedure for a given demand vector `DMD` as generated in step 1.
+
+    ```{r varietySampling}
+    set.seed(1234)
+    DMD <- c(100,20,300,3,50,1,160,20,500,7,1,40,86,120,130,4,54,100,20,10)
+    prod_step_width  <- 4 # in each step, two new products are introduced 
+
+    ix <- 1:length(DMD)
+    products_out <- ix
+    order_introduction <- vector(mode="numeric")
+    repeat{
+      order_introduction <- c(order_introduction,
+                              sample(ix[products_out],
+                                     size = 1,
+                                     prob = DMD[products_out]))
+      
+      products_out <- setdiff(ix,order_introduction)
+      
+      if(length(order_introduction)==(length(ix)-1)){
+        order_introduction <- c(order_introduction,ix[products_out])
+        break
+      }
+    }
+
+    order_introduction_index <- 1:length(order_introduction)
+
+    variety_step <- split(order_introduction_index,
+                          ceiling(seq_along(order_introduction_index) / prod_step_width))
+    order_introduction <- lapply(variety_step,function(x) order_introduction[x])
+
+    order_introduction
+    ```
+
+3.  Apply the Product Costing System
+
+    1.  Calculate the (true) benchmark costs under full information setting
+
+    2.  Calculate the reported costs for each product costing system which is defined by the following design of experiments data frame `cs_DOE`.
+
+        ```{r message=FALSE, warning=FALSE}
+        cs_DOE<-expand.grid(
+          ACP=c(1,5,10),
+          method = c("random","correl-random","PU","DC-0.2")
+        )
+        ```
+
+        `ACP` refers to the number of activity cost pools for ABC-costing systems. `method` defines the allocation heuristic. For an overview of available methods see the documentation of `costingSystem_ABC()` by running
+
+        ```{r eval=FALSE, include=TRUE}
+        ?costingSystem_ABC()
+        ```
+
+        For (simple) volume-based costing systems see the documentation of `costingSystem_VD()`
+
+        ```{r eval=FALSE, include=TRUE}
+        ?costingSystem_VD()
+        ```
+
+4.  Calculate the error measures on product and system level. EUCD, MPE, APE and PE. While the first two measures are system wide (for each combination of EAD realization and costing system, the second two are product-level measures.
+
+The simulation can be run by calling the following function:
+
+```{r runPCS, message=FALSE, warning=FALSE, include=FALSE}
+data <- experiment_PCS_MC(DOE = DOE,
+                          cs_DOE = expand.grid(
+                                      ACP=c(1,5,10),
+                                      method = c("random")
+                                    ),
+                          ACP_productLevel = 5,
+                          ehNodes = "remove")
+```
+
+```{r eval=FALSE}
+data <- experiment_PCS_MC(DOE = DOE,
+                          cs_DOE = expand.grid(
+                                      ACP=c(1,5,10),
+                                      method = c("random")
+                                    ),
+                          ACP_productLevel = 5,
+                          ehNodes = "remove")
+
+```
+
+Show the system level results for the first combination of EAD and variety scenario
+
+```{r}
+data[[1]]$res$system_level
+```
+
+Product level results are only reported for certain activity cost pools defined by `ACP_productLevel` under the full variety scenario due to the large amount of data.
+
+```{r}
+data[[1]]$res$product_level
+```
+
+## References

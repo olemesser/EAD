@@ -1,6 +1,6 @@
 #' @title Create a resource cost object
 #' @description This function creates three resource cost vectors according to traditional costing systems.
-#' In a first step, a direct cost vector is created by generate with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
+#' In a first step, a direct cost vector is created with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
 #' The remaining \code{TC*r_in} costs are indirect costs.
 #' Both, the variable and fixed indirect cost vector are created via sampling of values. The final vectors have a correlation of \code{cor_fix} and \code{cor_var} regarding the direct cost vector.
 #' The total fixed an indirect costs are defined as \code{(TC*r_in*r_fix)}.
@@ -8,8 +8,6 @@
 #' @param TC Total costs.
 #' @param r_in Proportion of indirect costs on total costs.
 #' @param r_fix Proportion of fixed costs on total indirect costs.
-#' @param cor_var Correlation between direct cost vector and variable indirect cost vector.
-#' @param cor_fix Correlation between direct cost vector and fixed indirect cost vector.
 #' @param cv Coefficient of variation for resource cost distribution.
 #' @return A list containing the three cost vectors. For each vector the coefficient of variation as well as the top 10% largest resource costs for each vector are calculated.
 #' Since the procedure is not able to match the exact input values, the final correlation value are measured. \code{cor_fix} measures the correlation between indirect fixed costs and direct cost vector.
@@ -21,18 +19,13 @@
 #'            TC=10^6,
 #'            r_in = 0.5,
 #'            r_fix=0.4,
-#'            cor_var=0.5,
-#'            cor_fix=0.5,
 #'            cv=0.2)
 #'
 crt_RC<-function(N_RD,
                  TC=10^6,
                  r_in,
                  r_fix,
-                 cor_var=0,
-                 cor_fix=0,
-                 cv,
-                 max_tries=15){
+                 cv){
   suppressMessages(suppressWarnings(require(faux)))
 
   #### Input for Testing ####
@@ -40,8 +33,6 @@ crt_RC<-function(N_RD,
   # TC=10^6
   # r_in=0.3
   # r_fix=0.5
-  # cor_var=-0.2
-  # cor_fix=-0.2
   # cv=2
   # max_tries=2000
   #### End Input for Testing ####
@@ -68,23 +59,12 @@ crt_RC<-function(N_RD,
     fix <- crt_RCid(l = N_RD,
                     TC = TC_fix,
                     sdlog = cv)
-    #fix$cor<-cor(RC_direct,fix$RC)
-    # fix <- crt_corVEC(TC = TC_fix,
-    #                  RC_base = RC_direct,
-    #                  cv = cv,
-    #                  cor = cor_fix,
-    #                  max_tries = 50)
 
     ### 3.2 variable costs ###
     var <- crt_RCid(l = N_RD,
                     TC = TC_var,
                     sdlog = cv)
-    # var$cor<-cor(RC_direct,var$RC)
-    # var <- crt_corVEC(TC = TC_var,
-    #                   RC_base = RC_direct,
-    #                   cv = cv,
-    #                   cor = cor_var,
-    #                   max_tries = 50)
+
 
   #### 4. Create Output Object ####
     output<-list(RC_var = list(RC = var$RC,
@@ -106,40 +86,6 @@ crt_RC<-function(N_RD,
 
   return(output)
 
-}
-
-
-crt_corVEC<-function(TC,
-                     RC_base,
-                     cv,
-                     cor,
-                     max_tries=50){
-  tries<-0
-  add<-0
-  N_RD<-length(RC_base)
-  if(TC==0){
-    RC<-rep(0,N_RD)
-    cv_is<-0
-    cor_is<-0
-  }else{
-    repeat{
-      tries<-tries+1
-      RC<-faux::rnorm_pre(RC_base,r=cor+add,mu=TC/N_RD,sd=cv*TC/N_RD)
-      RC<-abs(RC)
-      RC<-RC/sum(RC)*TC
-      cv_is<-sd(RC)/mean(RC)
-      cor_is<-cor(RC_base,RC)
-      if((cor_is-cor<=0.1 & cor_is-cor>=-0.1) | max_tries==tries){
-        break
-      }else{
-        add<-add+0.05
-        if(cor+add>=1) add<-1-cor
-      }
-    }
-  }
-  return(list(RC=RC,
-              cv=cv_is,
-              cor=cor_is))
 }
 
 

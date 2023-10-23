@@ -1,4 +1,8 @@
-experiment_PCS<-function(DOE){
+experiment_PCS<-function(DOE,
+                         cs_DOE = expand.grid(ACP=c(1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30),
+                                              method = c("random","correl-random","PU","DC-0.2")),
+                         ACP_productLevel = c(5)
+                         ){
   suppressWarnings(suppressMessages(require(EAD)))
   suppressWarnings(suppressMessages(require(data.table)))
   df<-lapply(1:NROW(DOE), function(i){
@@ -100,8 +104,6 @@ experiment_PCS<-function(DOE){
                                          TC_var = sum(benchmark$PC_B_var * DMD_zero))
 
         #### Calculate Reported Costs #####
-        cs_DOE<-expand.grid(ACP=c(1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30),
-                            method = c("random","correl-random","PU","DC-0.2"))
         reported<-lapply(1:NROW(cs_DOE),function(c){
           if(cs_DOE$method[c] %in% c("PU","DC") | startsWith(as.character(cs_DOE$method[c]),"DC")){
             PC_H <- costingSystem_VD(RES_CONS_PAT = P_RD[,resources_to_keep],
@@ -154,8 +156,8 @@ experiment_PCS<-function(DOE){
         if(length(products_out)==0){
           ### On product level only under full variety ###
           ### select some ACPs
-          product_level_data <- lapply(which(cs_DOE$ACP %in% c(4)),function(s){
-            data.frame(id= EAD[[1]]$ID,
+          product_level_data <- lapply(which(cs_DOE$ACP %in% ACP_productLevel),function(s){
+            data.frame(id = EAD[[1]]$ID,
                        LOF.RD =  EAD[[1]]$measures$PRODUCT$LOF$RD[products_in],
                        INTER.RD = EAD[[1]]$measures$PRODUCT$INTER$RD[products_in],
                        INTRA.RD = EAD[[1]]$measures$PRODUCT$INTRA$RD[products_in],
@@ -184,49 +186,43 @@ experiment_PCS<-function(DOE){
 
 
 
-experiment_PCS_MC<-function(DOE=NULL,
-                            NUMB_CORES=4,
-                            cluster=F,
-                            logfile="",
-                            extMC_lib=F,
-                            ehNodes="remove"){
-  suppressWarnings(require(parallel))
-  suppressWarnings(require(doSNOW))
-  suppressWarnings(require(foreach))
-  suppressWarnings(require(dplyr))
+experiment_PCS_MC<-function(DOE,
+                            cs_DOE,
+                            ACP_productLevel = 0,
+                            NUMB_CORES = 4,
+                            logfile = "",
+                            time_limit = Inf,
+                            cl = NULL,
+                            ehNodes = "remove"){
+  suppressMessages(suppressWarnings(require(parallel)))
+  suppressMessages(suppressWarnings(require(doSNOW)))
+  suppressMessages(suppressWarnings(require(foreach)))
+  suppressMessages(suppressWarnings(require(dplyr)))
+  suppressMessages(suppressWarnings(require(R.utils)))
 
   DOE_list<-DOE %>%
     group_split(split=1:n())%>%
     as.list()
 
-  if(extMC_lib){
-    library(odegoparallel)
-    cl <- odegoparallel::initMC(NUMB_CORES = NUMB_CORES,
-                                cluster = cluster,
-                                logfile = logfile)
-    parallel::clusterExport(cl, envir = globalenv(),c("time_limit"))
-    print(cl)
-    res <- odegoparallel::run_MC(cl, X = DOE_list,
-                                 FUN = function(ip, ...) {
-                                   res<-list()
-                                   res<-with_timeout(experiment_PCS(DOE = ip),
-                                                     timeout = time_limit)
-                                   gc()
-                                   return(res)
-                                 }, packages = c("EAD","odegoparallel",
-                                                 "dplyr", "tidyr", "GA",
-                                                 "Matrix", "digest", "faux","data.table",
-                                                 "plyr", "DescTools", "igraph", "R.utils","fGarch"),
-                                 errorhandlingNodes = ehNodes)
-  }else{
-    cl<-EAD::setupMC(NUMB_CORES=NUMB_CORES,logfile=logfile)
-    registerDoSNOW(cl)
-    on.exit(stopCluster(cl))
-    print(cl)
-    print(paste0("Time  Limit set to: ",time_limit, " seconds per EAD realization."))
-    snow::clusterExport(cl,"time_limit")
-    res<-par_apply(cl,X=DOE_list,FUN=experiment_PCS,errorhandling=ehNodes)
-  }
+  if(is.null(cl)) cl<-EAD::setupMC(NUMB_CORES=NUMB_CORES,logfile=logfile)
+  on.exit(stopCluster(cl))
+
+  parallel::clusterExport(cl, envir = environment(),c("time_limit","cs_DOE"))
+  print(cl)
+  res <- run_MC(cl, X = DOE_list,
+                               FUN = function(ip, ...) {
+                                 res<-list()
+                                 res<-with_timeout(experiment_PCS(DOE = ip,cs_DOE = cs_DOE, ACP_productLevel = ACP_productLevel),
+                                                   timeout = time_limit)
+                                 gc()
+                                 return(res)
+                               }, packages = c("EAD",
+                                               "dplyr", "tidyr", "GA",
+                                               "Matrix", "digest", "faux","data.table",
+                                               "plyr", "DescTools", "igraph", "R.utils","fGarch"),
+                               errorhandlingNodes = ehNodes)
+
+
   res<-res[sapply(res,length)>0]
   return(res)
 

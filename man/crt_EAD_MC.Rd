@@ -7,9 +7,9 @@
 crt_EAD_MC(
   DOE,
   NUMB_CORES = 4,
-  cluster = F,
   logfile = "",
-  extMC_lib = F,
+  time_limit = Inf,
+  cl = NULL,
   ehNodes = "remove"
 )
 }
@@ -20,14 +20,23 @@ crt_EAD_MC(
   \item{N_DD}{The number of elements in the physcial domain (PD)}
   \item{N_PrD}{The number of elements in the process domain (PrD)}
   \item{N_RD}{The number of elements in the resource domain (RD)}
-  \item{DENS_FD}{Densitiy of the DSM_FD matrix.}
+  \item{DNS}{Densitiy of the product mix \code{P_FD}.}
+  \item{N_PROD}{Number of products (rows) in \code{P_FD}.}
+  \item{method_FD}{Method for generating the product mix. For available methods see: \link[EAD]{create_ProductMix}.}
   \item{TOTAL_DEMAND}{Total demand}
-  \item{DMD_cv}{Coefficient of variation for the demand vector.}
-  \item{SDC_in}{System design complexity for the DMMs. In the current version this values is applied for all domains.}
-  \item{ut_DMM}{Boolean. If \code{ut_DMM=TRUE}, the upper triangle DMMs are created representing indirect inter domain dependencies.}
-  \item{SC_adj_n_in}{Adjusted and normalized structural complexity measure which should be created. In the current version this values is applied for all domains.}
+  \item{Q_VAR}{Demand heterogeneity.}
+  \item{DMM_PAR}{Parameter for creating the DMM matrices. Named list for each of the three DMMs.
+  The input is list object, where each list element is a 2d-vector specifying the lower and upper bound of the desired standardized system design complextiy.
+  For further details see: \link[EAD]{crt_DMM}.}
+  \item{uB_DMM}{The upper bound for entries in the DMM matrices. Passed to: \link[EAD]{crt_DMM}.}
+  \item{allowZero}{Specifies whether zero columns are allowed in the DMM matrices. Passed to: \link[EAD]{crt_DMM}.}
+  \item{ut_DMM}{Boolean. If \code{ut_DMM=TRUE}, the upper triangle DMMs (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD) are created representing indirect inter domain dependencies.}
+  \item{DSM_param}{The first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used. For details see: \link[EAD]{crt_DSM}.}
+  \item{DSM_method}{The method for DSM creation. For details see: \link[EAD]{crt_DSM}.}
+  \item{ub_DSM}{Upper bounds for entries in the DSMs.}
   \item{TC}{NTotal costs}
-  \item{ratio_fixedC}{Proportion of fixed costs on total costs}
+  \item{r_in}{Proportion of indirect costs on total costs}
+  \item{r_fix}{Proportion of fixed costs on total indirect costs}
   \item{RC_cor}{Correlation between variable cost vector and fixed cost vector}
   \item{RC_cv}{Coefficient of variation for resource cost distribution}
   \item{N_RUN}{Number of runs per unique setting}
@@ -37,8 +46,13 @@ crt_EAD_MC(
 
 \item{logfile}{Optional argument, specifying the name of the logfile which is created in the working directory.}
 
-\item{time_limit}{Time in seconds after which each EAD creation is interrupted. The interruption produces an error.
+\item{time_limit}{Time in seconds after which each EAD creation is interrupted. This is necessary since there are certain input combinations which result in long computational time.
 Therefore runs longer than \code{time_limit} are excluded from the output. The default value is infinity which means that no interruption is done.}
+
+\item{cl}{An optional cluster object created by \link[parallel]{makeCluster}. This allows to distribute the computation across different nodes within a network.
+For further details see the documentation of the 'parallel' package. By default the function \link[EAD]{setupMC} is called.}
+
+\item{ehNodes}{A character specifying the parallel node behavior on errors. This argument is passed to the '.errorhandling' of \link[foreach]{foreach}. The default value is \code{'remove'}.}
 }
 \value{
 A list of EAD objects
@@ -49,29 +63,35 @@ This function creates EAD realizations using a design of experiments (DOE). The 
 \examples{
 set.seed(1234)
 
-N_FR=7
-N_DD=15
-N_PrD=20
-N_RD=50
-DENS_FD=c(0,0.05,0.1,0.2)
-TOTAL_DEMAND=1000
-DMD_cv=c(0,0.5,1,3)
-DMM_PAR=c(0,0.05,0.1,0.2,0.3,0.4,0.5)
-ut_DMM=c(F)
-SC_adj_n_in=c(0,0.05,0.01,0.015,0.02)
-N_RUN=1:1
-x<-36
-DOE<-expand.grid(list(N_FR = N_FR,
-                      N_DD = N_DD,
-                      N_PrD = N_PrD,
-                      N_RD = N_RD,
-                      DENS_FD = DENS_FD,
-                      TOTAL_DEMAND = TOTAL_DEMAND,
-                      DMD_cv = DMD_cv,
-                      DMM_PAR = DMM_PAR,
-                      ut_DMM = ut_DMM,
-                      SC_adj_n_in = SC_adj_n_in,
-                      N_RUN = 1:N_RUN))
+library(tidyr)
+DOE<-expand_grid(N_FR = list(c(15)),
+                 N_DD = list(c(18,26)),
+                 N_PrD = list(c(36,52)),
+                 N_RD = list(c(72,104)),
+                 DNS = list(c(0.07,0.5)),
+                 N_PROD = 50
+                 method_FD = "DNS",
+                 TOTAL_DEMAND = 1000,
+                 Q_VAR = list(c(0,3)),
+                 DMM_PAR = expand_grid(FD_PD = list(c(0,0.08)),
+                                       PD_PrD = list(c(0,0.1)),
+                                       PrD_RD = list(c(0,0.1))),
+                 uB_DMM = 1,
+                 allowZero = F,
+                 ut_DMM = F,
+                 DSM_param=expand_grid(PD = list(c(0,0.05,0,1)),
+                                       PrD = list(c(0,0.05,0,1)),
+                                       RD = list(c(0,0.05,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+                 DSM_method='modular',
+                 ub_DSM = 1,
+                 TC = 10^6,
+                 r_in = list(c(0,0.9)),
+                 r_fix = list(c(0,1)),
+                 RC_cv = list(c(0,1.5)),
+                 N_RUN = 1:4 # number of runs
+)
 
-crt_EAD_MC(DOE,NUMB_CORES=4,logfile="log.txt")
+EAD <- crt_EAD_MC(DOE,NUMB_CORES=4,logfile="log.txt")
+EAD[[1]]
+
 }

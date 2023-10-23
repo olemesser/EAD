@@ -15,7 +15,7 @@
 #'    If there is no component which overfill the requirements of component one, the second component is selected by finding the nearest neighbor of component one by using the Euclidean distance.}
 #'    }
 #' @return Returns the manipulated EAD.
-#' @details For further details see the corresponding vignette by running \code{utils::vignette(package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
+#' @details For further details see the corresponding vignette by running \code{utils::vignette('cc-experiment', package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
 #' @references
 #' \insertAllCited{}
 #' @examples

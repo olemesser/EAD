@@ -4,16 +4,7 @@
 \alias{crt_RC}
 \title{Create a resource cost object}
 \usage{
-crt_RC(
-  N_RD,
-  TC = 10^6,
-  r_in,
-  r_fix,
-  cor_var = 0,
-  cor_fix = 0,
-  cv,
-  max_tries = 15
-)
+crt_RC(N_RD, TC = 10^6, r_in, r_fix, cv)
 }
 \arguments{
 \item{N_RD}{Number of resources.}
@@ -24,10 +15,6 @@ crt_RC(
 
 \item{r_fix}{Proportion of fixed costs on total indirect costs.}
 
-\item{cor_var}{Correlation between direct cost vector and variable indirect cost vector.}
-
-\item{cor_fix}{Correlation between direct cost vector and fixed indirect cost vector.}
-
 \item{cv}{Coefficient of variation for resource cost distribution.}
 }
 \value{
@@ -37,7 +24,7 @@ Since the procedure is not able to match the exact input values, the final corre
 }
 \description{
 This function creates three resource cost vectors according to traditional costing systems.
-In a first step, a direct cost vector is created by generate with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
+In a first step, a direct cost vector is created with the total costs of  \code{TC*(1-r_in)} and a coefficient of variation of \code{cv}.
 The remaining \code{TC*r_in} costs are indirect costs.
 Both, the variable and fixed indirect cost vector are created via sampling of values. The final vectors have a correlation of \code{cor_fix} and \code{cor_var} regarding the direct cost vector.
 The total fixed an indirect costs are defined as \code{(TC*r_in*r_fix)}.
@@ -49,8 +36,6 @@ RC<-crt_RC(N_RD=50,
            TC=10^6,
            r_in = 0.5,
            r_fix=0.4,
-           cor_var=0.5,
-           cor_fix=0.5,
            cv=0.2)
 
 }

@@ -7,10 +7,11 @@
 <!-- badges: end -->
 
 The numerical EAD framework generates firm environments according to the
-Extended Axiomatic Design (EAD) introduced by Mertens (2020). The
-simulation model is explained in Meßerschmidt (forthcoming). The
-framework adapts some function from the cost system design framework by
-Anand et al. (2019). The original code in C# is available under
+Extended Axiomatic Design (EAD) introduced by Mertens (2020),
+Meßerschmidt et al. (2020) and Schmidt et al. (2021). The simulation
+model is explained in Meßerschmidt (forthcoming). The framework adapts
+some function from the cost system design framework by Anand et
+al. (2019). The original code in C# is available under
 <https://github.com/vanand74/CostSystemSim>.
 
 ## Installation
@@ -118,8 +119,11 @@ costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
-sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
-#> [1] FALSE
+sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)
+#> [1] 1e+06
+
+TC
+#> [1] 1e+06
 ```
 
 To access the total product costs use the following arguments:
@@ -127,9 +131,9 @@ To access the total product costs use the following arguments:
 ``` r
 ## total product costs
 costs$PC_B
-#>  [1] 170.95082  44.52441 262.80348 128.15053  65.33652  46.41945 196.48416
-#>  [8] 237.29883 121.73387 200.09699  25.60735 131.75275 104.63150 110.94065
-#> [15] 132.83825 176.38468 123.79977 160.89892  92.75856  78.19226
+#>  [1] 160.64151  65.92719 117.54790 162.59060  54.93448  80.34445  77.24532
+#>  [8]  73.65922 138.37272 119.16597  94.54203  88.62365 122.10705  46.86105
+#> [15] 127.78382  98.95147 136.36680 158.02280  84.63497 141.47681
 ```
 
 For the indirect benchmark costs use:
@@ -137,9 +141,9 @@ For the indirect benchmark costs use:
 ``` r
 ## indirect benchmark product costs
 costs$PC_B_indirect
-#>  [1] 35.531399  8.864546 54.460040 27.476248 13.223336  9.470844 41.329289
-#>  [8] 49.428238 25.993841 41.612147  5.112054 26.836826 22.400648 22.478036
-#> [15] 26.824494 37.106391 25.181734 32.917573 18.494689 17.036711
+#>  [1] 58.49344 23.71110 42.97193 58.73410 20.16870 29.40368 27.89207 26.62506
+#>  [9] 50.17020 43.44468 34.02600 32.05563 44.16275 17.29656 46.28339 36.30717
+#> [17] 49.13422 57.09794 30.87422 51.16805
 ```
 
 If the product mix (available products) or the demand varies, the costs
@@ -178,8 +182,21 @@ For the full documentation use the included vignettes as:
 ## list available vignettes
 utils::vignette(package = "EAD")
 
-## open main documentation
-utils::vignette("documentation",package ="EAD")
+## opens main documentation
+utils::vignette("createEAD",package ="EAD")
+
+## opens the setup for product costing system experiments
+utils::vignette("pcs-experiment",package ="EAD")
+
+## opens the setup forthe complexity cost experiment
+utils::vignette("cc-experiment",package ="EAD")
+```
+
+This frameworks further comes with some example data sets reported in
+literature. To get on overview of available data sets call:
+
+``` r
+data(package = "EAD")
 ```
 
 # Acknowledgement
@@ -203,6 +220,14 @@ Mertens, K. G. (2020). *Measure and manage your product costs right –
 development and use of an extended axiomatic design for cost modeling.*
 TUHH Universitätsbibliothek. <https://doi.org/10.15480/882.2888>
 
+Meßerschmidt, O., Gumpinger, T., Meyer, M. & Mertens, K. G. Reviewing
+Complexity Costs – What Practice Needs and What Research Contributes
+Proceedings of the Design Society: DESIGN Conference, 2020. Cambridge
+University Press, 647-656. <https://doi.org/10.1017/dsd.2020.152>
+
+Meßerschmidt, O. (forthcoming). Variety and Costs - The Effects of
+Product Variety on Costs and Costing Systems.
+
 Meyer, M., Meßerschmidt, O., & Mertens, K. G. (2019). *How much does
 variety-induced complexity actually cost? Linking axiomatic design with
 cost modelling*. In M. Schröder & K. Wegner (Eds.), *Logistik im Wandel
@@ -210,5 +235,7 @@ der Zeit – Von der Produktionssteuerung zu vernetzten Supply Chains*
 (pp. 813–827). Wiesbaden: Springer Fachmedien Wiesbaden.
 <https://doi.org/10.1007/978-3-658-25412-4_39>
 
-Meßerschmidt, O. (forthcoming). *Variety and Costs - The Effects of
-Product Variety on Costs and Costing Systems.*
+Schmidt M, Mertens KG, Meyer M (2023) Cost hierarchies and the pattern
+of product cost cross-subsidization: Extending a computational model of
+costing system design. PLOS ONE 18(9): e0290370.
+<https://doi.org/10.1371/journal.pone.0290370>

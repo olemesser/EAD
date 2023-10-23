@@ -11,7 +11,7 @@ crt_DMM(N_src, N_tgt, DMM_PAR, binary = F, upper_Bound = 20, allowZero = T)
 
 \item{N_tgt}{Number of columns for the DMM.}
 
-\item{DMM_PAR}{Double within \code{0<=DMM_PAR<=1}. Specifies the desired system design complexity which should be generated.}
+\item{DMM_PAR}{Double within \code{0<=DMM_PAR<=1}. Specifies the desired standardized system design complexity which should be generated. For further details on measure calculation see: \link[EAD]{measure_designComplexity}.}
 
 \item{binary}{Boolean, default=F. If the output DMM should be an binary or non binary matrix. If \code{binary=TRUE} then the input \code{'upper_Bound'} will be ignored.}
 

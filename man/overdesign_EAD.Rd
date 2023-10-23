@@ -31,7 +31,7 @@ There are two methods available for manipulating the degree of overdesign (see \
 Since components are substituted this function changes the following matrices \eqn{DMM_{FD,PD}}, \eqn{DSM_{PD}} and \eqn{DMM_{PD,PrD}}.
 }
 \details{
-For further details see the corresponding vignette by running \code{utils::vignette(package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
+For further details see the corresponding vignette by running \code{utils::vignette('cc-experiment', package = ‘EAD’)} and \insertCite{Meerschmidt.2024;textual}{EAD}
 }
 \examples{
 

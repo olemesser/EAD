@@ -2,7 +2,7 @@
 #' @description Creates a \code{N_src} x \code{N_tgt}  domain mapping matrix (DMM) by reaching a certain given SDC.
 #' @param N_src Number of rows for the DMM.
 #' @param N_tgt Number of columns for the DMM.
-#' @param DMM_PAR Double within \code{0<=DMM_PAR<=1}. Specifies the desired system design complexity which should be generated.
+#' @param DMM_PAR Double within \code{0<=DMM_PAR<=1}. Specifies the desired standardized system design complexity which should be generated. For further details on measure calculation see: \link[EAD]{measure_designComplexity}.
 #' @param binary Boolean, default=F. If the output DMM should be an binary or non binary matrix. If \code{binary=TRUE} then the input \code{'upper_Bound'} will be ignored.
 #' @param upper_Bound Integer, default \code{upper_Bound=20}, specifies the maximum number in the DMM if \code{binary=FALSE}
 #' @param allowZero Boolean, default \code{allowZero=T}, specifies whether zero columns are allowed in the DMM matrices.

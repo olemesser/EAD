@@ -25,14 +25,16 @@ The implementation was checked by using the train boogie data set as reported by
 
 ## unsymmetrical matrix as input
 ## is transformed into a symmetric matrix first
-## use the undirected approach by Blondel, Guillaume, Lambiotte, & Lefebvre (2008) as well as Newman (2006)
+## use the undirected approach by:
+   ### Blondel, Guillaume, Lambiotte, & Lefebvre (2008)
+    ### well as Newman (2006)
   DSM<-matrix(c(1,0,0,
               1,1,0,
               1,1,1),
            nrow=3,
            ncol=3,
            byrow=T)
-  measure_modularity(DSM,symmetric=T)#'
+  measure_modularity(DSM,symmetric=T)
 
 ### Example presented by Sinha & Suh (2018)
   library(EAD)

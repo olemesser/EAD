@@ -225,51 +225,41 @@ simulate_costEffects<-function(DOE){
 
 simulate_costEffects_MC<-function(DOE,
                                   NUMB_CORES=4,
-                                  cluster=F,
-                                  logfile="",
-                                  extMC_lib=F,
-                                  ehNodes="remove"){
-  suppressWarnings(require(parallel))
-  suppressWarnings(require(doSNOW))
-  suppressWarnings(require(foreach))
-  suppressWarnings(require(dplyr))
+                                  logfile = "",
+                                  time_limit = Inf,
+                                  cl = NULL,
+                                  ehNodes = "remove"){
+  suppressMessages(suppressWarnings(require(parallel)))
+  suppressMessages(suppressWarnings(require(doSNOW)))
+  suppressMessages(suppressWarnings(require(foreach)))
+  suppressMessages(suppressWarnings(require(dplyr)))
 
   DOE_list<-DOE %>%
     group_split(split=1:n())%>%
     as.list()
 
-  if(extMC_lib){
-    library(odegoparallel)
-    cl <- odegoparallel::initMC(NUMB_CORES = NUMB_CORES,
-                                cluster = cluster,
-                                logfile = logfile)
-    parallel::clusterExport(cl, envir = globalenv(),c("time_limit"))
-    print(cl)
-    res <- odegoparallel::run_MC(cl, X = DOE_list,
-                                 FUN = function(DOE, ...) {
+  if(is.null(cl)) cl<-EAD::setupMC(NUMB_CORES=NUMB_CORES,logfile=logfile)
+  on.exit(stopCluster(cl))
+
+  parallel::clusterExport(cl, envir = environment(),c("time_limit"))
+  print(cl)
+  res <- run_MC(cl, X = DOE_list,
+                               FUN = function(DOE, ...) {
+                                 res<-list()
+                                 res<-with_timeout(simulate_costEffects(DOE[1,]),timeout = time_limit)
+                                 if(res$message=="error"){
                                    res<-list()
-                                   res<-with_timeout(simulate_costEffects(DOE[1,]),timeout = time_limit)
-                                   if(res$message=="error"){
-                                     res<-list()
-                                   }else if(res$message=="success"){
-                                     res<-res$res
-                                   }
-                                   gc()
-                                   return(res)
-                                 }, packages = c("EAD","odegoparallel",
-                                                 "dplyr", "tidyr",
-                                                 "Matrix", "digest", "faux","data.table",
-                                                 "plyr", "DescTools", "igraph", "R.utils","fGarch"),
-                                 errorhandlingNodes = ehNodes)
-  }else{
-    cl<-EAD::setupMC(NUMB_CORES=NUMB_CORES,logfile=logfile)
-    registerDoSNOW(cl)
-    on.exit(stopCluster(cl))
-    print(cl)
-    print(paste0("Time  Limit set to: ",time_limit, " seconds per EAD realization."))
-    snow::clusterExport(cl,"time_limit")
-    res<-par_apply(cl,X=DOE_list,FUN=simulate_costEffects)
-  }
+                                 }else if(res$message=="success"){
+                                   res<-res$res
+                                 }
+                                 gc()
+                                 return(res)
+                               }, packages = c("EAD",
+                                               "dplyr", "tidyr",
+                                               "Matrix", "digest", "faux","data.table",
+                                               "plyr", "DescTools", "igraph", "R.utils","fGarch"),
+                               errorhandlingNodes = ehNodes)
+
   # res<-res[sapply(res,length)>0]
   return(res)
 }

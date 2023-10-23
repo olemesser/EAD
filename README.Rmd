@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-The numerical EAD framework generates firm environments according to the Extended Axiomatic Design (EAD) introduced by Mertens (2020). The simulation model is explained in Meßerschmidt (forthcoming). The framework adapts some function from the cost system design framework by Anand et al. (2019). The original code in C# is available under <https://github.com/vanand74/CostSystemSim>.
+The numerical EAD framework generates firm environments according to the Extended Axiomatic Design (EAD) introduced by Mertens (2020), Meßerschmidt et al. (2020) and Schmidt et al. (2021). The simulation model is explained in Meßerschmidt (forthcoming). The framework adapts some function from the cost system design framework by Anand et al. (2019). The original code in C# is available under <https://github.com/vanand74/CostSystemSim>.
 
 ## Installation
 
@@ -134,7 +134,9 @@ costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 RC_fix = EAD[[1]][[1]]$RC$fix)
 
 ## the product costs multiplied by the demand equals the total costs
-sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)==TC
+sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)
+
+TC
 ```
 
 To access the total product costs use the following arguments:
@@ -186,8 +188,20 @@ For the full documentation use the included vignettes as:
 ## list available vignettes
 utils::vignette(package = "EAD")
 
-## open main documentation
-utils::vignette("documentation",package ="EAD")
+## opens main documentation
+utils::vignette("createEAD",package ="EAD")
+
+## opens the setup for product costing system experiments
+utils::vignette("pcs-experiment",package ="EAD")
+
+## opens the setup forthe complexity cost experiment
+utils::vignette("cc-experiment",package ="EAD")
+```
+
+This frameworks further comes with some example data sets reported in literature. To get on overview of available data sets call:
+
+```{r include=TRUE, eval=FALSE}
+data(package = "EAD")
 ```
 
 # Acknowledgement
@@ -200,6 +214,10 @@ Anand, V., Balakrishnan, R., & Labro, E. (2019). A Framework for Conducting N
 
 Mertens, K. G. (2020). *Measure and manage your product costs right -- development and use of an extended axiomatic design for cost modeling.* TUHH Universitätsbibliothek. <https://doi.org/10.15480/882.2888>
 
+Meßerschmidt, O., Gumpinger, T., Meyer, M. & Mertens, K. G. Reviewing Complexity Costs -- What Practice Needs and What Research Contributes Proceedings of the Design Society: DESIGN Conference, 2020. Cambridge University Press, 647-656. <https://doi.org/10.1017/dsd.2020.152>
+
+Meßerschmidt, O. (forthcoming). Variety and Costs - The Effects of Product Variety on Costs and Costing Systems.
+
 Meyer, M., Meßerschmidt, O., & Mertens, K. G. (2019). *How much does variety-induced complexity actually cost? Linking axiomatic design with cost modelling*. In M. Schröder & K. Wegner (Eds.), *Logistik im Wandel der Zeit -- Von der Produktionssteuerung zu vernetzten Supply Chains* (pp. 813--827). Wiesbaden: Springer Fachmedien Wiesbaden. <https://doi.org/10.1007/978-3-658-25412-4_39>
 
-Meßerschmidt, O. (forthcoming). *Variety and Costs - The Effects of Product Variety on Costs and Costing Systems.*
+Schmidt M, Mertens KG, Meyer M (2023) Cost hierarchies and the pattern of product cost cross-subsidization: Extending a computational model of costing system design. PLOS ONE 18(9): e0290370. <https://doi.org/10.1371/journal.pone.0290370>

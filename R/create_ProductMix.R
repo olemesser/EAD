@@ -135,22 +135,6 @@ create_ProductMix<-function(N_FR=13,
       }
     }
     P_FD_const <- do.call(rbind,product_mix)
-    # repeat{
-    #   row_densities <- as.numeric(apply(P_FD, 1, function(row) sum(row != 0) / N_FR))
-    #   row_density_error <- abs(row_densities-DNS)
-    #   row_idx <- 1:NROW(P_FD)
-    #   selected_rows<-vector(mode = "numeric")
-    #   while (length(selected_rows)<N_PROD) {
-    #     rows_available <- setdiff(1:NROW(P_FD),selected_rows)
-    #     new_row <- which(row_density_error[rows_available]==min(row_density_error[rows_available]))
-    #     new_row <- sample(new_row,1)
-    #     selected_rows <- c(selected_rows,row_idx[rows_available][new_row])
-    #   }
-    #   P_FD_const <- P_FD[selected_rows,]
-    #   cond_1 <- NROW(unique(P_FD_const))==N_PROD
-    #   cond_2 <- all(colSums(P_FD_const)>0)
-    #   if(cond_1 & cond_2) break
-    # }
   }
 
   colnames(P_FD_const)<-paste0("FD_",1:N_FR)

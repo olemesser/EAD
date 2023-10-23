@@ -17,7 +17,10 @@
 #' @examples
 #' ### Calculate product costs for the designed EAD ###
 #' data("exampleEAD")
-#' TC =  sum(exampleEAD[[1]][[1]]$RC$fix + exampleEAD[[1]][[1]]$RC$var + exampleEAD[[1]][[1]]$RC$direct)
+#' TC =  sum(exampleEAD[[1]][[1]]$RC$fix +
+#'           exampleEAD[[1]][[1]]$RC$var +
+#'           exampleEAD[[1]][[1]]$RC$direct)
+#'
 #' costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
 #'                 DMD = exampleEAD[[1]][[1]]$DEMAND,
 #'                 RC_direct = exampleEAD[[1]][[1]]$RC$direct,
