@@ -288,7 +288,7 @@ Again, `DNS` defines the proportion of non-zero entries in the final DSM. The se
 
 ```{r}
 DOE_bus<-expand.grid(DNS=c(0.1,0.2,0.7),
-                     power = c(0,2,5))
+                     power = c(0.1,2,5))
 ```
 
 ```{r fig.height=5, fig.width=5, eval=FALSE, include=TRUE}
