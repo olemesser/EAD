@@ -63,8 +63,8 @@ Third, define a design of experiment (DoE). For each
                    DNS = list(c(0.05,0.5)), # density of the functional product mix
                    method_FD = "DNS", # method to create the product mix
                    N_PROD=20, # number of products
-                   TOTAL_DEMAND = 10000, # total demand
-                   Q_VAR = list(c(0,3)), # demand heterogeneity
+                   TOTAL_DEMAND = list(c(100,10000)), # total demand
+                   Q_VAR = list(c(0,1.7)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
@@ -131,9 +131,9 @@ To access the total product costs use the following arguments:
 ``` r
 ## total product costs
 costs$PC_B
-#>  [1] 160.64151  65.92719 117.54790 162.59060  54.93448  80.34445  77.24532
-#>  [8]  73.65922 138.37272 119.16597  94.54203  88.62365 122.10705  46.86105
-#> [15] 127.78382  98.95147 136.36680 158.02280  84.63497 141.47681
+#>  [1] 526.20143 670.50974 183.80349 422.59265 384.35618 304.03129 220.38957
+#>  [8] 512.13447 277.22839 473.08595 310.13922 633.62098 670.30356 526.30935
+#> [15] 361.53438 454.44753 345.80560  89.11987 451.07620 316.85376
 ```
 
 For the indirect benchmark costs use:
@@ -141,9 +141,9 @@ For the indirect benchmark costs use:
 ``` r
 ## indirect benchmark product costs
 costs$PC_B_indirect
-#>  [1] 58.49344 23.71110 42.97193 58.73410 20.16870 29.40368 27.89207 26.62506
-#>  [9] 50.17020 43.44468 34.02600 32.05563 44.16275 17.29656 46.28339 36.30717
-#> [17] 49.13422 57.09794 30.87422 51.16805
+#>  [1] 218.50124 278.16651  75.99718 175.46319 159.56317 126.01142  90.98288
+#>  [8] 212.37655 114.63363 196.61797 128.83319 262.82268 277.85639 218.34766
+#> [15] 150.34403 188.49846 143.50661  36.92885 187.25739 131.55815
 ```
 
 If the product mix (available products) or the demand varies, the costs

@@ -76,8 +76,8 @@ Third, define a design of experiment (DoE). For each
                    DNS = list(c(0.05,0.5)), # density of the functional product mix
                    method_FD = "DNS", # method to create the product mix
                    N_PROD=20, # number of products
-                   TOTAL_DEMAND = 10000, # total demand
-                   Q_VAR = list(c(0,3)), # demand heterogeneity
+                   TOTAL_DEMAND = list(c(100,10000)), # total demand
+                   Q_VAR = list(c(0,1.7)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity

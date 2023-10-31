@@ -69,7 +69,7 @@ crt_EAD<-function(DOE,
 
       ### 1.2 Demand Generation ###
       DMD<-crt_DEMAND(n_PROD = NROW(P[["FD"]]),
-                 TOTAL_DEMAND = DOE$TOTAL_DEMAND[x],
+                 TOTAL_DEMAND = DOE$TOTAL_DEMAND[x][[1]],
                  Q_VAR = DOE$Q_VAR[x][[1]])
       measures[['SYSTEM']]<-c(measures[['SYSTEM']],
                               DMD_cv = DMD$CHECK$CV,
