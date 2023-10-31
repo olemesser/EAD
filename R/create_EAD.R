@@ -12,7 +12,7 @@ crt_EAD<-function(DOE,
   #                  DNS = list(c(0.07,0.5)), #density within the DSM_FD matrix. Creates product mixes where not all products are included
   #                  N_PROD = 50, # number of products
   #                  method_FD = "DNS", # method for generating the product mix
-  #                  TOTAL_DEMAND = 10000, # total demand
+  #                  TOTAL_DEMAND = list(c(100,12300)), # total demand
   #                  Q_VAR = list(c(0,3)), # demand heterogeneity
   #                  DMM_PAR = expand_grid(FD_PD=list(c(0,0.08)),
   #                                        PD_PrD=list(c(0,0.1)),
@@ -51,6 +51,7 @@ crt_EAD<-function(DOE,
     DOE$N_DD[x]<-ifelse(length(DOE$N_DD[x][[1]])>1,sample(DOE$N_DD[[x]][1]:DOE$N_DD[[x]][2],1),DOE$N_DD[[x]][1])
     DOE$N_PrD[x]<-ifelse(length(DOE$N_PrD[x][[1]])>1,sample(DOE$N_PrD[[x]][1]:DOE$N_PrD[[x]][2],1),DOE$N_PrD[[x]][1])
     DOE$N_RD[x]<-ifelse(length(DOE$N_RD[x][[1]])>1,sample(DOE$N_RD[[x]][1]:DOE$N_RD[[x]][2],1),DOE$N_RD[[x]][1])
+    DOE$TOTAL_DEMAND[x]<-ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])
     #### 1. Create Product Mix & Demand ####
       ### 1.1 Product Mix Generation ###
       if('DNS' %in% colnames(DOE)){
@@ -164,7 +165,7 @@ crt_EAD<-function(DOE,
 #'   \item{N_DD}{The number of elements in the physcial domain (PD)}
 #'   \item{N_PrD}{The number of elements in the process domain (PrD)}
 #'   \item{N_RD}{The number of elements in the resource domain (RD)}
-#'   \item{DNS}{Densitiy of the product mix \code{P_FD}.}
+#'   \item{DNS}{Density of the product mix \code{P_FD}.}
 #'   \item{N_PROD}{Number of products (rows) in \code{P_FD}.}
 #'   \item{method_FD}{Method for generating the product mix. For available methods see: \link[EAD]{create_ProductMix}.}
 #'   \item{TOTAL_DEMAND}{Total demand}
@@ -178,7 +179,7 @@ crt_EAD<-function(DOE,
 #'   \item{DSM_param}{The first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used. For details see: \link[EAD]{crt_DSM}.}
 #'   \item{DSM_method}{The method for DSM creation. For details see: \link[EAD]{crt_DSM}.}
 #'   \item{ub_DSM}{Upper bounds for entries in the DSMs.}
-#'   \item{TC}{NTotal costs}
+#'   \item{TC}{Total costs}
 #'   \item{r_in}{Proportion of indirect costs on total costs}
 #'   \item{r_fix}{Proportion of fixed costs on total indirect costs}
 #'   \item{RC_cor}{Correlation between variable cost vector and fixed cost vector}
@@ -204,7 +205,7 @@ crt_EAD<-function(DOE,
 #'                  DNS = list(c(0.07,0.5)),
 #'                  N_PROD = 50
 #'                  method_FD = "DNS",
-#'                  TOTAL_DEMAND = 1000,
+#'                  TOTAL_DEMAND = list(c(1000,1000)),
 #'                  Q_VAR = list(c(0,3)),
 #'                  DMM_PAR = expand_grid(FD_PD = list(c(0,0.08)),
 #'                                        PD_PrD = list(c(0,0.1)),
@@ -265,7 +266,7 @@ crt_EAD_MC<-function(DOE,
                   gc()
                   return(res)
                 }, packages = c("EAD",
-                                "dplyr", "tidyr", "GA",
+                                "dplyr", "tidyr",
                                 "Matrix", "digest", "faux",
                                 "plyr", "DescTools", "igraph", "R.utils","fGarch"),
              errorhandlingNodes = ehNodes)
