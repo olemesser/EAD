@@ -49,8 +49,6 @@ by the design of experiments
 
 ``` r
 set.seed(1234) # set random seed to reproduce the results
-time_limit <<- 50 # global time limit in seconds
-# setwd()
 ```
 
 Third, define a design of experiment (DoE). For each
@@ -62,7 +60,7 @@ Third, define a design of experiment (DoE). For each
                    N_RD = 60, # number of resource domain elements
                    DNS = list(c(0.05,0.5)), # density of the functional product mix
                    method_FD = "DNS", # method to create the product mix
-                   N_PROD=20, # number of products
+                   N_PROD = list(c(20,25)), # number of products
                    TOTAL_DEMAND = list(c(100,10000)), # total demand
                    Q_VAR = list(c(0,1.7)), # demand heterogeneity
                    DMM_PAR = expand_grid(FD_PD=list(c(0,0.1)),
@@ -92,7 +90,7 @@ used.
 ``` r
 ## run EAD generation procedure
   EAD<-crt_EAD_MC(DOE[1:4,],
-                  NUMB_CORES=c(4),
+                  NUMB_CORES=4,
                   logfile="")
 ```
 
@@ -131,9 +129,9 @@ To access the total product costs use the following arguments:
 ``` r
 ## total product costs
 costs$PC_B
-#>  [1] 526.20143 670.50974 183.80349 422.59265 384.35618 304.03129 220.38957
-#>  [8] 512.13447 277.22839 473.08595 310.13922 633.62098 670.30356 526.30935
-#> [15] 361.53438 454.44753 345.80560  89.11987 451.07620 316.85376
+#>  [1] 187.43833 269.10613 190.56710 236.15780  55.02643 101.85794 175.45651
+#>  [8] 132.41190 168.04365 298.89622  62.31939 238.61014 175.33661 190.52528
+#> [15] 113.81355 234.76031 150.99644 129.47386 189.47163 190.94431 158.04858
 ```
 
 For the indirect benchmark costs use:
@@ -141,9 +139,9 @@ For the indirect benchmark costs use:
 ``` r
 ## indirect benchmark product costs
 costs$PC_B_indirect
-#>  [1] 218.50124 278.16651  75.99718 175.46319 159.56317 126.01142  90.98288
-#>  [8] 212.37655 114.63363 196.61797 128.83319 262.82268 277.85639 218.34766
-#> [15] 150.34403 188.49846 143.50661  36.92885 187.25739 131.55815
+#>  [1]  73.01403 104.90440  73.89295  92.04684  21.36814  39.84188  68.46384
+#>  [8]  51.64589  65.25070 116.39438  24.32963  92.73272  68.21220  74.35375
+#> [15]  44.32725  91.66726  58.89260  50.61336  73.68200  74.37165  61.64075
 ```
 
 If the product mix (available products) or the demand varies, the costs

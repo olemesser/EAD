@@ -10,7 +10,7 @@ crt_EAD<-function(DOE,
   #                  N_PrD = list(c(36,52)), # number of process domain elements
   #                  N_RD = list(c(72,104)), # number of resource domain elements
   #                  DNS = list(c(0.07,0.5)), #density within the DSM_FD matrix. Creates product mixes where not all products are included
-  #                  N_PROD = 50, # number of products
+  #                  N_PROD = list(c(50,100)), # number of products
   #                  method_FD = "DNS", # method for generating the product mix
   #                  TOTAL_DEMAND = list(c(100,12300)), # total demand
   #                  Q_VAR = list(c(0,3)), # demand heterogeneity
@@ -31,11 +31,12 @@ crt_EAD<-function(DOE,
   #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
   #                  cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
   #                  RC_cv = list(c(0,1.5)), # coefficient of variation for resource cost distribution
-  #                  N_RUN = 1:1 # number of runs
+  #                  N_RUN = 1:4 # number of runs
   # )
   # DOE<-DOE[1:4,]
   #### END Input Testing ####
 
+  if(min(unlist(DOE$TOTAL_DEMAND)) < min(unlist(DOE$N_PROD))) stop("TOTAL_DEMAND < N_PROD. Please increase TOTAL_DEMAND or reduce N_PRDO!")
 
   #### For each DOE Setting ####
   EAD<-lapply(1:NROW(DOE),function(x){
@@ -51,7 +52,13 @@ crt_EAD<-function(DOE,
     DOE$N_DD[x]<-ifelse(length(DOE$N_DD[x][[1]])>1,sample(DOE$N_DD[[x]][1]:DOE$N_DD[[x]][2],1),DOE$N_DD[[x]][1])
     DOE$N_PrD[x]<-ifelse(length(DOE$N_PrD[x][[1]])>1,sample(DOE$N_PrD[[x]][1]:DOE$N_PrD[[x]][2],1),DOE$N_PrD[[x]][1])
     DOE$N_RD[x]<-ifelse(length(DOE$N_RD[x][[1]])>1,sample(DOE$N_RD[[x]][1]:DOE$N_RD[[x]][2],1),DOE$N_RD[[x]][1])
-    DOE$TOTAL_DEMAND[x]<-ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])
+    dmd_candidate <- ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])
+    DOE$N_PROD[x] <- ifelse(length(DOE$N_PROD[x][[1]])>1,sample(DOE$N_PROD[[x]][1]:DOE$N_PROD[[x]][2],1),DOE$N_PROD[[x]][1])
+
+    while(dmd_candidate[[1]] < DOE$N_PROD[x][[1]]){
+      dmd_candidate <- ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])
+    }
+    DOE$TOTAL_DEMAND[x] <- dmd_candidate
     #### 1. Create Product Mix & Demand ####
       ### 1.1 Product Mix Generation ###
       if('DNS' %in% colnames(DOE)){
@@ -62,7 +69,7 @@ crt_EAD<-function(DOE,
       prodMIX<-create_ProductMix(N_FR = DOE$N_FR[x][[1]],
                         DNS = DNS_set,
                         prop_PROD =ifelse('prop_PROD' %in% colnames(DOE),DOE$prop_PROD[x],NA),
-                        N_PROD = ifelse('N_PROD' %in% colnames(DOE),DOE$N_PROD[x],1),
+                        N_PROD = DOE$N_PROD[x][[1]],
                         method = DOE$method_FD[x])
       P[["FD"]]<-as.matrix(prodMIX$P_FD_const)
 
@@ -203,7 +210,7 @@ crt_EAD<-function(DOE,
 #'                  N_PrD = list(c(36,52)),
 #'                  N_RD = list(c(72,104)),
 #'                  DNS = list(c(0.07,0.5)),
-#'                  N_PROD = 50
+#'                  N_PROD = list(c(50)),
 #'                  method_FD = "DNS",
 #'                  TOTAL_DEMAND = list(c(1000,1000)),
 #'                  Q_VAR = list(c(0,3)),
