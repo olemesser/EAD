@@ -8,81 +8,70 @@
 #' @param TC Total costs.
 #' @param r_in Proportion of indirect costs on total costs.
 #' @param r_fix Proportion of fixed costs on total indirect costs.
-#' @param cv Coefficient of variation for resource cost distribution.
+#' @param sdlog The log-normal standard deviation for the total resource cost vector.
 #' @return A list containing the three cost vectors. For each vector the coefficient of variation as well as the top 10% largest resource costs for each vector are calculated.
 #' Since the procedure is not able to match the exact input values, the final correlation value are measured. \code{cor_fix} measures the correlation between indirect fixed costs and direct cost vector.
 #' \code{cor_var} between indirect variable costs and direct cost vector and \code{cor_fix_var} between both indirect cost vectors.
 #' @examples
 #' set.seed(1234)
 #'
-#' RC<-crt_RC(N_RD=50,
-#'            TC=10^6,
+#' RC<-crt_RC(N_RD = 50,
+#'            TC = 10^6,
 #'            r_in = 0.5,
-#'            r_fix=0.4,
-#'            cv=0.2)
+#'            r_fix = 0.4,
+#'            sdlog = 0.2)
 #'
 crt_RC<-function(N_RD,
                  TC=10^6,
                  r_in,
                  r_fix,
-                 cv){
-  suppressMessages(suppressWarnings(require(faux)))
+                 sdlog){
 
   #### Input for Testing ####
-  # N_RD=50
-  # TC=10^6
-  # r_in=0.3
-  # r_fix=0.5
-  # cv=2
-  # max_tries=2000
+  # N_RD = 50
+  # TC = 10^6
+  # r_in = 0.3
+  # r_fix = 0.5
+  # sdlog = 1
   #### End Input for Testing ####
 
   #### 0. Initial Checks ####
   if(r_in>0.9) stop("You selected more than 90% of the costs as indirect. The maximum is proportion is 90%. Please reduce r_in!")
   if(r_in<0) stop("The proportion of indirect costs cannot be negative. Please set r_in>=0!")
   if(r_fix<0 | r_fix>1) stop("r_fix must be within the bound of 0<=r_fix<=1")
-  if(cv==0) cv<-0.1
+  if(sdlog<=0) stop("The log-normal standard deviation cannot be zero or negative. Please increase the input value.")
 
   #### 1. Split Costs according the input ratios ####
   TC_direct <- TC * (1-r_in)
   TC_indirect <- TC * (r_in)
-  TC_fix <- TC_indirect * r_fix
-  TC_var <- TC_indirect - TC_fix
+  TC_fix <- TC * r_fix
+  TC_var <- TC - TC_fix
 
-  #### 2. Create Direct Cost Vector ####
-  RC_direct <- rlnorm(N_RD,meanlog = 0, sdlog = cv)
-  RC_direct <- (RC_direct/sum(RC_direct)*TC_direct)
-  cv_direct_is <- sd(RC_direct)/mean(RC_direct)
+  #### 2. Create Total variable and fixed cost vector ####
+  ### 2.1 fixed costs ###
+  RC_fix <- crt_RCid(l = N_RD,
+                  TC = TC_fix,
+                  sdlog = sdlog)
 
-  #### 3. Create Indirect cost vector ####
-    ### 3.1 fixed costs ###
-    fix <- crt_RCid(l = N_RD,
-                    TC = TC_fix,
-                    sdlog = cv)
+  ### 2.2 variable costs ###
+  RC_var <- crt_RCid(l = N_RD,
+                  TC = TC_var,
+                  sdlog = sdlog)
 
-    ### 3.2 variable costs ###
-    var <- crt_RCid(l = N_RD,
-                    TC = TC_var,
-                    sdlog = cv)
+  #### 3. Split RC into direct and indirect costs ####
+  ## 3.1 Split fixed cost vector into direct and indirect costs ##
+  RC_fix <- crt_RC_indirect(RC = RC_fix$RC, r_in = r_in)
+
+  ## 3.2 Split variable cost vector into direct and indirect costs ##
+  RC_var <- crt_RC_indirect(RC = RC_var$RC, r_in = r_in)
 
 
   #### 4. Create Output Object ####
-    output<-list(RC_var = list(RC = var$RC,
-                             cv = var$cv,
-                             top10 = measure_TOP10( var$RC)),
-                 RC_fix = list(RC = fix$RC,
-                             cv = fix$cv,
-                             top10 = measure_TOP10(fix$RC)),
-                 RC_direct = list(RC = RC_direct,
-                                  cv = cv_direct_is,
-                                  top10 = measure_TOP10(RC_direct)),
-                 cor_fix = suppressWarnings(cor(fix$RC,RC_direct)),
-                 cor_var = suppressWarnings(cor(RC_direct,var$RC)),
-                 cor_fix_var = suppressWarnings(cor(fix$RC,var$RC)),
-                 cor_indirect = suppressWarnings(cor((fix$RC+var$RC),RC_direct)),
-                 r_fix = r_fix,
-                 r_in = r_in,
-                 TC = sum(var$RC+fix$RC+RC_direct))
+  output<-list(RC_var = RC_var,
+               RC_fix = RC_fix,
+               r_fix =   sum(RC_fix$RC_i$RC +   RC_fix$RC_d$RC) / TC,
+               r_in = sum(RC_fix$RC_i$RC +   RC_var$RC_i$RC) / TC,
+               TC = sum(RC_fix$RC_i$RC + RC_fix$RC_d$RC + RC_var$RC_i$RC +   RC_var$RC_d$RC))
 
   return(output)
 
@@ -95,4 +84,32 @@ crt_RCid<-function(l,TC,sdlog){
   cv_is<-sd(RC)/mean(RC)
   return(list(RC=RC,
               cv=cv_is))
+}
+
+crt_RC_indirect <- function(RC,r_in,tol=0.005){
+  N_RD <- length(RC)
+  repeat{
+    prop_in <- runif(N_RD,min = r_in -  min(c(r_in, 1 - r_in)),
+                     max = r_in +  min(c(r_in, 1 - r_in)))
+    RC_i <- RC * prop_in
+    RC_d <- RC - RC_i
+    r_in_is <- sum(RC_i)/sum(c(RC_d,RC_i))
+    if(abs(r_in - r_in_is) < tol){
+      break
+    }else if(r_in_is > r_in){
+      idx <- sample(1:N_RD,1)
+      prop_in[idx] <- prop_in[idx] * runif(1,min=0.9,max=1)
+    }else if(r_in_is < r_in){
+      idx <- sample(1:N_RD,1)
+      prop_in[idx] <- prop_in[idx] * runif(1,min=1,max=1.1)
+    }
+  }
+  if(any(RC_i < 0) |  any(RC_d < 0)) stop("Invalid cost vectors created")
+
+  out <- list(RC_i = list(RC = RC_i,
+                          top10 = measure_TOP10(RC_i)),
+              RC_d = list(RC = RC_d,
+                          top10 = measure_TOP10(RC_d)))
+
+  return(out)
 }

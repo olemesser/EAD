@@ -4,7 +4,7 @@
 \alias{crt_RC}
 \title{Create a resource cost object}
 \usage{
-crt_RC(N_RD, TC = 10^6, r_in, r_fix, cv)
+crt_RC(N_RD, TC = 10^6, r_in, r_fix, sdlog)
 }
 \arguments{
 \item{N_RD}{Number of resources.}
@@ -15,7 +15,7 @@ crt_RC(N_RD, TC = 10^6, r_in, r_fix, cv)
 
 \item{r_fix}{Proportion of fixed costs on total indirect costs.}
 
-\item{cv}{Coefficient of variation for resource cost distribution.}
+\item{sdlog}{The log-normal standard deviation for the total resource cost vector.}
 }
 \value{
 A list containing the three cost vectors. For each vector the coefficient of variation as well as the top 10% largest resource costs for each vector are calculated.
@@ -32,10 +32,10 @@ The total fixed an indirect costs are defined as \code{(TC*r_in*r_fix)}.
 \examples{
 set.seed(1234)
 
-RC<-crt_RC(N_RD=50,
-           TC=10^6,
+RC<-crt_RC(N_RD = 50,
+           TC = 10^6,
            r_in = 0.5,
-           r_fix=0.4,
-           cv=0.2)
+           r_fix = 0.4,
+           sdlog = 0.2)
 
 }

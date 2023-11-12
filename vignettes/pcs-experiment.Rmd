@@ -50,7 +50,7 @@ DOE<-expand_grid(N_FR = list(c(15)), # number of functional requirements
                  TC = 10^6, # total costs
                  r_in = list(c(0.2,0.8)),
                  r_fix = list(c(0.1,0.5)), # proportion of fixed costs on total indirect costs
-                 RC_cv = list(c(0,3)), # coefficient of variation for resource cost distribution
+                 RC_sdlog = list(c(0.1,3)), # coefficient of variation for resource cost distribution
                  N_RUN = 1:4 # number of runs
 )
 ```
@@ -123,7 +123,7 @@ The simulation goes through the following steps:
 
 The simulation can be run by calling the following function:
 
-```{r runPCS, message=FALSE, warning=FALSE, include=FALSE}
+```{r runPCS, message=FALSE, warning=FALSE, include=FALSE,eval=FALSE}
 data <- experiment_PCS_MC(DOE = DOE,
                           cs_DOE = expand.grid(
                                       ACP=c(1,5,10),
@@ -146,13 +146,13 @@ data <- experiment_PCS_MC(DOE = DOE,
 
 Show the system level results for the first combination of EAD and variety scenario
 
-```{r}
+```{r eval=FALSE}
 data[[1]]$res$system_level
 ```
 
 Product level results are only reported for certain activity cost pools defined by `ACP_productLevel` under the full variety scenario due to the large amount of data.
 
-```{r}
+```{r eval=FALSE}
 data[[1]]$res$product_level
 ```
 

@@ -87,7 +87,7 @@ DOE<-expand_grid(N_FR = list(c(15)),
                  TC = 10^6,
                  r_in = list(c(0,0.9)),
                  r_fix = list(c(0,1)),
-                 RC_cv = list(c(0,1.5)),
+                 RC_sdlog = list(c(0,1.5)),
                  N_RUN = 1:4 # number of runs
 )
 

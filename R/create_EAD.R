@@ -30,7 +30,7 @@ crt_EAD<-function(DOE,
   #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
   #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
   #                  cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
-  #                  RC_cv = list(c(0,1.5)), # coefficient of variation for resource cost distribution
+  #                  RC_sdlog = list(c(0,1.5)), # coefficient of variation for resource cost distribution
   #                  N_RUN = 1:4 # number of runs
   # )
   # DOE<-DOE[1:4,]
@@ -121,23 +121,19 @@ crt_EAD<-function(DOE,
                      TC = DOE$TC[x],
                      r_fix = runif(1,min=DOE$r_fix[x][[1]][1],max=DOE$r_fix[x][[1]][2]),
                      r_in = runif(1,min=DOE$r_in[x][[1]][1],max=DOE$r_in[x][[1]][2]),
-                     cv = runif(1,min=DOE$RC_cv[x][[1]][1],max=DOE$RC_cv[x][[1]][2]))
+                     sdlog = runif(1,min=DOE$RC_sdlog[x][[1]][1],max=DOE$RC_sdlog[x][[1]][2]))
 
 
-          measures[['SYSTEM']][['RC']]<-list(RC_var_cv =  RC$RC_var$cv,
-                                             RC_var_top10 = RC$RC_var$top10,
-                                             RC_fix_cv =  RC$RC_fix$cv,
-                                             RC_fix_top10 = RC$RC_fix$top10,
-                                             cor_fix = RC$cor_fix,
-                                             cor_var = RC$cor_var,
-                                             cor_fix_var = RC$cor_fix_var,
-                                             cor_indirect = RC$cor_indirect,
+          measures[['SYSTEM']][['RC']]<-list(RC_vari_top10 = RC$RC_var$RC_i$top10,
+                                             RC_vard_top10 = RC$RC_var$RC_d$top10,
+                                             RC_fixi_top10 = RC$RC_fix$RC_i$top10,
+                                             RC_fixd_top10 = RC$RC_fix$RC_di$top10,
                                              r_fix = RC$r_fix,
                                              r_in = RC$r_in)
-          RC<-list(direct = RC$RC_direct$RC,
-                   var=RC$RC_var$RC,
-                   fix=RC$RC_fix$RC,
-                   P_RD_fix = DOM$P_RD_fix)
+          RC<-list(var_d = RC$RC_var$RC_d$RC,
+                   fix_d = RC$RC_fix$RC_d$RC,
+                   var_i=RC$RC_var$RC_i$RC,
+                   fix_i=RC$RC_fix$RC_i$RC)
 
     #### 4. Write Output object ####
     EAD<-list(P=P,
@@ -228,7 +224,7 @@ crt_EAD<-function(DOE,
 #'                  TC = 10^6,
 #'                  r_in = list(c(0,0.9)),
 #'                  r_fix = list(c(0,1)),
-#'                  RC_cv = list(c(0,1.5)),
+#'                  RC_sdlog = list(c(0,1.5)),
 #'                  N_RUN = 1:4 # number of runs
 #' )
 #'

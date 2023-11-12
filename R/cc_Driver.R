@@ -359,7 +359,7 @@ setupCosts<-function(P_PD,
                 n_setups = n_setups,
                 n_tasks = sum(TM),
                 n_taks_distinct = sum(TM_bin),
-                DNS_TM = measure_DENS(TM),
+                DNS_TM = measure_DENS(TM[rowSums(TM)>0,]),
                 TM = TM,
                 rm_TM = mean(rowMeans(TM_bin)[rowMeans(TM_bin)>0])))
 

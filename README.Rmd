@@ -90,7 +90,7 @@ Third, define a design of experiment (DoE). For each
                    TC = 10^6, # total costs
                    r_in = list(c(0,0.9)),
                    r_fix = list(c(0,1)), # proportion of fixed costs on total costs
-                   RC_cv = list(c(0,1)), # skewness of resource costs
+                   RC_sdlog = list(c(0.1,2)), # skewness of resource costs
                    N_RUN = 1:100 # number of runs
                     )
 ```
@@ -124,17 +124,14 @@ The following chunk calculates the product benchmark costs for the given design.
 
 ```{r costs, eval=T, include=TRUE}
 # variable indirect costs and the direct costs which are always variable are summed up
-TC <- sum(EAD[[1]][[1]]$RC$var + EAD[[1]][[1]]$RC$direct + EAD[[1]][[1]]$RC$fix)
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 DMD = EAD[[1]][[1]]$DEMAND,
-                RC_direct = EAD[[1]][[1]]$RC$direct,
-                RC_var = EAD[[1]][[1]]$RC$var,
-                RC_fix = EAD[[1]][[1]]$RC$fix)
+                RC_var = EAD[[1]][[1]]$RC$var_i + EAD[[1]][[1]]$RC$var_d,
+                RC_fix = EAD[[1]][[1]]$RC$fix_i + EAD[[1]][[1]]$RC$fix_d)
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)
 
-TC
 ```
 
 To access the total product costs use the following arguments:
@@ -153,20 +150,19 @@ costs$PC_B_indirect
 
 If the product mix (available products) or the demand varies, the costs are calculated as:
 
-```{r costs_varies, eval=FALSE, include=TRUE}
+```{r costs_varies, eval=TRUE, include=TRUE}
 ## lets assume we drop the first ten products 
 DMD<-EAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
 costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                DMD = DMD,
-               RC_direct = EAD[[1]][[1]]$RC$direct,
-               RC_fix = EAD[[1]][[1]]$RC$fix,
-               RCU=costs$RCU)
+               RC_fix = EAD[[1]][[1]]$RC$fix_i +  EAD[[1]][[1]]$RC$fix_d,
+               RCU = costs$RCU)
 
 PC_B_reduced<-costs_reduced$PC_B
 
 ## compare the differences
-costs<- data.frame(DMD_f = EAD[[1]][[1]]$DEMAND,
+summary<- data.frame(DMD_f = EAD[[1]][[1]]$DEMAND,
                    DMD_r = DMD,
                    PC_B_f = costs$PC_B,
                    PC_B_r = costs_reduced$PC_B,
@@ -175,7 +171,7 @@ costs<- data.frame(DMD_f = EAD[[1]][[1]]$DEMAND,
                    PC_fix_f = costs$PC_B_fixed,
                    PC_fix_r = costs_reduced$PC_B_fixed)
 
-head(costs)
+summary
 ```
 
 # Full Documentation
