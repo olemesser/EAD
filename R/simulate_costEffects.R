@@ -37,8 +37,8 @@ simulate_costEffects<-function(DOE){
         nonCC <- clc_PCB(EAD$P$RD,
                          DMD=EAD$DEMAND,
                          RC_direct = EAD$RC$direct,
-                         RC_var = EAD$RC$var,
-                         RC_fix = EAD$RC$fix)
+                         RC_var = EAD$RC$var_d + EAD$RC$var_i,
+                         RC_fix = EAD$RC$fix_d + EAD$RC$fix_i)
         ## component costs ##
         PDUC_noOD <- clc_variableComponentCosts(EAD = EAD,
                                            RCU = nonCC$RCU_direct)
@@ -153,7 +153,7 @@ simulate_costEffects<-function(DOE){
                                                           DMD = DEMAND_temp,
                                                           RCU = nonCC$RCU,
                                                           RCU_direct = nonCC$RCU_direct,
-                                                          RC_fix = EAD$RC$fix)
+                                                          RC_fix = EAD$RC$fix_d + EAD$RC$fix_i)
 
                                 out['TC_NC'] <- nonCC_scenario$TC - out$dvl_materialCosts
                                 out['TC_NC_var'] <- nonCC_scenario$TC_var - out$dvl_materialCosts
@@ -247,11 +247,11 @@ simulate_costEffects_MC<-function(DOE,
                                FUN = function(DOE, ...) {
                                  res<-list()
                                  res<-with_timeout(simulate_costEffects(DOE[1,]),timeout = time_limit)
-                                 if(res$message=="error"){
-                                   res<-list()
-                                 }else if(res$message=="success"){
-                                   res<-res$res
-                                 }
+                                 #if(res$message=="error"){
+                                #   res<-list()
+                                # }else if(res$message=="success"){
+                                #   res<-res$res
+                                # }
                                  gc()
                                  return(res)
                                }, packages = c("EAD",

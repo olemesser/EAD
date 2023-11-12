@@ -249,8 +249,8 @@ clc_domainCosts<-function(EAD){
   #### End Testing ####
 
   TRC <- colSums(EAD$P$RD * EAD$DEMAND)
-  RCU_fix <- EAD$RC$fix / TRC
-  RCU_var <- (EAD$RC$direct + EAD$RC$var) / TRC
+  RCU_fix <- EAD$RC$fix_d + EAD$RC$fix_i / TRC
+  RCU_var <- ( EAD$RC$var_d + EAD$RC$var_i) / TRC
 
   #### Trace costs ####
     ### in PrD ###

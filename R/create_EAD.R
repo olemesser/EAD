@@ -28,8 +28,6 @@ crt_EAD<-function(DOE,
   #                  TC = 10^6, # total costs
   #                  r_in = list(c(0,0.9)),
   #                  r_fix = list(c(0,1)), # proportion of fixed costs on total costs
-  #                  cor_var = list(c(-1,1)), # correlation between indirect variable cost vector and direct cost vector
-  #                  cor_fix = list(c(-1,1)), # correlation between indirect fixed cost vector and direct cost vector
   #                  RC_sdlog = list(c(0,1.5)), # coefficient of variation for resource cost distribution
   #                  N_RUN = 1:4 # number of runs
   # )
