@@ -105,7 +105,8 @@ overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
         #### Update EAD (Design & Costs) ####
         EAD_temp <- suppressWarnings(update_EAD(EAD_temp))
         costs_new <- clc_domainCosts(EAD_temp)
-        EAD_temp$RC$direct <-costs$var$RD * colSums(EAD_temp$P$RD * EAD_temp$DEMAND)
+        EAD_temp$RC$var_d <- costs$var$RD * colSums(EAD_temp$P$RD * EAD_temp$DEMAND)
+
 
         if(sum(EAD_temp$RC$direct)<sum(EAD$RC$direct)){
           min_bound <- min_bound+0.05
@@ -122,7 +123,7 @@ overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
     #### Update EAD (Design & Costs) ####
     EAD <- suppressWarnings(update_EAD(EAD))
     costs_new <- clc_domainCosts(EAD)
-    EAD$RC$direct <-costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
+    EAD_temp$RC$var_d <- costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
 
     return(list(EAD = EAD,
                 overdesign = list(substitute = el_substitute,

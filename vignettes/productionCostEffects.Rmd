@@ -26,10 +26,16 @@ The EAD design can be created by calling
 
 ```{r initialize}
 require(EAD)
-set.seed(1234)
-
-EAD <- smallEAD
-EAD$DEMAND <- c(10,50,100,30)
+P_PD <- matrix(c(1,0,0,1,
+                 0,1,3,0,
+                 0,0,1,1,
+                 0,1,2,1),byrow=T,nrow=4)
+PD_PrD <- matrix(c(1,0,0,0,
+                 0,1,1,0,
+                 0,2,01,0,
+                 0,0,0,1),byrow=T,nrow=4)
+PrD <- diag(0,4)
+DEMAND <- c(10,50,100,30)
 C_hold <- rep(5,4)
 C_order <- rep(15,4)
 C_setup <- 444.4
@@ -40,13 +46,13 @@ C_setup <- 444.4
 In a first step the component demand is calculated.
 
 ```{r}
-DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
+DMD_component <- as.numeric(DEMAND %*% P_PD)
 ```
 
 Second, the process consumption for each component is calculated
 
 ```{r}
-DMD_PD <- EAD$DMM$PD_PrD + EAD$DMM$PD_PrD %*% EAD$DSM$PrD
+DMD_PD <- PD_PrD + PD_PrD %*% PrD
 DMD_PD[DMD_PD>0] <- 1
 DMD_PD <- DMD_PD * DMD_component
 DMD_PD
@@ -103,12 +109,8 @@ A second manufacturing cost driver are the tooling costs. Authors note an decrea
 First, the example EAD is loaded and the tooling costs `C_tooling` for each process variant are defined.
 
 ```{r}
-EAD <- smallEAD
-EAD$DEMAND <- c(0,50,100,30)
-DMM_PD_PrD<-EAD$DMM$PD_PrD
-DSM_PrD<-EAD$DSM$PrD
-DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
-remove(EAD)
+DEMAND <- c(0,50,100,30)
+DMD_component <- as.numeric(DEMAND %*% P_PD)
 C_tooling<-matrix(c(5,0,0,0,
                     0,12,14,0,
                     0,10,0,0,
@@ -118,7 +120,7 @@ C_tooling<-matrix(c(5,0,0,0,
 It is assumed that tools are required for each combination of component and process so-called process variants. The process variants are calculated as follow where `PVM` holds information which components (rows) go into which processes (columns).
 
 ```{r}
-PVM <- DMM_PD_PrD + DMM_PD_PrD %*% DSM_PrD
+PVM <- PD_PrD + PD_PrD %*% PrD
 PVM
 ```
 

@@ -20,7 +20,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Component Overdesign
 
-This vignette visulazes implementation of complexity cost drivers in product development as reported in @Meerschmidt.2024 . The following chunk loads the example EAD and represents the initial domain mapping matrix $DMM_{FD,PD}$.
+This vignette visualizes implementation of complexity cost drivers in product development as reported in @Meerschmidt.2024 . The following chunk loads the example EAD and represents the initial domain mapping matrix $DMM_{FD,PD}$.
 
 ```{r}
 library(EAD)
@@ -40,7 +40,7 @@ res <- data.frame(SDC_N=NA,
 ## calculate values for initial design
 costs_inital<-clc_PCB(EAD$P$RD,
                    DMD = EAD$DEMAND,
-                   RC_direct = EAD$RC$direct,
+                   RC_direct = EAD$RC$var_d,
                    RC_var = rep(0,NCOL(EAD$P$RD)))
 res[1,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
            sum(costs_inital$PC_B * EAD$DEMAND),
@@ -69,7 +69,7 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
 
 See the results:
 
-```{r}
+```{r eval=FALSE}
 res
 ```
 
@@ -108,7 +108,7 @@ Print the results
 res
 ```
 
-## Material Costs of Overdesigned COmponents
+## Material Costs of Overdesigned Components
 
 However, @Eynan.1996 note that for two components $PD_{1}$ and $PD_{2}$ replaced by an overdesigned one$PD_{*}$ the following equation is true
 
@@ -156,10 +156,10 @@ If firms decide to restrict the free combination of functional requirements and,
 In order to calculate this driver within the framework the following procedure of `development_costs()` function is performed.
 
 ```{r}
-require(EAD)
-## load the example
-EAD <- smallEAD
-P_PD <- EAD$P$PD
+P_PD <- matrix(c(1,0,0,1,
+                 0,1,1,0,
+                 0,0,1,1,
+                 0,1,2,1),byrow=T,nrow=4)
 DEMAND<-c(0,50,100,30)
 PDC_fix<-c(700,389,1011,700)
 R_dvl<-0.3

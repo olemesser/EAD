@@ -17,14 +17,14 @@ update_EAD<-function(EAD){
   EAD$P$RD <- EAD$P$PrD %*% ((  EAD$DMM$PrD_RD %*%  EAD$DSM$RD) +  EAD$DMM$PrD_RD) + EAD$P$FD %*%  EAD$DMM$FD_RD + EAD$P$PD  %*%  EAD$DMM$PD_RD
 
   #### Update Measures ####
-  DSM_PD_keep <- !(colSums(smallEAD$DSM$PD)==0 & rowSums(smallEAD$DSM$PD)==0 & colSums(smallEAD$DMM$FD_PD)==0)
-  DSM_PrD_keep <- !(colSums(smallEAD$DSM$PrD)==0 & rowSums(smallEAD$DSM$PrD)==0 & colSums(smallEAD$DMM$PD_PrD)==0)
-  DSM_RD_keep <- !(colSums(smallEAD$DSM$RD)==0 & rowSums(smallEAD$DSM$RD)==0 & colSums(smallEAD$DMM$PrD_RD)==0)
+  DSM_PD_keep <- !(colSums(EAD$DSM$PD)==0 & rowSums(EAD$DSM$PD)==0 & colSums(EAD$DMM$FD_PD)==0)
+  DSM_PrD_keep <- !(colSums(EAD$DSM$PrD)==0 & rowSums(EAD$DSM$PrD)==0 & colSums(EAD$DMM$PD_PrD)==0)
+  DSM_RD_keep <- !(colSums(EAD$DSM$RD)==0 & rowSums(EAD$DSM$RD)==0 & colSums(EAD$DMM$PrD_RD)==0)
 
 
-  EAD$measures <- list(SYSTEM = list(DMD_cv = sd(EAD$DEMAND[smallEAD$DEMAND>0])/mean(EAD$DEMAND[smallEAD$DEMAND>0]),
-                                 DMD_T10 = measure_TOP10(EAD$DEMAND[smallEAD$DEMAND>0]),
-                                 Q_VAR = sd(log(EAD$DEMAND[smallEAD$DEMAND>0])),
+  EAD$measures <- list(SYSTEM = list(DMD_cv = sd(EAD$DEMAND[EAD$DEMAND>0])/mean(EAD$DEMAND[EAD$DEMAND>0]),
+                                 DMD_T10 = measure_TOP10(EAD$DEMAND[EAD$DEMAND>0]),
+                                 Q_VAR = sd(log(EAD$DEMAND[EAD$DEMAND>0])),
                                  SDC = list(FD_PD=measure_designComplexity(EAD$DMM$FD_PD,norm = F),
                                             FD_PrD=NA,
                                             FD_RD=NA,
@@ -104,15 +104,15 @@ update_EAD<-function(EAD){
                                            PrD = NA, #measure_OV(EAD$P$PrD[EAD$DEMAND>0,,drop=F]),
                                            RD = NA), #measure_OV(EAD$P$RD[EAD$DEMAND>0,,drop=F])),
                                  # RES_COR = NA,
-                                 D = list(FD = NA, #measure_diversificationINDEX(EAD$P$FD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[smallEAD$DEMAND>0]),
-                                          PD = NA, #measure_diversificationINDEX(EAD$P$PD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[smallEAD$DEMAND>0]),
-                                          PrD = NA, #measure_diversificationINDEX(EAD$P$PrD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[smallEAD$DEMAND>0]),
-                                          RD = NA), #measure_diversificationINDEX(EAD$P$RD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[smallEAD$DEMAND>0])),
+                                 D = list(FD = NA, #measure_diversificationINDEX(EAD$P$FD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[EAD$DEMAND>0]),
+                                          PD = NA, #measure_diversificationINDEX(EAD$P$PD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[EAD$DEMAND>0]),
+                                          PrD = NA, #measure_diversificationINDEX(EAD$P$PrD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[EAD$DEMAND>0]),
+                                          RD = NA), #measure_diversificationINDEX(EAD$P$RD[EAD$DEMAND>0,,drop=F],DMD = EAD$DEMAND[EAD$DEMAND>0])),
                                  N_FD = sum(colSums(EAD$P$FD[EAD$DEMAND>0,,drop=F])>0),
                                  N_PD = sum(colSums(EAD$P$PD[EAD$DEMAND>0,,drop=F])>0),
                                  N_PrD = sum(colSums(EAD$P$PrD[EAD$DEMAND>0,,drop=F])>0),
                                  N_RD = sum(colSums(EAD$P$RD[EAD$DEMAND>0,,drop=F])>0),
-                                 N_PROD = sum(EAD$DEMAND[smallEAD$DEMAND>0]>0),
+                                 N_PROD = sum(EAD$DEMAND[EAD$DEMAND>0]>0),
                                  TSS = sum(colSums(EAD$P$FD[EAD$DEMAND>0,,drop=F])>0) + sum(colSums(EAD$P$PD[EAD$DEMAND>0,,drop=F])>0) + sum(colSums(EAD$P$PrD[EAD$DEMAND>0,,drop=F])>0) + sum(colSums(EAD$P$RD[EAD$DEMAND>0,,drop=F])>0),
                                  RC = list(RC_vari_top10 = measure_TOP10(EAD$RC$var_i),
                                            RC_vard_top10 = measure_TOP10(EAD$RC$var_d),
