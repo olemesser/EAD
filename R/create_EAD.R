@@ -125,9 +125,10 @@ crt_EAD<-function(DOE,
           measures[['SYSTEM']][['RC']]<-list(RC_vari_top10 = RC$RC_var$RC_i$top10,
                                              RC_vard_top10 = RC$RC_var$RC_d$top10,
                                              RC_fixi_top10 = RC$RC_fix$RC_i$top10,
-                                             RC_fixd_top10 = RC$RC_fix$RC_di$top10,
+                                             RC_fixd_top10 = RC$RC_fix$RC_d$top10,
                                              r_fix = RC$r_fix,
-                                             r_in = RC$r_in)
+                                             r_in = RC$r_in,
+                                             TC = sum(RC$RC_var$RC_d$RC, RC$RC_fix$RC_d$RC,RC$RC_var$RC_i$RC,RC$RC_fix$RC_i$RC))
           RC<-list(var_d = RC$RC_var$RC_d$RC,
                    fix_d = RC$RC_fix$RC_d$RC,
                    var_i=RC$RC_var$RC_i$RC,
