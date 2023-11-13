@@ -247,11 +247,11 @@ simulate_costEffects_MC<-function(DOE,
                                FUN = function(DOE, ...) {
                                  res<-list()
                                  res<-with_timeout(simulate_costEffects(DOE[1,]),timeout = time_limit)
-                                 #if(res$message=="error"){
-                                #   res<-list()
-                                # }else if(res$message=="success"){
-                                #   res<-res$res
-                                # }
+                                if(res$message=="error"){
+                                  res<-list()
+                                }else if(res$message=="success"){
+                                  res<-res$res
+                                }
                                  gc()
                                  return(res)
                                }, packages = c("EAD",
