@@ -40,8 +40,10 @@ res <- data.frame(SDC_N=NA,
 ## calculate values for initial design
 costs_inital<-clc_PCB(EAD$P$RD,
                    DMD = EAD$DEMAND,
-                   RC_direct = EAD$RC$var_d,
-                   RC_var = rep(0,NCOL(EAD$P$RD)))
+                   RC_var_i = EAD$RC$var_i,
+                   RC_var_d = EAD$RC$var_d,
+                   RC_fix_d = EAD$RC$fix_d,
+                   RC_fix_i = EAD$RC$fix_i)
 res[1,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
            sum(costs_inital$PC_B * EAD$DEMAND),
            EAD$measures$SYSTEM$N_PD)
@@ -61,7 +63,9 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
            sum(clc_PCB(EAD$P$RD,
                    DMD = EAD$DEMAND,
                    RCU_direct = costs_inital$RCU_direct,
-                   RC_var = rep(0,NCOL(EAD$P$RD)))$PC_B * EAD$DEMAND),
+                   RCU_indirect = costs_inital$RCU_indirect,
+                   RC_fix_d = EAD$RC$fix_d,
+                   RC_fix_i = EAD$RC$fix_i)$PC_B * EAD$DEMAND),
            EAD$measures$SYSTEM$N_PD)
   i <- i+1
 }
@@ -93,10 +97,12 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
   message(paste0("\nDMM_PD_PrD at step S",i-1))
   print(EAD$DMM$FD_PD)
   res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
-           sum(clc_PCB(EAD$P$RD,
-                   DMD = EAD$DEMAND,
-                   RCU_direct = costs_inital$RCU_direct,
-                   RC_var = rep(0,NCOL(EAD$P$RD)))$PC_B * EAD$DEMAND),
+              sum(clc_PCB(EAD$P$RD,
+                               DMD = EAD$DEMAND,
+                               RCU_direct = costs_inital$RCU_direct,
+                               RCU_indirect = costs_inital$RCU_indirect,
+                               RC_fix_d = EAD$RC$fix_d,
+                               RC_fix_i = EAD$RC$fix_i)$PC_B * EAD$DEMAND),
            EAD$measures$SYSTEM$N_PD)
   i <- i+1
 }
@@ -128,10 +134,12 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
   message(paste0("\nDMM_PD_PrD at step S",i-1))
   print(EAD$DMM$PD_PrD)
   res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
-           sum(clc_PCB(EAD$P$RD,
+         sum(clc_PCB(EAD$P$RD,
                    DMD = EAD$DEMAND,
                    RCU_direct = costs_inital$RCU_direct,
-                   RC_var = rep(0,NCOL(EAD$P$RD)))$PC_B * EAD$DEMAND),
+                   RCU_indirect = costs_inital$RCU_indirect,
+                   RC_fix_d = EAD$RC$fix_d,
+                   RC_fix_i = EAD$RC$fix_i)$PC_B * EAD$DEMAND),
            EAD$measures$SYSTEM$N_PD)
   i <- i+1
 }
