@@ -68,9 +68,9 @@ Third, define a design of experiment (DoE). For each
 
 ```{r doe, eval=T, include=TRUE}
  DOE<-expand_grid(N_FR = 8, # number of functional requirements
-                   N_DD = 14, # number of physical domain elements
-                   N_PrD = 30, # number of process domain elements
-                   N_RD = 60, # number of resource domain elements
+                   N_DD = 8, # number of physical domain elements
+                   N_PrD = 8, # number of process domain elements
+                   N_RD = 10, # number of resource domain elements
                    DNS = list(c(0.05,0.5)), # density of the functional product mix
                    method_FD = "DNS", # method to create the product mix
                    N_PROD = list(c(20,25)), # number of products
@@ -80,7 +80,7 @@ Third, define a design of experiment (DoE). For each
                                 PD_PrD=list(c(0,0.05)),
                                 PrD_RD=list(c(0,0.05))), # desired system design complexity
                    uB_DMM = 10,
-                   allowZero = T,
+                   allowZero = F,
                    ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
                    DSM_param=expand_grid(PD=list(c(0,0.1,0,1)),
                                        PrD=list(c(0,0,0,1)),

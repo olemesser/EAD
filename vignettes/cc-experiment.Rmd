@@ -27,7 +27,7 @@ This documentation explains how to use this framework to run complexity cost exp
     library(EAD)
     set.seed(1234)
     EAD <- smallEAD
-    for(i in 1:(NCOL(EAD$DMM$FD_PD) - 1)){
+    for(i in 1:3){
       EAD <- overdesign_EAD(EAD,bounds=c(1,1),method='random')[[1]]
       print(EAD$DMM$FD_PD)
     }
@@ -39,7 +39,7 @@ This documentation explains how to use this framework to run complexity cost exp
     ```{r}
     set.seed(1234)
     EAD <- smallEAD
-    for(i in 1:(NCOL(EAD$DMM$FD_PD) - 1)){
+    for(i in 1:3){
       EAD <- overdesign_EAD(EAD,bounds=c(1,1),method='optimized')[[1]]
       print(EAD$DMM$FD_PD)
     }

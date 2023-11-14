@@ -433,8 +433,8 @@ clc_initialCosts <- function(EAD,
   if(sum(R_hold,R_order,R_setup)>1) stop("R_hold + R_order + R_setup > 1. Please reduce at least one of these values.")
 
   costs <- clc_domainCosts(EAD)
-  TC_var <- sum(EAD$RC$direct+EAD$RC$var)
-  TC_fix <- sum(EAD$RC$fix)
+  TC_var <- sum(EAD$RC$var_i+EAD$RC$var_d)
+  TC_fix <- sum(EAD$RC$fix_d + EAD$RC$fix_i)
   out<-list()
   #### Fixed Cost Drivers ####
     ## calculate the initial development costs ##
