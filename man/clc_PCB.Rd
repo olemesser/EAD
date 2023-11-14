@@ -7,10 +7,11 @@
 clc_PCB(
   RES_CONS_PAT,
   DMD = NULL,
-  RC_direct = NULL,
-  RC_var = NULL,
-  RC_fix = NULL,
-  RCU = NULL,
+  RC_var_d = NULL,
+  RC_var_i = NULL,
+  RC_fix_i = NULL,
+  RC_fix_d = NULL,
+  RCU_indirect = NULL,
   RCU_direct = NULL
 )
 }
@@ -19,50 +20,57 @@ clc_PCB(
 
 \item{DMD}{A demand vector. If no demand vector is supplied, each product is assumed to have a demand of one.}
 
-\item{RC_var}{A resource cost vector holding the variable costs.}
+\item{RC_var_d}{A resource cost vector holding the direct variable costs.}
 
-\item{RC_fix}{A resource cost vector holding the fixed costs.}
+\item{RC_var_i}{A resource cost vector holding the indirect variable costs.}
 
-\item{RCU}{A vector holding the resource costs per unit for the variable indirect costs.}
+\item{RC_fix_i}{A resource cost vector holding the indirect fixed costs.}
+
+\item{RC_fix_d}{A resource cost vector holding the direct fixed costs.}
+
+\item{RCU_indirect}{A vector holding the resource costs per unit for the variable indirect costs.}
 
 \item{RCU_direct}{A vector holding the resource costs per unit for the variable direct costs.}
 }
 \value{
-Calculates the true product costs (PC_B) and returns the resource costs per unit (RCU)
+Calculates the true product costs (PC_B) and returns the resource costs per unit (RCU_indirect)
 }
 \description{
 This function calculates the benchmark (true) product costs (PC_B).
 There are two options to use this function:
 \describe{
- \item{\code{!is.null(RC_var) & is.null(RCU)}}{This returns the product costs for a given EAD. \code{sum(PC_B*DMD)==TC}
+ \item{\code{!is.null(RC_var) & is.null(RCU_indirect)}}{This returns the product costs for a given EAD. \code{sum(PC_B*DMD)==TC}
  See the the first example for details.}
- \item{\code{is.null(RC_var) & !is.null(RCU)}}{This returns the product costs for an EAD with an reduced product mix. \code{sum(PC_B*DMD)<TC}
+ \item{\code{is.null(RC_var) & !is.null(RCU_indirect)}}{This returns the product costs for an EAD with an reduced product mix. \code{sum(PC_B*DMD)<TC}
  See the second example for details.}
 }
 }
 \examples{
 ### Calculate product costs for the designed EAD ###
-data("exampleEAD")
-TC =  sum(exampleEAD[[1]][[1]]$RC$fix +
-          exampleEAD[[1]][[1]]$RC$var +
-          exampleEAD[[1]][[1]]$RC$direct)
+data("smallEAD")
+TC =  sum(smallEAD[[1]]$RC$var_d +
+          smallEAD[[1]]$RC$var_i +
+          smallEAD[[1]]$RC$fix_d +
+          smallEAD[[1]]$RC$fix_i)
 
-costs<- clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
-                DMD = exampleEAD[[1]][[1]]$DEMAND,
-                RC_direct = exampleEAD[[1]][[1]]$RC$direct,
-                RC_var = exampleEAD[[1]][[1]]$RC$var,
-                RC_fix = exampleEAD[[1]][[1]]$RC$fix)
+costs<- clc_PCB(RES_CONS_PAT = smallEAD[[1]]$P$RD,
+                DMD = smallEAD[[1]]$DEMAND,
+                RC_var_d = smallEAD[[1]]$RC$var_d,
+                RC_var_i = smallEAD[[1]]$RC$var_i ,
+                RC_fix_i = smallEAD[[1]]$RC$fix_i,
+                RC_fix_d = smallEAD[[1]]$RC$fix_d)
 
 costs$PC_B
 
 ### Calculate product costs for an EAD with an reduced product mix
 ## lets assume we drop the first ten products
 
-DMD<-exampleEAD[[1]][[1]]$DEMAND
+DMD<-smallEAD[[1]]$DEMAND
 DMD[1:10]<-0
-costs<-clc_PCB(RES_CONS_PAT = exampleEAD[[1]][[1]]$P$RD,
+costs<-clc_PCB(RES_CONS_PAT = smallEAD[[1]]$P$RD,
                DMD = DMD,
-               RC_direct = exampleEAD[[1]][[1]]$RC$direct,
-               RC_fix = exampleEAD[[1]][[1]]$RC$fix,
-               RCU=costs$RCU)
+               RC_fix_d = smallEAD[[1]]$RC$fix_d
+               RC_fix_i = smallEAD[[1]]$RC$fix,
+               RCU_indirect = costs$RCU_indirect,
+               RCU_direct = costs$RC_direct)
 }

@@ -502,8 +502,9 @@ clc_variableComponentCosts <- function(EAD,RCU){
   P_RD <- P_PrD %*% ((EAD$DMM$PrD_RD %*% EAD$DSM$RD) + EAD$DMM$PrD_RD)
   costs <- clc_PCB(RES_CONS_PAT = P_RD,
                   RCU_direct = RCU,
-                  RCU = rep(0,length(RCU)),
-                  RC_fix = rep(0,length(RCU)))
+                  RCU_indirect = rep(0,length(RCU)),
+                  RC_fix_i = rep(0,length(RCU)),
+                  RC_fix_d = rep(0,length(RCU)))
 
   PDUC_var <- costs$PC_direct
   return(list(var = PDUC_var,

@@ -36,9 +36,11 @@ simulate_costEffects<-function(DOE){
         ## product costs and resource unit costs ##
         nonCC <- clc_PCB(EAD$P$RD,
                          DMD=EAD$DEMAND,
-                         RC_direct = EAD$RC$direct,
-                         RC_var = EAD$RC$var_d + EAD$RC$var_i,
-                         RC_fix = EAD$RC$fix_d + EAD$RC$fix_i)
+                         RC_var_d = EAD$RC$var_d + EAD$RC$var_i,
+                         RC_fix_d = EAD$RC$fix_d + EAD$RC$fix_i,
+                         RC_fix_i = rep(0,length(EAD$RC$var_d)),
+                         RC_var_i = rep(0,length(EAD$RC$var_d)))
+
         ## component costs ##
         PDUC_noOD <- clc_variableComponentCosts(EAD = EAD,
                                            RCU = nonCC$RCU_direct)
@@ -151,9 +153,10 @@ simulate_costEffects<-function(DOE){
                                 ### 3.9 Calculate non complexity costs ###
                                 nonCC_scenario <- clc_PCB(EAD$P$RD,
                                                           DMD = DEMAND_temp,
-                                                          RCU = nonCC$RCU,
+                                                          RCU_indirect = nonCC$RCU_indirect,
                                                           RCU_direct = nonCC$RCU_direct,
-                                                          RC_fix = EAD$RC$fix_d + EAD$RC$fix_i)
+                                                          RC_fix_d = EAD$RC$fix_d,
+                                                          RC_fix_i = EAD$RC$fix_i)
 
                                 out['TC_NC'] <- nonCC_scenario$TC - out$dvl_materialCosts
                                 out['TC_NC_var'] <- nonCC_scenario$TC_var - out$dvl_materialCosts

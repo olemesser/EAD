@@ -126,8 +126,10 @@ The following chunk calculates the product benchmark costs for the given design.
 # variable indirect costs and the direct costs which are always variable are summed up
 costs<- clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                 DMD = EAD[[1]][[1]]$DEMAND,
-                RC_var = EAD[[1]][[1]]$RC$var_i + EAD[[1]][[1]]$RC$var_d,
-                RC_fix = EAD[[1]][[1]]$RC$fix_i + EAD[[1]][[1]]$RC$fix_d)
+                RC_var_i = EAD[[1]][[1]]$RC$var_i,
+                RC_var_d = EAD[[1]][[1]]$RC$var_d,
+                RC_fix_i = EAD[[1]][[1]]$RC$fix_i,
+                RC_fix_d = EAD[[1]][[1]]$RC$fix_d)
 
 ## the product costs multiplied by the demand equals the total costs
 sum(costs$PC_B*EAD[[1]][[1]]$DEMAND)
@@ -156,8 +158,10 @@ DMD<-EAD[[1]][[1]]$DEMAND
 DMD[1:10]<-0
 costs_reduced<-clc_PCB(RES_CONS_PAT = EAD[[1]][[1]]$P$RD,
                DMD = DMD,
-               RC_fix = EAD[[1]][[1]]$RC$fix_i +  EAD[[1]][[1]]$RC$fix_d,
-               RCU = costs$RCU)
+               RC_fix_i = EAD[[1]][[1]]$RC$fix_i,
+               RC_fix_d = EAD[[1]][[1]]$RC$fix_d,
+               RCU_indirect = costs$RCU_indirect,
+               RCU_direct = costs$RCU_direct)
 
 PC_B_reduced<-costs_reduced$PC_B
 
@@ -166,10 +170,10 @@ summary<- data.frame(DMD_f = EAD[[1]][[1]]$DEMAND,
                    DMD_r = DMD,
                    PC_B_f = costs$PC_B,
                    PC_B_r = costs_reduced$PC_B,
-                   PC_var_f = costs$PC_B_var,
-                   PC_var_r = costs_reduced$PC_B_var,
-                   PC_fix_f = costs$PC_B_fixed,
-                   PC_fix_r = costs_reduced$PC_B_fixed)
+                   PC_var_f = costs$PC_B_var_d + costs$PC_B_var_i,
+                   PC_var_r = costs_reduced$PC_B_var_d + costs_reduced$PC_B_var_i,
+                   PC_fix_f = costs$PC_B_fix_d + costs$PC_B_fix_i,
+                   PC_fix_r = costs_reduced$PC_B_fix_d + costs_reduced$PC_B_fix_i)
 
 summary
 ```

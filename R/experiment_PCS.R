@@ -3,6 +3,43 @@ experiment_PCS<-function(DOE,
                                               method = c("random","correl-random","PU","DC-0.2")),
                          ACP_productLevel = c(5)
                          ){
+  #### Input for Testing ####
+  require(EAD)
+  require(tidyr)
+  i<-1
+  DOE<-expand_grid(N_FR = list(c(10)), # number of functional requirements
+                   N_DD = list(c(10)), # number of physical domain elements
+                   N_PrD = list(c(15)), # number of process domain elements
+                   N_RD = list(c(20)), # number of resource domain elements
+                   DNS = list(c(0.07,0.5)), #density within the DSM_FD matrix. Creates product mixes where not all products are included
+                   N_PROD = list(c(50,100)), # number of products
+                   method_FD = "DNS", # method for generating the product mix
+                   prod_step_width = 10,
+                   TOTAL_DEMAND = list(c(100,12300)), # total demand
+                   Q_VAR = list(c(0,3)), # demand heterogeneity
+                   DMM_PAR = expand_grid(FD_PD=list(c(0,0.08)),
+                                         PD_PrD=list(c(0,0.1)),
+                                         PrD_RD=list(c(0,0.1))), # desired system design complexity
+                   uB_DMM = 1,
+                   allowZero = F,
+                   ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+                   DSM_param=expand_grid(PD=list(c(0,0.05,0,1)),
+                                         PrD=list(c(0,0.05,0,1)),
+                                         RD=list(c(0,0.05,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+                   DSM_method='modular',
+                   ub_DSM = 1,
+                   TC = 10^6, # total costs
+                   r_in = list(c(0,0.9)),
+                   r_fix = list(c(0,1)), # proportion of fixed costs on total costs
+                   RC_sdlog = list(c(0,1.5)), # coefficient of variation for resource cost distribution
+                   N_RUN = 1:1 # number of runs
+  )
+  cs_DOE = expand.grid(ACP=c(5,10),
+                       method = c("random","correl-random","PU","DC-0.2"))
+  ACP_productLevel = c(5)
+  #### End INput for Testing ####
+
+
   suppressWarnings(suppressMessages(require(EAD)))
   suppressWarnings(suppressMessages(require(data.table)))
   df<-lapply(1:NROW(DOE), function(i){
@@ -15,10 +52,11 @@ experiment_PCS<-function(DOE,
       costs <- clc_PCB(
                         RES_CONS_PAT = EAD[[1]]$P$RD,
                         DMD = EAD[[1]]$DEMAND,
-                        RC_fix =  EAD[[1]]$RC$fix,
-                        RC_direct = EAD[[1]]$RC$direct,
-                        RC_var = EAD[[1]]$RC$var)
-      RCU<-costs$RCU
+                        RC_var_i = EAD[[1]]$RC$var_i,
+                        RC_var_d = EAD[[1]]$RC$var_d,
+                        RC_fix_i =  EAD[[1]]$RC$fix_i,
+                        RC_fix_d =  EAD[[1]]$RC$fix_d)
+      RCU_indirect<-costs$RCU_indirect
       TRC<-costs$TRC
       RCU_direct <- costs$RCU_direct
 
@@ -67,11 +105,13 @@ experiment_PCS<-function(DOE,
         benchmark <- clc_PCB(
                              RES_CONS_PAT = EAD[[1]]$P$RD[,resources_to_keep],
                              DMD = DMD_zero,
-                             RCU = RCU[resources_to_keep],
-                             RC_fix =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep],
+                             RCU_indirect = RCU_indirect[resources_to_keep],
+                             RC_fix_i =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
+                             RC_fix_d =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_d)[resources_to_keep],
                              RCU_direct = costs$RCU_direct[resources_to_keep])
         PC_B <- benchmark$PC_B
-        PC_direct <- benchmark$PC_direct
+        PC_direct <- benchmark$PC_B_var_d + benchmark$PC_B_fix_d
+
         # # check fixed_costs
         # sum(ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep]) == sum(benchmark$PC_B_fixed *DMD_zero)
         # ##check variable costs
@@ -96,12 +136,13 @@ experiment_PCS<-function(DOE,
                                          HIC_n.PD = measures_system$HIC_n.PD,
                                          HIC_n.PrD = measures_system$HIC_n.PrD,
                                          HIC_n.RD = measures_system$HIC_n.RD,
-                                         RC_cor.indirect = measures_system$RC.cor_indirect,
+                                         D_PD = measure_diversificationINDEX(P_RD[,resources_to_keep], DMD = DMD),
+                                         D_PD_noDemand = measure_diversificationINDEX(P_RD[,resources_to_keep]),
                                          r_indirect = sum(benchmark$PC_B_indirect*DMD_zero) /sum(PC_B*DMD_zero),
                                          TC = sum(benchmark$PC_B * DMD_zero),
-                                         RC_indirect = sum(benchmark$PC_B_indirect*DMD_zero),
-                                         TC_fix = sum(benchmark$PC_B_fixed * DMD_zero),
-                                         TC_var = sum(benchmark$PC_B_var * DMD_zero))
+                                         TC_indirect = sum(benchmark$PC_B_indirect * DMD_zero),
+                                         TC_fix = sum(benchmark$PC_B_fix_i + benchmark$PC_B_fix_d * DMD_zero),
+                                         TC_var = sum(benchmark$PC_B_var_i + benchmark$PC_B_var_d * DMD_zero))
 
         #### Calculate Reported Costs #####
         reported<-lapply(1:NROW(cs_DOE),function(c){

@@ -89,8 +89,8 @@ DOE<-expand_grid(N_FR = list(c(5)), # number of functional requirements
                  DSM_method='modular',
                  ub_DSM = 5,
                  TC = 10^6, # total costs
-                 r_in = list(c(0.1,0.5)),
-                 r_fix = list(c(1,1)), # proportion of fixed costs on total indirect costs
+                 r_in = list(c(0,0)),
+                 r_fix = list(c(0,0.5)), # proportion of fixed costs on total indirect costs
                  RC_sdlog = list(c(0.1,3)), # coefficient of variation for resource cost distribution
                  bounds = list(c(0.1,1)), # bounds for the increase in material and development costs caused by overdesign
                  method_overdesign = "optimized", # method used for the overdesign
@@ -116,7 +116,7 @@ The numerical experiment is started by calling:
 ```{r include=TRUE, eval=FALSE}
 res <- simulate_costEffects_MC(DOE,
                                NUMB_CORES=4,
-                               ehNodes = "remove")
+                               ehNodes = "pass")
 ```
 
 ```{r include=FALSE, eval=TRUE}
