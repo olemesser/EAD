@@ -22,18 +22,32 @@
 #'
 #' EAD <- smallEAD
 #' overdesign_EAD(EAD,bounds=c(1,1),method='random')
-overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
+overdesign_EAD<-function(EAD,
+                         bounds=c(1,1),
+                         method=c('random','optimized'),
+                         force = list(el_substitute = NULL,
+                                      el_replaced_by = NULL)){
   require(EAD)
   #### Testing ####
-  # EAD <- smallEAD
+  # EAD <- sampleEAD
   # EAD$measures$SYSTEM$SDC_n$FD_PD
   # EAD$measures$SYSTEM$SDC$FD_PD
-  # el_substitute<-2
-  # el_replaced_by<-3
-  # bounds=c(0.5,0.5)
+  # force = list(el_substitute = 2,
+  #              el_replaced_by = 3)
+  # force = list(el_substitute = 1,
+  #              el_replaced_by = 4)
   # bounds=c(1,1)
-  # method <- "optimized"
+  # method <- "random"
   #### End Testing ####
+
+  if(!is.null(unlist(force))){
+    el_substitute <- force$el_substitute
+    el_replaced_by <- force$el_replaced_by
+  }else{
+    el_substitute <- NULL
+    el_replaced_by <- NULL
+  }
+
 
   if(length(method)>1) method <- method[1]
 
@@ -43,19 +57,20 @@ overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
     if(length(available_components)<2) stop("Not enough elements for overdesign available.")
 
     if(method == "random"){
-       el_substitute <- sample(available_components,1)
+       if(is.null(el_substitute))  el_substitute <- sample(available_components,1)
        replacement_candidates <- setdiff(available_components,el_substitute)
        neighbors <- as.matrix(dist(t(EAD$DMM$FD_PD)))
        neighbors <- neighbors[el_substitute,replacement_candidates,drop=F]
-       el_replaced_by <- replacement_candidates[which.min(neighbors)]
+       if(is.null(el_replaced_by)) el_replaced_by <- replacement_candidates[which.min(neighbors)]
     }else if(method == "optimized"){
       DMD_component <- as.numeric(EAD$DEMAND %*% EAD$P$PD)
-      el_substitute <- which.min(ifelse(DMD_component==0,NA,DMD_component))
+      if(is.null(el_substitute)) el_substitute <- which.min(ifelse(DMD_component==0,NA,DMD_component))
       replacement_candidates <- setdiff(available_components,el_substitute)
       ## check if there is a component which overfills the requirements
       overfill <- EAD$DMM$FD_PD[,el_substitute] %*% EAD$DMM$FD_PD[,replacement_candidates,drop=F]
       overfill <- as.numeric(overfill[1,])
-      el_replaced_by <- replacement_candidates[which(overfill>=sum(EAD$DMM$FD_PD[,el_substitute]))]
+      if(is.null(el_replaced_by)) el_replaced_by <- replacement_candidates[which(overfill>=sum(EAD$DMM$FD_PD[,el_substitute]))]
+
       if(length(el_replaced_by)>0){
         el_replaced_by <-  el_replaced_by[which.min(costs$var$PD[el_replaced_by])]
       }else{
@@ -123,7 +138,7 @@ overdesign_EAD<-function(EAD,bounds=c(1,1),method=c('random','optimized')){
     #### Update EAD (Design & Costs) ####
     EAD <- suppressWarnings(update_EAD(EAD))
     costs_new <- clc_domainCosts(EAD)
-    EAD_temp$RC$var_d <- costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
+    #EAD_temp$RC$var_d <- costs$var$RD * colSums(EAD$P$RD * EAD$DEMAND)
 
     return(list(EAD = EAD,
                 overdesign = list(substitute = el_substitute,
@@ -246,11 +261,11 @@ partmgmtCosts <- function(P_PD,DEMAND,C_PA){
 
 clc_domainCosts<-function(EAD){
   #### Testing ####
-  # EAD <- smallEAD
+  # EAD <- sampleEAD
   #### End Testing ####
 
   TRC <- colSums(EAD$P$RD * EAD$DEMAND)
-  RCU_fix <- EAD$RC$fix_d + EAD$RC$fix_i / TRC
+  RCU_fix <- (EAD$RC$fix_d + EAD$RC$fix_i) / TRC
   RCU_var <- ( EAD$RC$var_d + EAD$RC$var_i) / TRC
 
   #### Trace costs ####
@@ -267,7 +282,7 @@ clc_domainCosts<-function(EAD){
   return(list(fix = list(FD = NA,
                                PD = PDC_fix,
                                PrD = PrDC_fix,
-                               RD = EAD$RC$fix),
+                               RD = EAD$RC$fix_i + EAD$RC$fix_d),
               var = list(FD = NA,
                                PD = RCU_PD_var,
                                PrD = RCU_PrD_var,

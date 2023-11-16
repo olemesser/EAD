@@ -4,7 +4,12 @@
 \alias{overdesign_EAD}
 \title{Substitutes two components by an overdesigned one}
 \usage{
-overdesign_EAD(EAD, bounds = c(1, 1), method = c("random", "optimized"))
+overdesign_EAD(
+  EAD,
+  bounds = c(1, 1),
+  method = c("random", "optimized"),
+  force = list(el_substitute = NULL, el_replaced_by = NULL)
+)
 }
 \arguments{
 \item{EAD}{An EAD object created via \link[EAD]{crt_EAD_MC}.}

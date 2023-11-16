@@ -10,7 +10,7 @@ crt_EAD<-function(DOE,
   #                  N_PrD = list(c(36,52)), # number of process domain elements
   #                  N_RD = list(c(72,104)), # number of resource domain elements
   #                  DNS = list(c(0.07,0.5)), #density within the DSM_FD matrix. Creates product mixes where not all products are included
-  #                  N_PROD = list(c(50,100)), # number of products
+  #                  N_PROD = list(c(50,50)), # number of products
   #                  method_FD = "DNS", # method for generating the product mix
   #                  TOTAL_DEMAND = list(c(100,12300)), # total demand
   #                  Q_VAR = list(c(0,3)), # demand heterogeneity
@@ -38,6 +38,7 @@ crt_EAD<-function(DOE,
 
   #### For each DOE Setting ####
   EAD<-lapply(1:NROW(DOE),function(x){
+    ## initialize values ##
     uB_DMM <- DOE$uB_DMM[x]
     ub_DSM <- DOE$ub_DSM[x]
     allowZero <- DOE$allowZero[x]
@@ -46,12 +47,15 @@ crt_EAD<-function(DOE,
     DSM<-list()
     message<-list()
     P<-list()
-    DOE$N_FR[x]<-ifelse(length(DOE$N_FR[x][[1]])>1,sample(DOE$N_FR[[x]][1]:DOE$N_FR[[x]][2],1),DOE$N_FR[[x]][1])
-    DOE$N_DD[x]<-ifelse(length(DOE$N_DD[x][[1]])>1,sample(DOE$N_DD[[x]][1]:DOE$N_DD[[x]][2],1),DOE$N_DD[[x]][1])
-    DOE$N_PrD[x]<-ifelse(length(DOE$N_PrD[x][[1]])>1,sample(DOE$N_PrD[[x]][1]:DOE$N_PrD[[x]][2],1),DOE$N_PrD[[x]][1])
-    DOE$N_RD[x]<-ifelse(length(DOE$N_RD[x][[1]])>1,sample(DOE$N_RD[[x]][1]:DOE$N_RD[[x]][2],1),DOE$N_RD[[x]][1])
-    dmd_candidate <- ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])
-    DOE$N_PROD[x] <- ifelse(length(DOE$N_PROD[x][[1]])>1,sample(DOE$N_PROD[[x]][1]:DOE$N_PROD[[x]][2],1),DOE$N_PROD[[x]][1])
+
+    #### 0 Initial sampling of final DOE values ####
+    DOE$N_FR[x] <- sampleDOE(DOE$N_FR[x][[1]])
+    DOE$N_DD[x] <- sampleDOE(DOE$N_DD[x][[1]])
+    DOE$N_PrD[x] <- sampleDOE(DOE$N_PrD[x][[1]])
+    DOE$N_RD[x] <- sampleDOE(DOE$N_RD[x][[1]])
+    DOE$N_PROD[x] <- sampleDOE(DOE$N_PROD[x][[1]])
+    dmd_candidate <- sampleDOE(DOE$TOTAL_DEMAND[x][[1]])
+
 
     while(dmd_candidate[[1]] < DOE$N_PROD[x][[1]]){
       dmd_candidate <- ifelse(length(DOE$TOTAL_DEMAND[x][[1]])>1,sample(DOE$TOTAL_DEMAND[[x]][1]:DOE$TOTAL_DEMAND[[x]][2],1),DOE$TOTAL_DEMAND[[x]][1])

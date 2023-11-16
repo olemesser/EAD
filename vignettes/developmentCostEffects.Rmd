@@ -25,7 +25,7 @@ This vignette visualizes implementation of complexity cost drivers in product de
 ```{r}
 library(EAD)
 set.seed(123)
-EAD <- smallEAD
+EAD <- sampleEAD
 EAD$DMM$FD_PD
 ```
 
@@ -34,7 +34,7 @@ Before the design is overdesigned step by step the initial variable resource uni
 ```{r}
 ## define output object
 res <- data.frame(SDC_N=NA,
-           TC_var=NA,
+           TC=NA,
            N_PD=NA)
 
 ## calculate values for initial design
@@ -54,12 +54,17 @@ res[1,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
 The increase of material costs due to overdesign modeled as follows. Starting with a given $DMM_{FD,PD}$ matrix, two components are substituted by one oversized one. The replacement works as follows. First a component is randomly selected, its nearest neighbor component is calculated and selected as a component to be substituted. It is possible to select the second component also by random chance, however, the nearest neighbor search ensures that these two components share some similarities. This reflects more practical settings since it is more likely that engineering, for example, standardizes a small and large beam instead of a small beam and a cabinet. The procedure is repeated as long as there is only one component left. The following chunk visualizes the procedure.
 
 ```{r}
-i<-2
-while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
-  EAD<-overdesign_EAD(EAD)$EAD
-  message(paste0("\nDMM_FD_PD at step S",i-1))
+force <- list(list(el_substitute = 1,
+                   el_replaced_by = 2),
+              list(el_substitute = 4,
+                   el_replaced_by = 2))
+message(paste0("\nDMM_FD_PD at step S",0))
   print(EAD$DMM$FD_PD)
-  res[i,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
+for(i in 1:length(force)){
+  EAD<-overdesign_EAD(EAD,force = force[i][[1]])$EAD
+  message(paste0("\nDMM_FD_PD at step S",i))
+  print(EAD$DMM$FD_PD)
+  res[i+1,]<-c(EAD$measures$SYSTEM$SDC_n$FD_PD,
            sum(clc_PCB(EAD$P$RD,
                    DMD = EAD$DEMAND,
                    RCU_direct = costs_inital$RCU_direct,
@@ -73,7 +78,7 @@ while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
 
 See the results:
 
-```{r eval=FALSE}
+```{r}
 res
 ```
 
@@ -89,8 +94,9 @@ The following code shows the second method:
 
 ```{r}
 set.seed(123)
-EAD <- smallEAD
-
+EAD <- sampleEAD
+message(paste0("\nDMM_PD_PrD at step S",0))
+print(EAD$DMM$FD_PD)
 i<-2
 while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
   EAD<-overdesign_EAD(EAD,bounds = c(1,1),method="optimized")$EAD
@@ -126,8 +132,9 @@ with $U[lb;ub]$ being a uniform distribution within the bounds of $lb$ and $ub$.
 
 ```{r}
 set.seed(123)
-EAD <- smallEAD
-
+EAD <- sampleEAD
+message(paste0("\nDMM_PD_PrD at step S",0))
+print(EAD$DMM$FD_PD)
 i<-2
 while(sum(colSums(EAD$DMM$FD_PD)>0)>1){
   EAD<-overdesign_EAD(EAD,bounds = c(0.6,1),method = "optimized")$EAD

@@ -77,3 +77,17 @@ try_with_time_limit <- function(expr, cpu = Inf, elapsed = Inf)
   y <- try({setTimeLimit(cpu, elapsed); expr}, silent = TRUE)
   if(inherits(y, "try-error")) NULL else y
 }
+
+
+sampleDOE<-function(x){
+  if(length(x)>1){
+    if(x[1] == x[2]){
+      x <- x[1]
+    }else{
+      x <- sample(x[1]:x[2],1)
+    }
+  }else{
+    x <- x[1]
+  }
+  return(x)
+}
