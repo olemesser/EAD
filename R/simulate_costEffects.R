@@ -164,7 +164,8 @@ simulate_costEffects<-function(DOE){
                                 out['TC'] <- out$TC_NC +  out$TC_CC
                                 out['N_PROD_step'] <- sum(DEMAND_temp>0)
                                 out['DMD_perc'] <- sum(DEMAND_temp) / sum(EAD$DEMAND)
-                                out['LZM'] <- mean(setup$lotSize[DMD_component>0])
+                                out['LZM_component'] <- mean(setup$lotSize[DMD_component>0])
+                                out['LZM_process'] <- mean(setup$TM[setup$TM>0])
                                 out['N_task'] <- setup$n_tasks
                                 out['N_task_distinct'] <- setup$n_taks_distinct
                                 out['DNS_TM'] <- setup$DNS_TM
