@@ -370,6 +370,7 @@ setupCosts<-function(P_PD,
   TM_bin[TM_bin>0] <- 1
 
      return(list(TC_setup = sum(n_setups * C_setup),
+                 LZM = LZM,
                 lotSize = ceiling(apply(LZM, 1, max)),
                 DMD_component = DMD_component,
                 n_setups = n_setups,
