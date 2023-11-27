@@ -9,7 +9,7 @@ costingSystem_VD(
   RC_direct,
   RC_indirect,
   DMD,
-  method = c("PU", "DC-0.8")
+  method = c("DIV", "DLH-0.8")
 )
 }
 \arguments{

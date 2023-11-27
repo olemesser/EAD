@@ -246,7 +246,7 @@ costingSystem_VD<-function(RES_CONS_PAT,
                            RC_direct,
                            RC_indirect,
                            DMD,
-                           method=c("PU","DC-0.8")){
+                           method=c("DIV","DLH-0.8")){
   #### Input for Testing ####
   # EAD <- exampleEAD
   # RES_CONS_PAT <- EAD[[4]][[1]]$P$RD
@@ -258,12 +258,12 @@ costingSystem_VD<-function(RES_CONS_PAT,
   #### END Testing ####
 
   #### Method Selection ####
-  if(method=="PU"){
+  if(method=="DIV"){
     ### PU - indirect costs are allocated equally across products
-    PC_H <- sum(RC_indirect)/sum(DMD)
-  }else if(startsWith(as.character(method),"DC")){
+    PC_H <- rep(sum(RC_indirect)/sum(DMD),length(DMD))
+  }else if(startsWith(as.character(method),"DLH")){
     ### DC - indirect costs are allocated based on the direct costs
-    p_res<-as.numeric(strsplit(as.character(method),"DC-")[[1]][2])
+    p_res<-as.numeric(strsplit(as.character(method),"DLH-")[[1]][2])
     p_res<-ceiling(NCOL(RES_CONS_PAT)*p_res)
     TRC<-colSums(RES_CONS_PAT * DMD)
     RCU <- RC_direct/TRC

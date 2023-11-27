@@ -4,39 +4,39 @@ experiment_PCS<-function(DOE,
                          ACP_productLevel = c(5)
                          ){
   #### Input for Testing ####
-  require(EAD)
-  require(tidyr)
-  i<-1
-  DOE<-expand_grid(N_FR = list(c(10)), # number of functional requirements
-                   N_DD = list(c(10)), # number of physical domain elements
-                   N_PrD = list(c(15)), # number of process domain elements
-                   N_RD = list(c(20)), # number of resource domain elements
-                   DNS = list(c(0.07,0.5)), #density within the DSM_FD matrix. Creates product mixes where not all products are included
-                   N_PROD = list(c(50,100)), # number of products
-                   method_FD = "DNS", # method for generating the product mix
-                   prod_step_width = 10,
-                   TOTAL_DEMAND = list(c(100,12300)), # total demand
-                   Q_VAR = list(c(0,3)), # demand heterogeneity
-                   DMM_PAR = expand_grid(FD_PD=list(c(0,0.08)),
-                                         PD_PrD=list(c(0,0.1)),
-                                         PrD_RD=list(c(0,0.1))), # desired system design complexity
-                   uB_DMM = 1,
-                   allowZero = F,
-                   ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
-                   DSM_param=expand_grid(PD=list(c(0,0.05,0,1)),
-                                         PrD=list(c(0,0.05,0,1)),
-                                         RD=list(c(0,0.05,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
-                   DSM_method='modular',
-                   ub_DSM = 1,
-                   TC = 10^6, # total costs
-                   r_in = list(c(0,0.9)),
-                   r_fix = list(c(0,1)), # proportion of fixed costs on total costs
-                   RC_sdlog = list(c(0,1.5)), # coefficient of variation for resource cost distribution
-                   N_RUN = 1:1 # number of runs
-  )
-  cs_DOE = expand.grid(ACP=c(5,10),
-                       method = c("random","correl-random","PU","DC-0.2"))
-  ACP_productLevel = c(5)
+  # require(EAD)
+  # require(tidyr)
+  # i<-1
+  # DOE<-expand_grid(N_FR = list(c(30)), # number of functional requirements
+  #                  N_DD = list(c(50)), # number of physical domain elements
+  #                  N_PrD = list(c(50)), # number of process domain elements
+  #                  N_RD = list(c(50)), # number of resource domain elements
+  #                  DNS = list(c(0.07,0.2)), # density of the P_FD matrix.
+  #                  method_FD = "DNS",
+  #                  N_PROD = list(c(200,200)), # number of products
+  #                  prod_step_width = 20,
+  #                  TOTAL_DEMAND = list(c(200,25000)), # total demand
+  #                  Q_VAR = list(c(0,1.7)), # coefficient of variation for demand distribution
+  #                  DMM_PAR = expand_grid(FD_PD = list(c(0,0.08)),
+  #                                        PD_PrD = list(c(0,0.0)),
+  #                                        PrD_RD = list(c(0,0.0))), # desired design complexity
+  #                  allowZero = F,
+  #                  uB_DMM = 2,
+  #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
+  #                  DSM_param=expand_grid(PD = list(c(0,0.14,0,1)),
+  #                                        PrD = list(c(0,0.0,0,1)),
+  #                                        RD = list(c(0,0.0,0,1))), # first two entries refer to the density of the DSMs and the second pair to the cv if the DSM_method='modular' is used.
+  #                  DSM_method='modular',
+  #                  ub_DSM = 2,
+  #                  TC = 10^6, # total costs
+  #                  r_in = list(c(0.2,0.8)),
+  #                  r_fix = list(c(0.2,0.6)), # proportion of fixed costs on total indirect costs
+  #                  RC_sdlog = list(c(0,3)), # coefficient of variation for resource cost distribution # coefficient of variation for resource cost distribution
+  #                  N_RUN = 1:1 # number of runs
+  # )
+  # cs_DOE = expand.grid(ACP=c(2,3,4,5,10),
+  #                      method = c("random","correl-random","DIV"))
+  # ACP_productLevel = c(5)
   #### End INput for Testing ####
 
 
@@ -136,9 +136,9 @@ experiment_PCS<-function(DOE,
                                          HIC_n.PD = measures_system$HIC_n.PD,
                                          HIC_n.PrD = measures_system$HIC_n.PrD,
                                          HIC_n.RD = measures_system$HIC_n.RD,
-                                         D_PD = measure_diversificationINDEX(P_RD[,resources_to_keep], DMD = DMD),
-                                         D_PD_noDemand = measure_diversificationINDEX(P_RD[,resources_to_keep]),
-                                         r_indirect = sum(benchmark$PC_B_indirect*DMD_zero) /sum(PC_B*DMD_zero),
+                                         D_RD = measure_diversificationINDEX(P_RD[,resources_to_keep], DMD = DMD),
+                                         D_RD_noDemand = measure_diversificationINDEX(P_RD[,resources_to_keep]),
+                                         COST_SHARE = sum(benchmark$PC_B_indirect*DMD_zero) /sum(PC_B*DMD_zero),
                                          TC = sum(benchmark$PC_B * DMD_zero),
                                          TC_indirect = sum(benchmark$PC_B_indirect * DMD_zero),
                                          TC_fix = sum(benchmark$PC_B_fix_i + benchmark$PC_B_fix_d * DMD_zero),
@@ -146,37 +146,33 @@ experiment_PCS<-function(DOE,
 
         #### Calculate Reported Costs #####
         reported<-lapply(1:NROW(cs_DOE),function(c){
-          if(cs_DOE$method[c] %in% c("PU","DC") | startsWith(as.character(cs_DOE$method[c]),"DC")){
+          if(cs_DOE$method[c] %in% c("DIV","DLH") | startsWith(as.character(cs_DOE$method[c]),"DLH")){
             PC_H <- costingSystem_VD(RES_CONS_PAT = P_RD[,resources_to_keep],
-                                     RC_indirect = RCU[resources_to_keep] * benchmark$TRC +
-                                       ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep],
-                                     RC_direct = RCU_direct[resources_to_keep] * benchmark$TRC,
+                                     RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC +
+                                       ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
+                                     RC_direct = RCU_direct[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_d)[resources_to_keep],
                                      DMD = DMD,
                                      method = cs_DOE$method[c])
           }else if (cs_DOE$method[c] %in% c("random","size-misc","correl-random")){
             PC_H <- costingSystem_ABC(RES_CONS_PAT = P_RD[,resources_to_keep],
                                       DMD = DMD,
-                                      RC_indirect = (costs$RCU[resources_to_keep] * benchmark$TRC) +
-                                                        ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep],
+                                      RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC +
+                                                        ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
                                       RD = cs_DOE$method[c],
                                       AD = "big-pool",
                                       ACP = cs_DOE$ACP[c])
 
             # sum(RC_indirect) == sum(benchmark$PC_B_indirect[products_in]*DMD)
             # sum(PC_H*DMD) == sum(benchmark$PC_B_indirect[products_in]*DMD)
-            # PC_H <- PC_H + PC_direct[products_in]
-            # clc_costingERROR(PC_B[products_in],PC_H)$EUCD
-
           }
+          #RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
           PC_H <- PC_H + PC_direct[products_in]
           costingError<-clc_costingERROR(PC_B[products_in],PC_H)
-          costingError_w<-clc_costingERROR(PC_B[products_in],PC_H,DMD=DMD)
           return(list(EUCD = costingError$EUCD,
-                      EUCD_w = costingError_w$EUCD,
-                      MPE = costingError$MPE,
-                      MPE_w = costingError_w$MPE,
+                      MAPE = costingError$MAPE,
                       PC_H = PC_H,
                       PC_B = PC_B[products_in],
+                      #cond_1 = (sum(RC_indirect) == sum(benchmark$PC_B_indirect[products_in]*DMD)),
                       TC = sum(PC_B[products_in] * DMD)))
         })
 
@@ -184,9 +180,7 @@ experiment_PCS<-function(DOE,
           ### On System level for each variety step ###
             error <- lapply(reported,function(x){
                       data.frame(EUCD = x$EUCD,
-                                 MPE = x$MPE,
-                                 EUCD_w = x$EUCD_w,
-                                 MPE_w = x$MPE_w,
+                                 MAPE = x$MAPE,
                                  TC = x$TC)
                       })
             error <- data.table::rbindlist(error)
@@ -208,8 +202,8 @@ experiment_PCS<-function(DOE,
                        PC_B = reported[[s]]$PC_B,
                        PC_H = reported[[s]]$PC_H,
                        PC_direct = PC_direct[products_in],
-                       PC_B_var = benchmark$PC_B_var[products_in],
-                       PC_B_fix = benchmark$PC_B_fixed[products_in])
+                       PC_B_var = benchmark$PC_B_var_i[products_in],
+                       PC_B_fix = benchmark$PC_B_fix_i[products_in])
           })
           product_level_data <- data.table::rbindlist(product_level_data)
           system_level_data <- data.table::rbindlist(system_level_data)

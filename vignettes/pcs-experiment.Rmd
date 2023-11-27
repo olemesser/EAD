@@ -123,7 +123,7 @@ The simulation goes through the following steps:
 
 The simulation can be run by calling the following function:
 
-```{r runPCS, message=FALSE, warning=FALSE, include=FALSE,eval=FALSE}
+```{r runPCS, message=FALSE, warning=FALSE, include=FALSE,eval=TRUE}
 data <- experiment_PCS_MC(DOE = DOE,
                           cs_DOE = expand.grid(
                                       ACP=c(1,5,10),
@@ -146,13 +146,13 @@ data <- experiment_PCS_MC(DOE = DOE,
 
 Show the system level results for the first combination of EAD and variety scenario
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 data[[1]]$res$system_level
 ```
 
 Product level results are only reported for certain activity cost pools defined by `ACP_productLevel` under the full variety scenario due to the large amount of data.
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 data[[1]]$res$product_level
 ```
 
