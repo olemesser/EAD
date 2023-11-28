@@ -103,21 +103,16 @@ The simulation goes through the following steps:
         ```{r message=FALSE, warning=FALSE}
         cs_DOE<-expand.grid(
           ACP=c(1,5,10),
-          method = c("random","correl-random","PU","DC-0.2")
-        )
+          method = c("random","correl-random","DIV"))
         ```
 
-        `ACP` refers to the number of activity cost pools for ABC-costing systems. `method` defines the allocation heuristic. For an overview of available methods see the documentation of `costingSystem_ABC()` by running
+        `ACP` refers to the number of activity cost pools for ABC-costing systems. `method` defines the allocation heuristic. For an overview of available methods see the documentation of `costingSystem_ABC()` by running:
 
         ```{r eval=FALSE, include=TRUE}
         ?costingSystem_ABC()
         ```
 
         For (simple) volume-based costing systems see the documentation of `costingSystem_VD()`
-
-        ```{r eval=FALSE, include=TRUE}
-        ?costingSystem_VD()
-        ```
 
 4.  Calculate the error measures on product and system level. EUCD, MPE, APE and PE. While the first two measures are system wide (for each combination of EAD realization and costing system, the second two are product-level measures.
 
