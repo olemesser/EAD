@@ -141,13 +141,13 @@ data <- experiment_PCS_MC(DOE = DOE,
 
 Show the system level results for the first combination of EAD and variety scenario
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 data[[1]]$res$system_level
 ```
 
 Product level results are only reported for certain activity cost pools defined by `ACP_productLevel` under the full variety scenario due to the large amount of data.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 data[[1]]$res$product_level
 ```
 
