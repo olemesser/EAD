@@ -32,7 +32,7 @@ experiment_PCS<-function(DOE,
   #                  r_in = list(c(0.2,0.8)),
   #                  r_fix = list(c(0.2,0.6)), # proportion of fixed costs on total indirect costs
   #                  RC_sdlog = list(c(0,3)), # coefficient of variation for resource cost distribution # coefficient of variation for resource cost distribution
-  #                  N_RUN = 1:1 # number of runs
+  #                  N_RUN = 1:2 # number of runs
   # )
   # cs_DOE = expand.grid(ACP=c(2,3,4,5,10),
   #                      method = c("random","correl-random","DIV"))
@@ -142,8 +142,9 @@ experiment_PCS<-function(DOE,
                                          TC = sum(benchmark$PC_B * DMD_zero),
                                          TC_indirect = sum(benchmark$PC_B_indirect * DMD_zero),
                                          TC_fix = sum((benchmark$PC_B_fix_i + benchmark$PC_B_fix_d) * DMD_zero),
-                                         TC_var = sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d) * DMD_zero))
-        measures_system_temp$UNIT_SHARE <- measures_system_temp$TC_var / (measures_system_temp$TC_var + measures_system_temp$TC_fix)
+                                         TC_var = sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d) * DMD_zero)) %>%
+          mutate(UNIT_SHARE = TC_var / (TC_var + TC_fix))
+        #measures_system_temp$UNIT_SHARE <- measures_system_temp$TC_var / (measures_system_temp$TC_var + measures_system_temp$TC_fix)
 
         #### Calculate Reported Costs #####
         reported<-lapply(1:NROW(cs_DOE),function(c){
@@ -182,12 +183,15 @@ experiment_PCS<-function(DOE,
           ### On System level for each variety step ###
             error <- lapply(reported,function(x){
                       data.frame(EUCD = x$EUCD,
-                                 MAPE = x$MAPE,
-                                 TC = x$TC)
+                                 MAPE = x$MAPE)
                       })
             error <- data.table::rbindlist(error)
-            system_level_data[[l]]<-data.frame(id = EAD[[1]]$ID,
-                                               merge(measures_system_temp,cbind(cs_DOE,error)))
+            #system_level_data[[l]]<-data.frame(id = EAD[[1]]$ID,
+            #                                   merge(data.frame(measures_system_temp),cbind(cs_DOE,error)))
+            system_level_data[[l]]<-tibble(id = EAD[[1]]$ID,
+                                           measures_system_temp,
+                                           cbind(cs_DOE,error))
+
             l <- l+1
 
         if(length(products_out)==0){
