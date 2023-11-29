@@ -112,10 +112,24 @@ clc_PCB<-function(RES_CONS_PAT,
 
 
 
-clc_costingERROR<-function(PC_B,PC_H){
+clc_costingERROR<-function(PC_B,
+                           PC_H,
+                           DMD = NULL){
+  require(dplyr)
+  require(tidyr)
+  if(is.null(DMD)) DMD <- rep(1,length(PC_B))
   PE <- (PC_B - PC_H)/PC_B
+
+  temp <- data.frame(PC_B = PC_B,
+                 PC_H = PC_H,
+                 DMD = DMD) %>%
+    uncount(DMD) %>%
+    mutate(PE_w = (PC_B - PC_H)/PC_B)
+
   output<-list(EUCD = sqrt(sum((PC_B - PC_H)^2)),
                MAPE = as.numeric(mean(abs(PE))),
+               EUCD_w = sqrt(sum((temp$PC_B - temp$PC_H)^2)),
+               MAPE_w = as.numeric(mean(abs(temp$PE_w))),
                PE = as.numeric(PE),
                APE = as.numeric(abs(PE)))
 

@@ -173,9 +173,13 @@ experiment_PCS<-function(DOE,
             # sum(PC_H*DMD) == sum(benchmark$PC_B_indirect[products_in]*DMD)
           }
           #RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
-          costingError<-clc_costingERROR(benchmark$PC_B_indirect[products_in],PC_H_indirect)
+          costingError<-clc_costingERROR(PC_B = benchmark$PC_B_indirect[products_in],
+                                         PC_H = PC_H_indirect,
+                                         DMD = DMD)
           return(list(EUCD = costingError$EUCD,
                       MAPE = costingError$MAPE,
+                      EUCD_w = costingError$EUCD_w,
+                      MAPE_w = costingError$MAPE_w,
                       PC_H = PC_H_indirect + PC_direct[products_in],
                       PC_B =  PC_B[products_in],
                       PC_H_i = PC_H_indirect,
@@ -188,11 +192,11 @@ experiment_PCS<-function(DOE,
           ### On System level for each variety step ###
             error <- lapply(reported,function(x){
                       data.frame(EUCD = x$EUCD,
-                                 MAPE = x$MAPE)
+                                 MAPE = x$MAPE,
+                                 EUCD_w = x$EUCD_w,
+                                 MAPE_w = x$MAPE_w)
                       })
             error <- data.table::rbindlist(error)
-            #system_level_data[[l]]<-data.frame(id = EAD[[1]]$ID,
-            #                                   merge(data.frame(measures_system_temp),cbind(cs_DOE,error)))
             system_level_data[[l]]<-tibble(id = EAD[[1]]$ID,
                                            measures_system_temp,
                                            cbind(cs_DOE,error))
@@ -225,8 +229,8 @@ experiment_PCS<-function(DOE,
                 product_level= product_level_data))
   })
 
-  output<-list(system_level=data.table::rbindlist(lapply(df,function(x) x$system_level)),
-               product_level=data.table::rbindlist(lapply(df,function(x) x$product_level)))
+  output<-list(system_level = data.table::rbindlist(lapply(df,function(x) x$system_level)),
+               product_level = data.table::rbindlist(lapply(df,function(x) x$product_level)))
   return(output)
 }
 
