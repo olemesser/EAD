@@ -122,10 +122,16 @@ experiment_PCS<-function(DOE,
 
 
         #### Create Measure Object ####
+        RC_fix_i <-  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
+        RC_var_i <- RCU_indirect[resources_to_keep] * colSums(EAD[[1]]$P$RD[,resources_to_keep] * DMD_zero)
+        RC_i <- RC_fix_i + RC_var_i
+        cor_mat <- cor(EAD[[1]]$P$RD[products_in,resources_to_keep])
         measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
                                          PCI.PD = measure_PCI(P_PD),
                                          DNS.RD = measure_DENS(P_RD[,resources_to_keep]),
                                          DMD_T10 = measure_TOP10(DMD),
+                                         RC_i_T10 = measure_TOP10(RC_i),
+                                         COR = mean(cor_mat),
                                          Q_VAR = sd(log(DMD)),
                                          NPV.FD = measure_NPV(P_FD),
                                          N_RD = NCOL(P_RD[,resources_to_keep]),
@@ -144,7 +150,6 @@ experiment_PCS<-function(DOE,
                                          TC_fix = sum((benchmark$PC_B_fix_i + benchmark$PC_B_fix_d) * DMD_zero),
                                          TC_var = sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d) * DMD_zero)) %>%
           mutate(UNIT_SHARE = TC_var / (TC_var + TC_fix))
-        #measures_system_temp$UNIT_SHARE <- measures_system_temp$TC_var / (measures_system_temp$TC_var + measures_system_temp$TC_fix)
 
         #### Calculate Reported Costs #####
         reported<-lapply(1:NROW(cs_DOE),function(c){

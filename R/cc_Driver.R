@@ -325,7 +325,7 @@ setupCosts<-function(P_PD,
                      C_setup){
   require(EAD)
   #### Input for testing ####
-  # EAD <- smallEAD
+  # EAD <- sampleEAD
   # P_PD <- EAD$P$PD
   # DMM_PD_PrD <- EAD$DMM$PD_PrD
   # DSM_PrD <- EAD$DSM$PrD
