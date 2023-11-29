@@ -56,9 +56,10 @@ experiment_PCS<-function(DOE,
                         RC_var_d = EAD[[1]]$RC$var_d,
                         RC_fix_i =  EAD[[1]]$RC$fix_i,
                         RC_fix_d =  EAD[[1]]$RC$fix_d)
-      RCU_indirect<-costs$RCU_indirect
       TRC<-costs$TRC
-      RCU_direct <- costs$RCU_direct
+      # sum((costs$PC_B_fix_d + costs$PC_B_fix_i + costs$PC_B_var_d + costs$PC_B_var_i)* EAD[[1]]$DEMAND)
+      # sum(RCU_indirect * TRC)
+      # sum((costs$PC_B_var_i) * EAD[[1]]$DEMAND)
 
     #### 2. Create Variety Scenario ####
       ### start with 30% of variety and increase 2% in each step
@@ -97,95 +98,100 @@ experiment_PCS<-function(DOE,
         P_PD <- EAD[[1]]$P$PD[products_in,,drop=F]
         P_RD <- EAD[[1]]$P$RD[products_in,,drop=F]
         resources_to_keep <- which(colSums(P_RD)>0)
+        P_FD <- P_FD[,which(colSums(P_FD)>0),drop=F]
+        P_PD <- P_PD[,which(colSums(P_PD)>0),drop=F]
+        P_RD <- P_RD[,resources_to_keep,drop=F]
         DMD <- EAD[[1]]$DEMAND[products_in]
 
-        DMD_zero <- rep(0,length(EAD[[1]]$DEMAND))
-        DMD_zero[products_in] <- EAD[[1]]$DEMAND[products_in]
         #### Calculate True Costs ####
         benchmark <- clc_PCB(
-                             RES_CONS_PAT = EAD[[1]]$P$RD[,resources_to_keep],
-                             DMD = DMD_zero,
-                             RCU_indirect = RCU_indirect[resources_to_keep],
-                             RC_fix_i =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
-                             RC_fix_d =  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_d)[resources_to_keep],
-                             RCU_direct = costs$RCU_direct[resources_to_keep])
+                             RES_CONS_PAT = P_RD,
+                             DMD = DMD,
+                             RCU_indirect = costs$RCU_indirect[resources_to_keep],
+                             RCU_direct = costs$RCU_direct[resources_to_keep],
+                             RC_fix_i =  EAD[[1]]$RC$fix_i[resources_to_keep],
+                             RC_fix_d =  EAD[[1]]$RC$fix_d[resources_to_keep])
         PC_direct <- benchmark$PC_B_var_d + benchmark$PC_B_fix_d
         PC_B <-  benchmark$PC_B_indirect + PC_direct
+        #benchmark$TC
+        #sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d + benchmark$PC_B_fix_i + benchmark$PC_B_fix_d) * DMD)
 
         # # check fixed_costs
-        # sum(ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix)[resources_to_keep]) == sum(benchmark$PC_B_fixed *DMD_zero)
+        #sum(EAD[[1]]$RC$fix[resources_to_keep]) == sum(benchmark$PC_B_fixed *DMD)
         # ##check variable costs
-        # sum((EAD[[1]]$P$RD[,resources_to_keep] %*% RCU[resources_to_keep])*DMD_zero) == sum(benchmark$PC_B_var *DMD_zero)
+        #sum((P_RD %*% costs$RCU_indirect[resources_to_keep])*DMD) == sum(benchmark$PC_B_var_i *DMD)
         # ## check direct costs
-        # sum((benchmark$PC_B-benchmark$PC_B_indirect)*DMD_zero) == sum((EAD[[1]]$P$RD[,resources_to_keep] %*% costs$RCU_direct[resources_to_keep])*DMD_zero)
-
+        #sum((benchmark$PC_B_var_d)*DMD) == sum((P_RD %*% costs$RCU_direct[resources_to_keep])*DMD)
 
 
         #### Create Measure Object ####
-        RC_fix_i <-  ifelse(colSums(EAD[[1]]$P$RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
-        RC_var_i <- RCU_indirect[resources_to_keep] * colSums(EAD[[1]]$P$RD[,resources_to_keep] * DMD_zero)
+        RC_fix_i <-  EAD[[1]]$RC$fix_i[resources_to_keep]
+        RC_var_i <- costs$RCU_indirect[resources_to_keep] * colSums(P_RD * DMD)
         RC_i <- RC_fix_i + RC_var_i
         cor_mat <- cor(EAD[[1]]$P$RD[products_in,resources_to_keep])
         measures_system_temp<-data.frame(PCI.FD = measure_PCI(P_FD),
                                          PCI.PD = measure_PCI(P_PD),
-                                         DNS.RD = measure_DENS(P_RD[,resources_to_keep]),
+                                         DNS.RD = measure_DENS(P_RD),
                                          DMD_T10 = measure_TOP10(DMD),
+                                         TOTAL_DMD = sum(DMD),
                                          RC_i_T10 = measure_TOP10(RC_i),
                                          COR = mean(cor_mat),
                                          Q_VAR = sd(log(DMD)),
                                          NPV.FD = measure_NPV(P_FD),
-                                         N_RD = NCOL(P_RD[,resources_to_keep]),
-                                         N_PROD = NROW(P_RD[,resources_to_keep]),
+                                         N_RD = NCOL(P_RD),
+                                         N_PROD = NROW(P_RD),
                                          SDC_n.FD_PD = measures_system$SDC_n.FD_PD,
                                          SDC_n.PD_PrD = measures_system$SDC_n.PD_PrD,
                                          SDC_n.PrD_RD = measures_system$SDC_n.PrD_RD,
                                          HIC_n.PD = measures_system$HIC_n.PD,
                                          HIC_n.PrD = measures_system$HIC_n.PrD,
                                          HIC_n.RD = measures_system$HIC_n.RD,
-                                         D_RD = measure_diversificationINDEX(P_RD[,resources_to_keep], DMD = DMD),
-                                         D_RD_noDemand = measure_diversificationINDEX(P_RD[,resources_to_keep]),
-                                         R_id = sum(benchmark$PC_B_indirect * DMD_zero) /sum(PC_B * DMD_zero),
-                                         TC = sum(benchmark$PC_B * DMD_zero),
-                                         TC_indirect = sum(benchmark$PC_B_indirect * DMD_zero),
-                                         TC_fix = sum((benchmark$PC_B_fix_i + benchmark$PC_B_fix_d) * DMD_zero),
-                                         TC_var = sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d) * DMD_zero)) %>%
-          mutate(UNIT_SHARE = TC_var / (TC_var + TC_fix))
+                                         D_RD = measure_diversificationINDEX(P_RD, DMD = DMD),
+                                         D_RD_noDemand = measure_diversificationINDEX(P_RD),
+                                         R_id = sum(benchmark$PC_B_indirect * DMD) /sum(PC_B * DMD),
+                                         TC = sum(benchmark$PC_B * DMD),
+                                         TC_indirect = sum(benchmark$PC_B_indirect * DMD),
+                                         TC_fix_i = sum((benchmark$PC_B_fix_i) * DMD),
+                                         TC_var_i = sum((benchmark$PC_B_var_i) * DMD),
+                                         TC_fix = sum((benchmark$PC_B_fix_i + benchmark$PC_B_fix_d) * DMD),
+                                         TC_var = sum((benchmark$PC_B_var_i + benchmark$PC_B_var_d) * DMD)) %>%
+          mutate(UNIT_SHARE_i =  TC_var_i / (TC_var_i + TC_fix_i),
+                 UNIT_SHARE = TC_var / (TC_var + TC_fix))
 
         #### Calculate Reported Costs #####
         reported<-lapply(1:NROW(cs_DOE),function(c){
           if(cs_DOE$method[c] %in% c("DIV","DLH") | startsWith(as.character(cs_DOE$method[c]),"DLH")){
-            PC_H_indirect <- costingSystem_VD(RES_CONS_PAT = P_RD[,resources_to_keep],
-                                     RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC +
-                                       ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
-                                     RC_direct = RCU_direct[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_d)[resources_to_keep],
+            PC_H_indirect <- costingSystem_VD(RES_CONS_PAT = P_RD,
+                                     RC_indirect = costs$RCU_indirect[resources_to_keep] * benchmark$TRC + EAD[[1]]$RC$fix_i[resources_to_keep],
+                                     RC_direct = rep(0,length(costs$RCU_indirect[resources_to_keep])),  # costs$RCU_direct[resources_to_keep] * benchmark$TRC + EAD[[1]]$RC$fix_d[resources_to_keep],
                                      DMD = DMD,
                                      method = cs_DOE$method[c])
+
           }else if (cs_DOE$method[c] %in% c("random","size-misc","correl-random")){
-            PC_H_indirect <- costingSystem_ABC(RES_CONS_PAT = P_RD[,resources_to_keep],
+            PC_H_indirect <- costingSystem_ABC(RES_CONS_PAT = P_RD,
                                       DMD = DMD,
-                                      RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC +
-                                                        ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep],
+                                      RC_indirect = costs$RCU_indirect[resources_to_keep] * benchmark$TRC + EAD[[1]]$RC$fix_i[resources_to_keep],
                                       RD = cs_DOE$method[c],
                                       AD = "big-pool",
                                       ACP = cs_DOE$ACP[c])
 
-            # sum(RC_indirect) == sum(benchmark$PC_B_indirect[products_in]*DMD)
-            # sum(PC_H*DMD) == sum(benchmark$PC_B_indirect[products_in]*DMD)
+            # sum(RC_indirect) == sum(benchmark$PC_B_indirect*DMD)
+            # sum(PC_H_indirect*DMD) == sum(benchmark$PC_B_indirect*DMD)
           }
           #RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
-          costingError<-clc_costingERROR(PC_B = benchmark$PC_B_indirect[products_in],
+          #cond_1 = (sum(RC_indirect) == sum(benchmark$PC_B_indirect*DMD))
+          costingError<-clc_costingERROR(PC_B = benchmark$PC_B_indirect,
                                          PC_H = PC_H_indirect,
                                          DMD = DMD)
           return(list(EUCD = costingError$EUCD,
                       MAPE = costingError$MAPE,
                       EUCD_w = costingError$EUCD_w,
                       MAPE_w = costingError$MAPE_w,
-                      PC_H = PC_H_indirect + PC_direct[products_in],
-                      PC_B =  PC_B[products_in],
+                      PC_H = PC_H_indirect + PC_direct,
+                      PC_B =  PC_B,
                       PC_H_i = PC_H_indirect,
-                      PC_B_i = benchmark$PC_B_indirect[products_in],
-                      #cond_1 = (sum(RC_indirect) == sum(benchmark$PC_B_indirect[products_in]*DMD)),
-                      TC = sum(PC_B[products_in] * DMD)))
+                      PC_B_i = benchmark$PC_B_indirect,
+                      TC = sum(PC_B * DMD)))
         })
 
         #### Create Output Object ####
