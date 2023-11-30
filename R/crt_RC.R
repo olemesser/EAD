@@ -30,7 +30,7 @@ crt_RC<-function(N_RD,
   #### Input for Testing ####
   # N_RD = 50
   # TC = 10^6
-  # r_in = 0.3
+  # r_in = 0.5
   # r_fix = 0.5
   # sdlog = 1
   #### End Input for Testing ####
@@ -59,11 +59,20 @@ crt_RC<-function(N_RD,
                   sdlog = sdlog)
 
   #### 3. Split RC into direct and indirect costs ####
+  ## calculate possible ratios for indirect fixed and variable costs
+  ## the total sum of indirect costs must be TC_indirect
+  r_in_fix_min <- ifelse(sum(RC_var$RC) < TC_indirect,
+                         abs(TC_indirect - sum(RC_var$RC)) / sum(RC_fix$RC),
+                         0)
+  r_in_max <- ifelse(sum(RC_fix$RC) > TC_indirect,
+                     TC_indirect/sum(RC_fix$RC) * 0.9,
+                     0.9)
   ## 3.1 Split fixed cost vector into direct and indirect costs ##
-  RC_fix <- crt_RC_indirect(RC = RC_fix$RC, r_in = r_in)
+  RC_fix <- crt_RC_indirect(RC = RC_fix$RC, r_in = runif(1,min = r_in_fix_min,max = r_in_max))
 
   ## 3.2 Split variable cost vector into direct and indirect costs ##
-  RC_var <- crt_RC_indirect(RC = RC_var$RC, r_in = r_in)
+  r_in_var <- (TC_indirect - sum(RC_fix$RC_i$RC)) / sum(RC_var$RC)
+  RC_var <- crt_RC_indirect(RC = RC_var$RC, r_in = r_in_var)
 
 
   #### 4. Create Output Object ####
