@@ -68,8 +68,9 @@ experiment_PCS<-function(DOE,
       order_introduction <- vector(mode="numeric")
       repeat{
         order_introduction <- c(order_introduction,sample(ix[products_out],
-                                                          size = 1,
-                                                          prob = EAD[[1]]$DEMAND[products_out]))
+                                                          size = 1
+                                                          # prob = EAD[[1]]$DEMAND[products_out])
+                                                          ))
         products_out <- setdiff(ix,order_introduction)
         if(length(order_introduction)==(length(ix)-1)){
           order_introduction <- c(order_introduction,ix[products_out])
