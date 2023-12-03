@@ -87,8 +87,9 @@ clc_PCB<-function(RES_CONS_PAT,
   PC_B_var_i <- as.numeric(RES_CONS_PAT %*% RCU_indirect)
 
   #### 3. Calculate Fixed Costs ####
-  PC_B_fix_i <- RES_CONS_PAT %*% ifelse(is.infinite(RC_fix_i/TRC),0,(RC_fix_i/TRC))
-  PC_B_fix_d <- RES_CONS_PAT %*% ifelse(is.infinite(RC_fix_d/TRC),0,(RC_fix_d/TRC))
+  RES_CONS_PAT_p <- apply(RES_CONS_PAT,2,function(x) x/sum(x))
+  PC_B_fix_i <- (RES_CONS_PAT_p %*% RC_fix_i) / DMD
+  PC_B_fix_d <- (RES_CONS_PAT_p %*% RC_fix_d) / DMD
 
   #### 4. Calculate Total Costs ####
   TC_var <- sum((PC_B_var_d + PC_B_var_i) * DMD)

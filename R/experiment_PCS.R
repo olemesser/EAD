@@ -167,7 +167,6 @@ experiment_PCS<-function(DOE,
                                      RC_direct = rep(0,length(costs$RCU_indirect[resources_to_keep])),  # costs$RCU_direct[resources_to_keep] * benchmark$TRC + EAD[[1]]$RC$fix_d[resources_to_keep],
                                      DMD = DMD,
                                      method = cs_DOE$method[c])
-
           }else if (cs_DOE$method[c] %in% c("random","size-misc","correl-random")){
             PC_H_indirect <- costingSystem_ABC(RES_CONS_PAT = P_RD,
                                       DMD = DMD,
