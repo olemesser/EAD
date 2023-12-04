@@ -40,72 +40,97 @@
 #'                    AD=AD,
 #'                    ACP=10)
 costingSystem_ABC<-function(RES_CONS_PAT,
-                        RC_indirect,
-                        DMD,
-                        RD=c("random","size-random","size-misc","correl-random","correl-size"),
-                        AD=c("big-pool","indexed-2","indexed-3"),
-                        ACP=10){
+                            RC_var_i,
+                            RC_fix_i = NULL,
+                            DMD,
+                            RD=c("random","size-random","size-misc","correl-random","correl-size"),
+                            AD=c("big-pool","indexed-2","indexed-3"),
+                            ACP=10){
 
   #### Input for Testing ####
+  # library(EAD)
   # EAD <- exampleEAD
   # RES_CONS_PAT <- EAD[[4]][[1]]$P$RD
-  # RC_indirect <- EAD[[4]][[1]]$RC$var + EAD[[4]][[1]]$RC$fix
+  # RC_var_i <- EAD[[4]][[1]]$RC$var
+  # RC_fix_i <- EAD[[4]][[1]]$RC$fix
   # DMD <-  EAD[[4]][[1]]$DEMAND
-  # ACP<-1
+  # ACP<-4
   # RD<-"random"
   # AD<-"big-pool"
-  # AD<-"indexed-3"
+  # # AD<-"indexed-3"
+  # temp<-clc_PCB(
+  #   RES_CONS_PAT = RES_CONS_PAT,
+  #   DMD = DMD,
+  #   RC_var_i = RC_var_i,
+  #   RC_fix_i =  RC_fix_i,
+  #   RC_fix_d =  rep(0,length(RC_var_i)),
+  #   RC_var_d =  rep(0,length(RC_var_i)))
+  # PC_B <- temp$PC_B_indirect
   #### END Testing ####
+
+  if(is.null(RC_fix_i)) RC_fix_i <- rep(0,length(RC_var_i))
 
   #### Stage (1/2) - Allocation to Cost Center (CC) ####
     if(RD=="random"){
-      CC <- RCP_ACP_random(RC = RC_indirect,ACP = ACP)
+      CC <- RCP_ACP_random(RC_var = RC_var_i,
+                           RC_fix = RC_fix_i,
+                           ACP = ACP)
     }else if(RD=="size-random"){
-      CC <- RCP_ACP_sizerandom(RC = RC_indirect,ACP = ACP)
+      CC <- RCP_ACP_sizerandom(RC = RC_var_i + RC_fix_i,ACP = ACP)
     }else if(RD=="size-misc"){
-      CC <- RCP_ACP_sizemisc(RC = RC_indirect,ACP = ACP)
+      CC <- RCP_ACP_sizemisc(RC = RC_var_i + RC_fix_i,ACP = ACP)
     }else if(RD=="correl-random"){
-      CC <- RCP_ACP_correl(RC = RC_indirect,
+      CC <- RCP_ACP_correl(RC_var = RC_var_i,
+                           RC_fix = RC_fix_i,
                            ACP = ACP,
                            RES_CONS_PAT = RES_CONS_PAT,
                            method="random")
     }else if(RD=="correl-size"){
-      CC <- RCP_ACP_correl(RC = RC_indirect,
+      CC <- RCP_ACP_correl(RC_var = RC_var_i,
+                           RC_fix = RC_fix_i,
                            ACP = ACP,
                            RES_CONS_PAT = RES_CONS_PAT,
                            method="size")
     }
 
   #### Stage (2/2) - Allocation across products ####
-  ACT_CONS_PAT<-stage_twoAllocation(CC,RES_CONS_PAT,AD)
-  ACP <- ACT_CONS_PAT$ACP
-  ACT_CONS_PAT <- ACT_CONS_PAT$ACT_CONS_PAT
-  TAC <- colSums(ACT_CONS_PAT * DMD)
-  PC_H<-as.numeric(ACT_CONS_PAT %*% (ACP/TAC))
+  ACT_CONS_PAT <- stage_twoAllocation(CC,RES_CONS_PAT,AD)
+  ## for variable costs ##
+  TAC <- colSums(ACT_CONS_PAT$ACT_CONS_PAT * DMD)
+  PC_H<-as.numeric(ACT_CONS_PAT$ACT_CONS_PAT %*% (ACT_CONS_PAT$ACP$var/TAC))
+
+  ## for fixed costs ##
+  ACT_CONS_PAT_p <- apply(ACT_CONS_PAT$ACT_CONS_PAT,2,function(x) x/sum(x))
+  PC_H <- PC_H + as.numeric((ACT_CONS_PAT_p %*% ACT_CONS_PAT$ACP$fix) / DMD)
 
   # sum(PC_H * DMD) == sum(RC_indirect)
   return(PC_H)
 }
 
-RCP_ACP_random<-function(RC,ACP,exclude=NULL){
-  NUMB_RC<-length(RC)
+RCP_ACP_random<-function(RC_var,
+                         RC_fix,
+                         ACP,exclude=NULL){
+  NUMB_RC<-length(RC_var)
   repeat{
     RC_to_ACP<-split(sample(c(1:NUMB_RC),NUMB_RC),
                      c(1:ACP,sample(c(1:ACP),NUMB_RC-ACP,replace = T)))
     CC<-lapply(RC_to_ACP,function(x){
       return(list(mapping=x,
-                  size=RC[x]))
+                  size=list(var = RC_var[x],
+                            fix = RC_fix[x])))
     })
     names(CC)<-NULL
 
     # break if every ACP is greater then 0
-    if(all(sapply(CC,function(x) sum(x$size)>0 & length(x$mapping)>0)) & length(RC_to_ACP)==ACP){
+    if(all(sapply(CC,function(x) sum(x$size$var + x$size$fix)>0 & length(x$mapping)>0)) & length(RC_to_ACP)==ACP){
       break
     }
   }
+
   if(!is.null(exclude)){
     CC <- lapply(CC,function(x){
-            x$size <- x$size[!(x$mapping %in% exclude)]
+            x$size$var <- x$size$var[!(x$mapping %in% exclude)]
+            x$size$fix <- x$size$fix[!(x$mapping %in% exclude)]
             x$mapping <- x$mapping[!(x$mapping %in% exclude)]
             return(x)
           })
@@ -152,27 +177,36 @@ RCP_ACP_sizemisc<-function(RC,ACP){
 
 }
 
-RCP_ACP_correl<-function(RC,ACP = ACP,RES_CONS_PAT,method=c("random","size")){
+RCP_ACP_correl<-function(RC_var,
+                         RC_fix = NULL,
+                         ACP,
+                         RES_CONS_PAT,
+                         method=c("random","size")){
   # Pick ACP resources randomly and allocate one each to the number of activity pools chosen by the system designer (ACP).
   # For the first activity pool, select those resources with the highest correlation with the resource in the pool.
   # Assign a total of INT(RCP/ACP) resources to this pool. Repeat for the second activity pool and so on.
+
+  if(is.null(RC_fix)) RC_fix <- rep(0,length(RC_fix))
   #### Randomly Assigned ####
   if(method=="random"){
-    assigned <- sample(1:length(RC),ACP)
+    assigned <- sample(1:length(RC_var),ACP)
     CC <- lapply(1:length(assigned),function(x){
       list(mapping=assigned[x],
-           size=RC[assigned[x]])
+           size=list(var = RC_var[assigned[x]],
+                     fix =  RC_fix[assigned[x]])
+           )
     })
   }else if(method=="size"){
     #### Pre assignment of first ACP resources ####
-    RCs<-sort(RC,decreasing = TRUE,index.return=TRUE)   # sorted Resource cost vector
+    RCs<-sort(RC_var + RC_fix,decreasing = TRUE,index.return=TRUE)   # sorted Resource cost vector
     CC <- lapply(1:ACP,function(x) list(mapping=RCs$ix[x],
-                                            size=RCs$x[x]))
+                                            size=list(var = RC_var[RCs$ix[x]],
+                                                      fix = RC_fix[RCs$ix[x]])))
     assigned <- RCs$ix[1:ACP]
   }
 
   #### Correlation Based Assigned ####
-  n_assigned<-setdiff(1:length(RC),assigned)
+  n_assigned<-setdiff(1:length(RC_var),assigned)
   if(length(n_assigned)>0){
     for (x in n_assigned) {
       cor_vec <- cor(RES_CONS_PAT[,x],RES_CONS_PAT)
@@ -181,7 +215,8 @@ RCP_ACP_correl<-function(RC,ACP = ACP,RES_CONS_PAT,method=c("random","size")){
       cor_vec$ix<-cor_vec$ix[cor_vec$ix %in% assigned]
       idx <- which(assigned==cor_vec$ix[1])
       CC[[idx]] <- list(mapping=c(CC[[idx]]$mapping,x),
-                        size=c(CC[[idx]]$size,RC[x]))
+                        size=list(var = c(CC[[idx]]$size$var,RC_var[x]),
+                                  fix = c(CC[[idx]]$size$fix,RC_fix[x])))
     }
   }
   return(CC)
@@ -191,11 +226,16 @@ stage_twoAllocation<-function(CC,RES_CONS_PAT,AD=c("big-pool","indexed-2","index
 
   ## reorder cost pools ##
   CC<-lapply(CC,function(x){
-    x$mapping<-x$mapping[order(x$size,decreasing = T)]
-    x$size<-x$size[order(x$size,decreasing = T)]
+    x$mapping<-x$mapping[order(sum(unlist(x$size)),decreasing = T)]
+    idx_decr <- order(x$size$var + x$size$fix,decreasing = T)
+    x$size$var<-x$size$var[idx_decr]
+    x$size$fix<-x$size$fix[idx_decr]
     return(x)
   })
-  ACP<-sapply(CC, function(x) sum(x$size))
+  ACP<-sapply(CC, function(x) c(var = sum(x$size$var),
+                                   fix = sum(x$size$fix)))
+  ACP <- list(var = ACP[1,],
+              fix = ACP[2,])
 
 
   if(AD=="big-pool"){

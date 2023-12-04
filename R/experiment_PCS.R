@@ -34,7 +34,7 @@ experiment_PCS<-function(DOE,
   #                  RC_sdlog = list(c(0,3)), # coefficient of variation for resource cost distribution # coefficient of variation for resource cost distribution
   #                  N_RUN = 1:2 # number of runs
   # )
-  # cs_DOE = expand.grid(ACP=c(2,3,4,5,10),
+  # cs_DOE = expand.grid(ACP=c(2,3,4,5,10,50),
   #                      method = c("random","correl-random","DIV"))
   # ACP_productLevel = c(5)
   #### End INput for Testing ####
@@ -170,15 +170,15 @@ experiment_PCS<-function(DOE,
           }else if (cs_DOE$method[c] %in% c("random","size-misc","correl-random")){
             PC_H_indirect <- costingSystem_ABC(RES_CONS_PAT = P_RD,
                                       DMD = DMD,
-                                      RC_indirect = costs$RCU_indirect[resources_to_keep] * benchmark$TRC + EAD[[1]]$RC$fix_i[resources_to_keep],
+                                      RC_var_i = costs$RCU_indirect[resources_to_keep] * benchmark$TRC,
+                                      RC_fix_i = EAD[[1]]$RC$fix_i[resources_to_keep],
                                       RD = cs_DOE$method[c],
                                       AD = "big-pool",
                                       ACP = cs_DOE$ACP[c])
 
-            # sum(RC_indirect) == sum(benchmark$PC_B_indirect*DMD)
-            # sum(PC_H_indirect*DMD) == sum(benchmark$PC_B_indirect*DMD)
+            #sum(PC_H_indirect*DMD) == sum(benchmark$PC_B_indirect*DMD)
           }
-          #RC_indirect = RCU_indirect[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
+          #RC_indirect = costs$RCU_indirect[resources_to_keep] * benchmark$TRC + ifelse(colSums(P_RD)==0,0,EAD[[1]]$RC$fix_i)[resources_to_keep]
           #cond_1 = (sum(RC_indirect) == sum(benchmark$PC_B_indirect*DMD))
           costingError<-clc_costingERROR(PC_B = benchmark$PC_B_indirect,
                                          PC_H = PC_H_indirect,

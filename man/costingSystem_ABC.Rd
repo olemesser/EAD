@@ -6,7 +6,8 @@
 \usage{
 costingSystem_ABC(
   RES_CONS_PAT,
-  RC_indirect,
+  RC_var_i,
+  RC_fix_i = NULL,
   DMD,
   RD = c("random", "size-random", "size-misc", "correl-random", "correl-size"),
   AD = c("big-pool", "indexed-2", "indexed-3"),
