@@ -68,7 +68,10 @@ crt_RC<-function(N_RD,
                      TC_indirect/sum(RC_fix$RC) * 0.9,
                      0.9)
   ## 3.1 Split fixed cost vector into direct and indirect costs ##
-  RC_fix <- crt_RC_indirect(RC = RC_fix$RC, r_in = runif(1,min = r_in_fix_min,max = r_in_max))
+  RC_fix <- crt_RC_indirect(RC = RC_fix$RC,
+                            r_in = runif(1,
+                                         min = mean(r_in_fix_min,r_in_max),
+                                         max = r_in_max))
 
   ## 3.2 Split variable cost vector into direct and indirect costs ##
   r_in_var <- (TC_indirect - sum(RC_fix$RC_i$RC)) / sum(RC_var$RC)
