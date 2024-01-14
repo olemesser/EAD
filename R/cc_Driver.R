@@ -354,20 +354,22 @@ setupCosts<-function(P_PD,
 
 
   #### 5. Sample execution order  and calculate the number of setups ####
-  runs<-500
-  n_setups <- matrix(NA,nrow = runs,ncol = NCOL(TM))
-  for(i in 1:runs){
-    for (j in 1:NCOL(TM)) {
-      x <- TM[,j]
-      execution <- rep(which(x != 0), x[x != 0])
-      execution <- sample(execution)
-      n_setups[i,j] <- sum(diff(execution) != 0) + 1
-    }
-  }
-  n_setups <- ceiling(colMeans(n_setups))
+  # runs<-500
+  # n_setups <- matrix(NA,nrow = runs,ncol = NCOL(TM))
+  # for(i in 1:runs){
+  #   for (j in 1:NCOL(TM)) {
+  #     x <- TM[,j]
+  #     execution <- rep(which(x != 0), x[x != 0])
+  #     execution <- sample(execution)
+  #     n_setups[i,j] <- sum(diff(execution) != 0) + 1
+  #   }
+  # }
+  # n_setups <- ceiling(colMeans(n_setups))
 
   TM_bin <- TM
   TM_bin[TM_bin>0] <- 1
+  ## assuming that the minimum number of setups is required
+  n_setups <- colSums(TM_bin)
 
      return(list(TC_setup = sum(n_setups * C_setup),
                  LZM = LZM,

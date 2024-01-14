@@ -80,6 +80,7 @@ TM
 These tasks are executed in a certain order. There are several scheduling methods. However, the model assumes a random processing order. The execution `execution` list hold these information. According to the model of @Zhang.2020, setup occur if and only if the current setup differs from the predecessors' setup.
 
 ```{r}
+set.seed(1234)
 execution <- apply(TM,2,function(x){
   idx <- which(x!=0)
   execution <- unlist(sapply(idx,function(y) rep(y,x[y])))
@@ -88,9 +89,12 @@ execution <- apply(TM,2,function(x){
 })
 
 ## print the execution order
+message("Execution Order")
 execution
 ## plus one is added since there is an initial setup
 n_setups <-sapply(execution,function(x) sum(diff(x) != 0)+1)
+
+message("Setups")
 n_setups
 ```
 
@@ -115,6 +119,7 @@ C_tooling<-matrix(c(5,0,0,0,
                     0,12,14,0,
                     0,10,0,0,
                     0,0,0,7),nrow=4,byrow=T)
+sum(C_tooling)
 ```
 
 It is assumed that tools are required for each combination of component and process so-called process variants. The process variants are calculated as follow where `PVM` holds information which components (rows) go into which processes (columns).
@@ -124,7 +129,7 @@ PVM <- PD_PrD + PD_PrD %*% PrD
 PVM
 ```
 
-Each non-zero entry in `PVM` represents a process variant for which tooling is required. By dropping unused process variants which are not needed under the currentproduct mix are set to zero.
+Each non-zero entry in `PVM` represents a process variant for which tooling is required. By dropping unused process variants which are not needed under the current product mix are set to zero.
 
 ```{r}
 PVM[DMD_component==0,] <- 0
@@ -136,6 +141,12 @@ The total tooling costs are than given as:
 
 ```{r}
 sum(C_tooling)
+```
+
+The number of process variants is calculated as:
+
+```{r}
+sum(PVM>0)
 ```
 
 # References
