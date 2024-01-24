@@ -169,6 +169,8 @@ simulate_costEffects<-function(DOE){
                                 out['N_task'] <- setup$n_tasks
                                 out['N_task_distinct'] <- setup$n_taks_distinct
                                 out['DNS_TM'] <- setup$DNS_TM
+                                out['COR_TM'] <- mean(cor(setup$TM))
+                                out['TM_var'] <- mean(apply(setup$TM,2,function(x) sd(x)/mean(x)))
                                 out['DMD_PD_mean'] <- mean(DMD_component[DMD_component>0])
                                 out['DMD_PD_sum'] <- sum(DMD_component)
                                 out['Units_stock'] <- stock$Units_stock
