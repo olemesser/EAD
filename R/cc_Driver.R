@@ -333,7 +333,7 @@ setupCosts<-function(P_PD,
   # C_hold <- rep(5,4)
   # C_order <- rep(15,4)
   # C_setup <- 444.4
-  #### END Input for Testing ####
+  # ### END Input for Testing ####
 
   #### 1. Calculate Component Demand ####
   DMD_component <- as.numeric(DEMAND %*% P_PD)
@@ -354,13 +354,22 @@ setupCosts<-function(P_PD,
 
 
   #### 5. Sample execution order  and calculate the number of setups ####
-  runs<-500
+  runs<-100
   n_setups <- matrix(NA,nrow = runs,ncol = NCOL(TM))
   for(i in 1:runs){
     for (j in 1:NCOL(TM)) {
       x <- TM[,j]
       execution <- rep(which(x != 0), x[x != 0])
       execution <- sample(execution)
+      ## look ahead rule Kekre 1987
+      t <- 1
+      t_step <- 10
+      repeat{
+        t_max <- ifelse((t+t_step) <= length(execution),t + t_step,length(execution))
+        execution[t:t_max] <- sort(execution[t:t_max])
+        t <- t + t_step + 1
+        if(t >= length(execution)) break
+      }
       n_setups[i,j] <- sum(diff(execution) != 0) + 1
     }
   }
