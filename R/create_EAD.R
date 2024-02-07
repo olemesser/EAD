@@ -273,8 +273,8 @@ crt_EAD_MC<-function(DOE,
                   return(res)
                 }, packages = c("EAD",
                                 "dplyr", "tidyr",
-                                "Matrix", "digest", "faux",
-                                "plyr", "DescTools", "igraph", "R.utils","fGarch"),
+                                "Matrix", "digest",
+                                "plyr", "DescTools", "igraph", "R.utils"),
              errorhandlingNodes = ehNodes)
 
   EAD<-EAD[sapply(EAD,length)>0]

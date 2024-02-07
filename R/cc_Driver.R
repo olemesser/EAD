@@ -364,8 +364,9 @@ setupCosts<-function(P_PD,
       ## look ahead rule Kekre 1987
       t <- 1
       t_step <- 10
+      execution_length <- length(execution)
       repeat{
-        t_max <- ifelse((t+t_step) <= length(execution),t + t_step,length(execution))
+        t_max <- min(t + t_step, execution_length)
         execution[t:t_max] <- sort(execution[t:t_max])
         t <- t + t_step + 1
         if(t >= length(execution)) break

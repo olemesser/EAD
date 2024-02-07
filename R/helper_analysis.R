@@ -93,24 +93,24 @@ cor_table<-function(res,filename,group=NULL){
 }
 
 
-sem_effects <- function(fit){
-  require(lavaan)
-
-  beta <- lavInspect(fit, "est")$beta
-  y <- matrix(0,nrow = NROW(beta),ncol = NCOL(beta))
-  n <- 1
-  repeat{
-    effect <- eval(parse(text = paste(rep("beta",n),collapse = " %*% ")))
-    y <- y + effect
-    if(sum(effect)==0){
-      message(paste0("Effects of order ",n-1," were calculated."))
-      break
-    }else{
-      n <- n + 1
-    }
-  }
-  return(y)
-}
+# sem_effects <- function(fit){
+#   require(lavaan)
+#
+#   beta <- lavInspect(fit, "est")$beta
+#   y <- matrix(0,nrow = NROW(beta),ncol = NCOL(beta))
+#   n <- 1
+#   repeat{
+#     effect <- eval(parse(text = paste(rep("beta",n),collapse = " %*% ")))
+#     y <- y + effect
+#     if(sum(effect)==0){
+#       message(paste0("Effects of order ",n-1," were calculated."))
+#       break
+#     }else{
+#       n <- n + 1
+#     }
+#   }
+#   return(y)
+# }
 
 
 cor.mtest <- function(mat, ...) {

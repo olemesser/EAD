@@ -152,3 +152,27 @@ NULL
 #' @references
 #' \insertAllCited{}
 NULL
+
+
+#' A DMM containing the dependencies dependencies between functional requirements and design parameter as reported by \insertCite{Danilovic.2007;textual}{EAD}.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name DANI_DMM
+#' @usage data(DANI_DMM)
+#' @format A DMM with 18 by 41 elements.
+#' @references
+#' \insertAllCited{}
+NULL
+
+
+#' A DMM containing the dependencies between functional requirements and design parameter for a valve as reported by \insertCite{Li.2008;textual}{EAD}.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name LI_valve
+#' @usage data(LI_valve)
+#' @format A DMM with 29 by 49 elements.
+#' @references
+#' \insertAllCited{}
+NULL

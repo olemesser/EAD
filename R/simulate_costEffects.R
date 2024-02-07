@@ -262,8 +262,8 @@ simulate_costEffects_MC<-function(DOE,
                                  return(res)
                                }, packages = c("EAD",
                                                "dplyr", "tidyr",
-                                               "Matrix", "digest", "faux","data.table",
-                                               "plyr", "DescTools", "igraph", "R.utils","fGarch"),
+                                               "Matrix", "digest", "data.table",
+                                               "plyr", "DescTools", "igraph", "R.utils"),
                                errorhandlingNodes = ehNodes)
 
   # res<-res[sapply(res,length)>0]

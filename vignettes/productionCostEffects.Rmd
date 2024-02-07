@@ -27,18 +27,19 @@ The EAD design can be created by calling
 ```{r initialize}
 require(EAD)
 P_PD <- matrix(c(1,0,0,1,
-                 0,1,3,0,
+                 0,1,1,0,
                  0,0,1,1,
                  0,1,2,1),byrow=T,nrow=4)
 PD_PrD <- matrix(c(1,0,0,0,
                  0,1,1,0,
-                 0,2,01,0,
+                 0,2,1,0,
                  0,0,0,1),byrow=T,nrow=4)
 PrD <- diag(0,4)
 DEMAND <- c(10,50,100,30)
 C_hold <- rep(5,4)
 C_order <- rep(15,4)
 C_setup <- 444.4
+PD_PrD
 ```
 
 # Setup Costs
@@ -47,6 +48,7 @@ In a first step the component demand is calculated.
 
 ```{r}
 DMD_component <- as.numeric(DEMAND %*% P_PD)
+DMD_component
 ```
 
 Second, the process consumption for each component is calculated
@@ -75,6 +77,9 @@ In a fourth step, the tasks are calculated. The tasks describe how many lots nee
 TM <- ceiling(DMD_PD / LZM)
 TM[is.nan(TM)] <- 0
 TM
+
+message("Total number of tasks")
+sum(TM)
 ```
 
 These tasks are executed in a certain order. There are several scheduling methods. However, the model assumes a random processing order. The execution `execution` list hold these information. According to the model of @Zhang.2020, setup occur if and only if the current setup differs from the predecessors' setup.

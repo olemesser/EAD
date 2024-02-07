@@ -1,6 +1,6 @@
 experiment_PCS<-function(DOE,
                          cs_DOE = expand.grid(ACP=c(1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30),
-                                              method = c("random","correl-random","PU","DC-0.2")),
+                                              method = c("random","correl-random","DIV","DLH-0.2")),
                          ACP_productLevel = c(5)
                          ){
   #### Input for Testing ####
@@ -18,8 +18,8 @@ experiment_PCS<-function(DOE,
   #                  TOTAL_DEMAND = list(c(200,25000)), # total demand
   #                  Q_VAR = list(c(0,1.7)), # coefficient of variation for demand distribution
   #                  DMM_PAR = expand_grid(FD_PD = list(c(0,0.08)),
-  #                                        PD_PrD = list(c(0,0.0)),
-  #                                        PrD_RD = list(c(0,0.0))), # desired design complexity
+  #                                        PD_PrD = list(c(0,0.08)),
+  #                                        PrD_RD = list(c(0,0.08))), # desired design complexity
   #                  allowZero = F,
   #                  uB_DMM = 2,
   #                  ut_DMM = F, # if the upper triangle DMMs should be generated too (DMM_FD_PrD,DMM_FD_RD,DMM_PD_RD)
@@ -34,9 +34,9 @@ experiment_PCS<-function(DOE,
   #                  RC_sdlog = list(c(0,3)), # coefficient of variation for resource cost distribution # coefficient of variation for resource cost distribution
   #                  N_RUN = 1:2 # number of runs
   # )
-  # cs_DOE = expand.grid(ACP=c(2,3,4,5,10,50),
+  # cs_DOE = expand.grid(ACP=c(1,2,3,4,5,10,50),
   #                      method = c("random","correl-random","DIV"))
-  # ACP_productLevel = c(5)
+  # ACP_productLevel = c(1,5)
   #### End INput for Testing ####
 
 
@@ -99,10 +99,12 @@ experiment_PCS<-function(DOE,
 
         P_FD <- EAD[[1]]$P$FD[products_in,,drop=F]
         P_PD <- EAD[[1]]$P$PD[products_in,,drop=F]
+        P_PrD <- EAD[[1]]$P$PrD[products_in,,drop=F]
         P_RD <- EAD[[1]]$P$RD[products_in,,drop=F]
         resources_to_keep <- which(colSums(P_RD)>0)
         P_FD <- P_FD[,which(colSums(P_FD)>0),drop=F]
         P_PD <- P_PD[,which(colSums(P_PD)>0),drop=F]
+        P_PrD <- P_PrD[,which(colSums(P_PrD)>0),drop=F]
         P_RD <- P_RD[,resources_to_keep,drop=F]
         DMD <- EAD[[1]]$DEMAND[products_in]
 
@@ -151,6 +153,14 @@ experiment_PCS<-function(DOE,
                                          HIC_n.RD = measures_system$HIC_n.RD,
                                          D_RD = measure_diversificationINDEX(P_RD, DMD = DMD),
                                          D_RD_noDemand = measure_diversificationINDEX(P_RD),
+                                         INTER.FD = mean(measure_INTER(P_FD)),
+                                         INTRA.FD = mean(measure_INTRA(P_FD)),
+                                         INTER.PD = mean(measure_INTER(P_PD)),
+                                         INTRA.PD = mean(measure_INTRA(P_PD)),
+                                         INTER.PrD = mean(measure_INTER(P_PrD)),
+                                         INTRA.PrD = mean(measure_INTRA(P_PrD)),
+                                         INTER.RD = mean(measure_INTER(P_RD)),
+                                         INTRA.RD = mean(measure_INTRA(P_RD)),
                                          R_id = sum(benchmark$PC_B_indirect * DMD) /sum(PC_B * DMD),
                                          TC = sum(benchmark$PC_B * DMD),
                                          TC_indirect = sum(benchmark$PC_B_indirect * DMD),
@@ -276,8 +286,8 @@ experiment_PCS_MC<-function(DOE,
                                  return(res)
                                }, packages = c("EAD",
                                                "dplyr", "tidyr",
-                                               "Matrix", "digest", "faux","data.table",
-                                               "plyr", "DescTools", "igraph", "R.utils","fGarch"),
+                                               "Matrix", "digest", "data.table",
+                                               "plyr", "DescTools", "igraph", "R.utils"),
                                errorhandlingNodes = ehNodes)
 
 
