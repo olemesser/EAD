@@ -226,6 +226,8 @@ experiment_PCS<-function(DOE,
           ### select some ACPs
           product_level_data <- lapply(which(cs_DOE$ACP %in% ACP_productLevel),function(s){
             data.frame(id = EAD[[1]]$ID,
+                       INTER.PD = EAD[[1]]$measures$PRODUCT$INTER$PD[products_in],
+                       INTRA.PD = EAD[[1]]$measures$PRODUCT$INTRA$PD[products_in],
                        LOF.RD =  EAD[[1]]$measures$PRODUCT$LOF$RD[products_in],
                        INTER.RD = EAD[[1]]$measures$PRODUCT$INTER$RD[products_in],
                        INTRA.RD = EAD[[1]]$measures$PRODUCT$INTRA$RD[products_in],
