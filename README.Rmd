@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-The numerical EAD framework generates firm environments according to the Extended Axiomatic Design (EAD) introduced by Mertens (2020), Meßerschmidt et al. (2020) and Schmidt et al. (2021). The simulation model is explained in Meßerschmidt (forthcoming). The framework adapts some function from the cost system design framework by Anand et al. (2019). The original code in C# is available under <https://github.com/vanand74/CostSystemSim>.
+The numerical EAD framework generates firm environments according to the Extended Axiomatic Design (EAD) introduced by Mertens (2020), Meßerschmidt et al. (2020) and Schmidt et al. (2021). The framework adapts some function from the cost system design framework by Anand et al. (2019). The original code in C# is available under <https://github.com/vanand74/CostSystemSim>.
 
 ## Installation
 
@@ -214,8 +214,6 @@ Mertens, K. G. (2020). *Measure and manage your product costs right -- develop
 
 Meßerschmidt, O., Gumpinger, T., Meyer, M. & Mertens, K. G. Reviewing Complexity Costs -- What Practice Needs and What Research Contributes Proceedings of the Design Society: DESIGN Conference, 2020. Cambridge University Press, 647-656. <https://doi.org/10.1017/dsd.2020.152>
 
-Meßerschmidt, O. (forthcoming). Variety and Costs - The Effects of Product Variety on Costs and Costing Systems.
-
 Meyer, M., Meßerschmidt, O., & Mertens, K. G. (2019). *How much does variety-induced complexity actually cost? Linking axiomatic design with cost modelling*. In M. Schröder & K. Wegner (Eds.), *Logistik im Wandel der Zeit -- Von der Produktionssteuerung zu vernetzten Supply Chains* (pp. 813--827). Wiesbaden: Springer Fachmedien Wiesbaden. <https://doi.org/10.1007/978-3-658-25412-4_39>
 
-Schmidt M, Mertens KG, Meyer M (2023) Cost hierarchies and the pattern of product cost cross-subsidization: Extending a computational model of costing system design. PLOS ONE 18(9): e0290370. <https://doi.org/10.1371/journal.pone.0290370>
+Schmidt M, Mertens, K. G., Meyer M (2023) Cost hierarchies and the pattern of product cost cross-subsidization: Extending a computational model of costing system design. PLOS ONE 18(9): e0290370. <https://doi.org/10.1371/journal.pone.0290370>
