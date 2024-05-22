@@ -198,12 +198,17 @@ experiment_PCS<-function(DOE,
           costingError<-clc_costingERROR(PC_B = benchmark$PC_B_indirect,
                                          PC_H = PC_H_indirect,
                                          DMD = DMD)
+          PC_H = PC_H_indirect + PC_direct
+          P_UC = sum(PC_B *.95 > PC_H) / length(PC_H)
+          P_OC = sum(PC_B *1.05 < PC_H) / length(PC_H)
           return(list(EUCD = costingError$EUCD,
                       MAPE = costingError$MAPE,
                       EUCD_w = costingError$EUCD_w,
                       MAPE_w = costingError$MAPE_w,
-                      PC_H = PC_H_indirect + PC_direct,
+                      PC_H = PC_H,
                       PC_B =  PC_B,
+                      P_UC = P_UC,
+                      P_OC = P_OC,
                       PC_H_i = PC_H_indirect,
                       PC_B_i = benchmark$PC_B_indirect,
                       TC = sum(PC_B * DMD)))
@@ -214,6 +219,8 @@ experiment_PCS<-function(DOE,
             error <- lapply(reported,function(x){
                       data.frame(EUCD = x$EUCD,
                                  MAPE = x$MAPE,
+                                 P_UC = x$P_UC,
+                                 P_OC = x$P_OC,
                                  EUCD_w = x$EUCD_w,
                                  MAPE_w = x$MAPE_w)
                       })
